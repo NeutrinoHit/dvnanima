@@ -1,0 +1,25 @@
+# Core numerical and Manim stack
+manim>=0.19
+numpy>=2.0
+scipy>=1.13
+matplotlib>=3.8
+pillow>=10
+
+# Image, audio and video processing
+opencv-python>=4.10
+h5py>=3.11
+imageio>=2.34
+imageio-ffmpeg>=0.5
+av>=12
+
+# Interactive and 3D renderers used in fields/ and cherenkov_cone/
+plotly>=5.24
+kaleido>=1.0
+pyqtgraph>=0.13
+PyQt6>=6.7
+PyOpenGL>=3.1
+pyvista>=0.44
+
+# Circuit diagrams and Cockcroft-Walton simulations
+schemdraw>=0.19
+PySpice>=1.5
