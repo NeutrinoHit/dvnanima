@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PY="${PYTHON_BIN:-python}"
+MEDIA_DIR="$SCRIPT_DIR/media"
 DATASET=""
 OUT=""
 FORWARD_ARGS=()
@@ -38,9 +39,10 @@ DATASET="$(resolve_scalar_qed_dataset "$SCRIPT_DIR" "$DATASET")"
 require_scalar_qed_dataset "$DATASET"
 
 if [[ -z "$OUT" ]]; then
-  OUT="$SCRIPT_DIR/$(scalar_qed_dataset_stem "$DATASET")_pyqtgraph_3d.mp4"
+  OUT="$MEDIA_DIR/$(scalar_qed_dataset_label "$DATASET")_pyqtgraph_3d.mp4"
 fi
 
+mkdir -p "$MEDIA_DIR"
 cd "$SCRIPT_DIR"
 CMD=(
   "$PY" -m fields.scalar_qed.render_scalar_qed_pyqtgraph "$DATASET"

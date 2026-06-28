@@ -39,21 +39,14 @@ The default upper surface is `a0`.
 - `20_render_pyqtgraph_2d_mp4.sh`: quick 2D movie, useful for tuning.
 - `21_render_pyqtgraph_3d_mp4.sh`: final lecture-quality 3D movie.
 
-Generated `.npz`, `.mp4`, `.gif`, and `media/` outputs are intentionally
-ignored by git.
+Generated outputs are intentionally ignored by git:
 
-## Existing Local Outputs
+- `datasets/`: `.npz` datasets
+- `media/`: rendered movies
 
-These are useful local products, but they are generated artifacts rather than
-source files:
-
-- `scalar_qed_dataset_pp_20260329_163850.npz`
-- `scalar_qed_dataset_pm_20260329_163413.npz`
-- `pp.mp4`
-- `pm.mp4`
-
-`scalar_qed_dataset_latest.npz` is a local symlink updated by
-`00_export_dataset.sh`.
+`datasets/scalar_qed_dataset_latest.npz` is a local symlink updated by
+`00_export_dataset.sh`. The render scripts read from `datasets/` by default
+and write movies to `media/` by default.
 
 ## Recommended Commands
 
@@ -91,15 +84,15 @@ Render a specific dataset:
 
 ```bash
 ./21_render_pyqtgraph_3d_mp4.sh \
-  --dataset scalar_qed_dataset_pp_20260329_163850.npz \
-  --out pp.mp4
+  --dataset datasets/scalar_qed_dataset_pp_YYYYMMDD_HHMMSS.npz \
+  --out media/pp.mp4
 ```
 
 Render a quick 2D diagnostic movie:
 
 ```bash
 ./20_render_pyqtgraph_2d_mp4.sh \
-  --dataset scalar_qed_dataset_pm_20260329_163413.npz
+  --dataset datasets/scalar_qed_dataset_pm_YYYYMMDD_HHMMSS.npz
 ```
 
 For quick checks without the full grid/time cost:
@@ -107,6 +100,25 @@ For quick checks without the full grid/time cost:
 ```bash
 ./00_export_dataset.sh --config scalar_qed_single.toml --preview --out /tmp/scalar_qed_single_preview.npz
 ./21_render_pyqtgraph_3d_mp4.sh --dataset /tmp/scalar_qed_single_preview.npz --out /tmp/scalar_qed_single_preview.mp4
+```
+
+## Rebuild All Lecture Movies
+
+Use deterministic dataset names when you want simple repeatable render
+commands:
+
+```bash
+./00_export_dataset.sh --config scalar_qed_single.toml --out datasets/single.npz
+./00_export_dataset.sh --config scalar_qed_pm.toml --out datasets/pm.npz
+./00_export_dataset.sh --config scalar_qed_pp.toml --out datasets/pp.npz
+```
+
+Render the final 3D movies:
+
+```bash
+./21_render_pyqtgraph_3d_mp4.sh --dataset datasets/single.npz --out media/single.mp4
+./21_render_pyqtgraph_3d_mp4.sh --dataset datasets/pm.npz --out media/pm.mp4
+./21_render_pyqtgraph_3d_mp4.sh --dataset datasets/pp.npz --out media/pp.mp4
 ```
 
 ## Final 3D Render Defaults

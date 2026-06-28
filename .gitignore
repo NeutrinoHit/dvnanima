@@ -14,3 +14,4 @@ media/
 
 # Field-project render caches
 fields/**/media/
+fields/**/datasets/

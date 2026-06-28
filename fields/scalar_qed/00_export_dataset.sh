@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PY="${PYTHON_BIN:-python}"
 DEFAULT_CONFIG="$SCRIPT_DIR/scalar_qed.toml"
+DATASET_DIR="$SCRIPT_DIR/datasets"
 
 CONFIG="$DEFAULT_CONFIG"
 OUT=""
@@ -62,10 +63,11 @@ PY
 )"
   fi
   TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-  OUT="$SCRIPT_DIR/scalar_qed_dataset_${SCENARIO}_${TIMESTAMP}.npz"
+  OUT="$DATASET_DIR/scalar_qed_dataset_${SCENARIO}_${TIMESTAMP}.npz"
   FORWARD_ARGS+=(--out "$OUT")
 fi
 
+mkdir -p "$DATASET_DIR"
 cd "$SCRIPT_DIR"
 PYTHONPATH="../.." "$PY" -m fields.scalar_qed.export_scalar_qed_dataset "${FORWARD_ARGS[@]}"
 
@@ -86,5 +88,17 @@ out_abs = Path(sys.argv[2]).resolve()
 print(os.path.relpath(out_abs, script_dir))
 PY
 )"
-ln -sfn "$OUT_REL" "$SCRIPT_DIR/scalar_qed_dataset_latest.npz"
-echo "Updated latest dataset link: $SCRIPT_DIR/scalar_qed_dataset_latest.npz -> $OUT_REL"
+LATEST_LINK="$DATASET_DIR/scalar_qed_dataset_latest.npz"
+OUT_REL_TO_DATASETS="$("$PY" - "$DATASET_DIR" "$OUT_ABS" <<'PY'
+from __future__ import annotations
+import os
+import sys
+from pathlib import Path
+dataset_dir = Path(sys.argv[1]).resolve()
+out_abs = Path(sys.argv[2]).resolve()
+print(os.path.relpath(out_abs, dataset_dir))
+PY
+)"
+ln -sfn "$OUT_REL_TO_DATASETS" "$LATEST_LINK"
+echo "Saved dataset: $OUT_REL"
+echo "Updated latest dataset link: $LATEST_LINK -> $OUT_REL_TO_DATASETS"

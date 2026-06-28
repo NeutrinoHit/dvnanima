@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 
+scalar_qed_dataset_dir() {
+  local script_dir="$1"
+  printf '%s\n' "$script_dir/datasets"
+}
+
 resolve_scalar_qed_dataset() {
   local script_dir="$1"
   local requested="${2:-}"
+  local dataset_dir
+  dataset_dir="$(scalar_qed_dataset_dir "$script_dir")"
 
   if [[ -n "$requested" ]]; then
     printf '%s\n' "$requested"
@@ -14,7 +21,7 @@ resolve_scalar_qed_dataset() {
     return 0
   fi
 
-  local latest="$script_dir/scalar_qed_dataset_latest.npz"
+  local latest="$dataset_dir/scalar_qed_dataset_latest.npz"
   if [[ -f "$latest" ]]; then
     printf '%s\n' "$latest"
     return 0
@@ -23,7 +30,7 @@ resolve_scalar_qed_dataset() {
   local candidates=()
   while IFS= read -r path; do
     candidates+=("$path")
-  done < <(find "$script_dir" -maxdepth 1 -type f -name 'scalar_qed_dataset_*.npz' | sort)
+  done < <(find "$dataset_dir" -maxdepth 1 -type f -name 'scalar_qed_dataset_*.npz' 2>/dev/null | sort)
 
   if [[ ${#candidates[@]} -gt 0 ]]; then
     printf '%s\n' "${candidates[$((${#candidates[@]} - 1))]}"
@@ -49,7 +56,7 @@ Create one first, for example:
   ./00_export_dataset.sh --config scalar_qed_single.toml
 
 Or pass an explicit dataset:
-  --dataset fields/scalar_qed/scalar_qed_dataset_pp_YYYYMMDD_HHMMSS.npz
+  --dataset fields/scalar_qed/datasets/scalar_qed_dataset_pp_YYYYMMDD_HHMMSS.npz
 EOF
   return 1
 }
@@ -57,4 +64,16 @@ EOF
 scalar_qed_dataset_stem() {
   local dataset="$1"
   basename "$dataset" .npz
+}
+
+scalar_qed_dataset_label() {
+  local dataset="$1"
+  local stem
+  stem="$(scalar_qed_dataset_stem "$dataset")"
+  stem="${stem#scalar_qed_dataset_}"
+  if [[ "$stem" =~ ^([[:alnum:]_-]+)_[0-9]{8}_[0-9]{6}$ ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+  else
+    printf '%s\n' "$stem"
+  fi
 }
