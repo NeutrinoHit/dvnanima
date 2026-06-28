@@ -5,6 +5,7 @@
 
 # Игнорируем тяжелые медиа-файлы Manim
 media/
+**/partial_movie_files/
 
 # Generated numerical datasets and rendered movies are large.
 # Keep the source, configs, and launchers in git; regenerate these locally.
