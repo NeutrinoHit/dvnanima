@@ -1,0 +1,50 @@
+# Default lecture-quality scenario: like charges, visible repulsion.
+# Use scalar_qed_pm.toml for attraction and scalar_qed_single.toml for one packet.
+
+[grid]
+nx = 400
+ny = 288
+lx = 28.0
+ly = 20.0
+
+[time]
+t_start = 0.0
+t_end = 32.0
+simulation_num_samples = 681
+animation_num_samples = 241
+
+[physics]
+mass = 6.00
+charge_q = 0.88
+
+[observables]
+lower_surface = "phi_abs2"
+upper_surface = "a0"
+
+[render]
+lower_height_target = 1.10
+upper_height_target = 0.92
+lower_visual_gain = 1.00
+upper_visual_gain = 1.00
+upper_plane_shift = 2.10
+playback_time_scale = 1.00
+
+[[packets]]
+name = "packet_1"
+charge_ratio = 4.20
+sigma = 0.38
+px = 1.80
+py = 0.00
+x0 = -4.40
+y0 = 0.54
+phase0 = 0.0
+
+[[packets]]
+name = "packet_2"
+charge_ratio = 4.20
+sigma = 0.38
+px = -1.80
+py = 0.00
+x0 = 4.40
+y0 = -0.54
+phase0 = 0.0

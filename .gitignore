@@ -1,6 +1,16 @@
 # Игнорируем кэш Python
 **/__pycache__/
 *.py[cod]
+.DS_Store
 
 # Игнорируем тяжелые медиа-файлы Manim
 media/
+
+# Generated numerical datasets and rendered movies are large.
+# Keep the source, configs, and launchers in git; regenerate these locally.
+*.npz
+*.mp4
+*.gif
+
+# Field-project render caches
+fields/**/media/
