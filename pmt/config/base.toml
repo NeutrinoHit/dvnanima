@@ -1,0 +1,100 @@
+[scene]
+name = "surface_to_plate"
+title = "PMT Surface To Plate"
+kind = "surface_to_plate"
+physics_mode = "numerical"
+launch_mode = "surface"
+
+[grid]
+nx = 320
+ny = 240
+lx_cm = 120.0
+ly_cm = 90.0
+
+[time]
+dt = 5.0e-12
+steps = 12000
+integration_substeps = 4
+bz_t = 0.0
+
+[electrons]
+count = 420
+mass = 9.1093837015e-31
+charge = -1.602176634e-19
+initial_energy_ev = 0.35
+initial_energy_spread_ev = 0.12
+angle_spread_deg = 8.0
+emission_jitter_cm = 0.15
+seed = 12345
+launch_angle_deg = 0.0
+
+[electrodes]
+background_voltage = 0.0
+cathode_voltage = 0.0
+anode_voltage = 1600.0
+focus_voltage = 700.0
+
+[geometry]
+cathode_shape = "hemisphere"
+photocathode_diameter_cm = 50.8
+photocathode_thickness_cm = 0.6
+photocathode_center_x_cm = -20.0
+photocathode_center_y_cm = 0.0
+photocathode_active_theta_min_deg = -80.0
+photocathode_active_theta_max_deg = 80.0
+
+line_cathode_x_cm = -26.0
+line_cathode_height_cm = 50.8
+line_cathode_thickness_cm = 0.6
+
+launch_point_x_cm = -18.0
+launch_point_y_cm = 0.0
+
+receiver_kind = "plate"
+receiver_point_x_cm = 8.0
+receiver_point_y_cm = 0.0
+receiver_radius_cm = 0.45
+
+plate_center_x_cm = 8.0
+plate_center_y_cm = 0.0
+plate_length_cm = 4.0
+plate_thickness_cm = 0.8
+plate_angle_deg = -14.0
+
+focus_enabled = false
+focus_kind = "plate"
+focus_center_x_cm = 2.5
+focus_center_y_cm = 0.0
+focus_length_cm = 6.0
+focus_thickness_cm = 0.5
+focus_angle_deg = -12.0
+
+[central]
+center_x_cm = 8.0
+center_y_cm = 0.0
+kappa = 40.0
+softening_cm = 0.45
+
+[render]
+figure_width = 12.0
+figure_height = 8.2
+dpi = 180
+background = "black"
+trajectory_color = "white"
+field_line_color = "#ff3b30"
+electrode_cathode_color = "#4ca3ff"
+electrode_receiver_color = "#ff9b5a"
+electrode_focus_color = "#9bffa4"
+scalar_map = "potential"
+colormap = "magma"
+show_field_lines = true
+field_line_density = 1.0
+field_line_mode = "stream"
+trajectory_alpha = 0.36
+trajectory_linewidth = 0.9
+max_trajectories = 260
+
+[solver]
+sor_omega = 1.93
+sor_tolerance = 1.0e-8
+sor_max_iterations = 20000

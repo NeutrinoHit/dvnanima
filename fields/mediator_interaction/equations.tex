@@ -1,0 +1,58 @@
+\section*{Interaction Through a Mediator Field}
+
+We use two scalar fields in $(2+1)$ dimensions: the main field $\phi(t,x,y)$ and the mediator field $\chi(t,x,y)$.
+
+The starting Lagrangian is
+\[
+\mathcal L=
+\frac12\partial_\mu\phi\,\partial^\mu\phi
++\frac12\partial_\mu\chi\,\partial^\mu\chi
+-V(\phi,\chi),
+\]
+with
+\[
+V(\phi,\chi)=
+\frac12 m_\phi^2\phi^2
++\frac12 m_\chi^2\chi^2
++g\,\chi\phi^2
++\frac{\lambda_\phi}{4}\phi^4
++\frac{\lambda_\chi}{4}\chi^4.
+\]
+
+The full equations of motion are
+\[
+\Box\phi+m_\phi^2\phi+2g\,\phi\chi+\lambda_\phi\phi^3=0,
+\qquad
+\Box\chi+m_\chi^2\chi+g\,\phi^2+\lambda_\chi\chi^3=0,
+\qquad
+\Box=\partial_t^2-\partial_x^2-\partial_y^2.
+\]
+
+Equivalently,
+\[
+\partial_t^2\phi-\nabla^2\phi+m_\phi^2\phi=-2g\,\phi\chi-\lambda_\phi\phi^3,
+\qquad
+\partial_t^2\chi-\nabla^2\chi+m_\chi^2\chi=-g\,\phi^2-\lambda_\chi\chi^3.
+\]
+
+The quartic couplings are chosen positive so that the potential is bounded from below:
+\[
+\lambda_\phi>0,\qquad \lambda_\chi>0.
+\]
+
+Initial data:
+
+\begin{itemize}
+\item $\phi(0,x,y)$ is taken as two incoming Gaussian wave packets with opposite carrier momenta and nonzero impact parameter;
+\item by default, $\chi(0,x,y)=0$ and $\dot\chi(0,x,y)=0$, so the mediator field is generated dynamically by the source $-g\phi^2$;
+\item an optional linearized static initialization can be used for smoother starts, but the main evolution solves the full nonlinear two-field system.
+\end{itemize}
+
+Interpretation:
+
+\begin{itemize}
+\item $\phi$ creates a source proportional to $\phi^2$;
+\item $\chi$ then propagates as a genuine dynamical field;
+\item the resulting $\chi$ profile acts back on $\phi$ through the term $-2g\,\phi\chi$;
+\item the quartic self-interactions stabilize the dynamics against runaway growth.
+\end{itemize}

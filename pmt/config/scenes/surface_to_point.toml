@@ -1,0 +1,15 @@
+[scene]
+name = "surface_to_point"
+title = "Surface To Point Receiver"
+kind = "surface_to_point"
+physics_mode = "numerical"
+launch_mode = "surface"
+
+[electrodes]
+anode_voltage = 1300.0
+
+[geometry]
+receiver_kind = "point"
+receiver_point_x_cm = 8.0
+receiver_point_y_cm = 0.0
+receiver_radius_cm = 0.55

@@ -9,9 +9,20 @@ media/
 # Generated numerical datasets and rendered movies are large.
 # Keep the source, configs, and launchers in git; regenerate these locally.
 *.npz
+*.h5
+*.hdf5
 *.mp4
+*.mov
+*.webm
+*.avi
+*.wmv
 *.gif
 
 # Field-project render caches
 fields/**/media/
 fields/**/datasets/
+fields/**/radiating_charge_plotly*.html
+
+# Local plotting/test outputs
+**/.mplconfig/
+**/out/

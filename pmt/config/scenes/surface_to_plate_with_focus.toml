@@ -1,0 +1,25 @@
+[scene]
+name = "surface_to_plate_with_focus"
+title = "Surface To Plate With Focus Electrode"
+kind = "surface_to_plate_with_focus"
+physics_mode = "numerical"
+launch_mode = "surface"
+
+[electrodes]
+anode_voltage = 1500.0
+focus_voltage = 700.0
+
+[geometry]
+receiver_kind = "plate"
+plate_center_x_cm = 9.0
+plate_center_y_cm = 0.0
+plate_length_cm = 4.2
+plate_thickness_cm = 0.8
+plate_angle_deg = -14.0
+focus_enabled = true
+focus_kind = "plate"
+focus_center_x_cm = 2.6
+focus_center_y_cm = 0.0
+focus_length_cm = 6.0
+focus_thickness_cm = 0.5
+focus_angle_deg = -11.0

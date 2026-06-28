@@ -1,0 +1,17 @@
+[scene]
+name = "surface_to_plate"
+title = "Surface To Plate"
+kind = "surface_to_plate"
+physics_mode = "numerical"
+launch_mode = "surface"
+
+[electrodes]
+anode_voltage = 1600.0
+
+[geometry]
+receiver_kind = "plate"
+plate_center_x_cm = 8.0
+plate_center_y_cm = 0.0
+plate_length_cm = 4.0
+plate_thickness_cm = 0.8
+plate_angle_deg = -14.0

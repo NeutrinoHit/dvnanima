@@ -1,0 +1,48 @@
+[grid]
+nx = 360
+ny = 280
+lx_cm = 120.0
+ly_cm = 90.0
+
+[particles]
+count = 1200
+steps = 18000
+dt = 5.0e-12
+mass = 9.1093837015e-31
+charge = -1.602176634e-19
+initial_energy_ev = 0.35
+initial_energy_spread_ev = 0.12
+angle_spread_deg = 7.0
+emission_jitter_y = 0.15
+integration_substeps = 6
+
+[simulation]
+seed = 12345
+
+# Electrodes: Dirichlet boundaries (constant potentials)
+cathode_voltage = 0.0
+dynode_voltage = 1600.0
+background_voltage = 0.0
+
+# Photocathode geometry (default: 20-inch hemisphere, values in cm)
+photocathode_shape = "hemisphere"
+photocathode_diameter_cm = 50.8
+photocathode_thickness_cm = 0.6
+photocathode_center_x_cm = -20.0
+photocathode_center_y_cm = 0.0
+photocathode_active_theta_min_deg = -80.0
+photocathode_active_theta_max_deg = 80.0
+
+# Dynode geometry (2D effective plate, tuned to 20-inch Hamamatsu scale)
+# Historical Hamamatsu 20-inch development mentions ~75x75 mm large dynodes.
+# Here we use a conservative first-approximation plate that is visibly smaller than the bulb.
+dynode_center_x_cm = 8.0
+dynode_center_y_cm = 0.0
+dynode_length_cm = 4.0
+dynode_thickness_cm = 0.8
+dynode_angle_deg = -14.0
+
+bz_t = 0.0
+sor_omega = 1.93
+sor_tolerance = 1.0e-8
+sor_max_iterations = 20000

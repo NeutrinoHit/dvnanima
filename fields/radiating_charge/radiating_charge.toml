@@ -1,0 +1,63 @@
+[grid]
+nx = 640
+ny = 480
+lx = 28.0
+ly = 22.0
+z_obs = 0.35
+mask_radius = 0.10
+
+[time]
+t_start = -7.0
+t_end = 12.0
+trajectory_dt = 0.002
+animation_num_samples = 241
+
+[source]
+charge = 1.0
+c = 4.0
+eps0 = 1.0
+
+[observables]
+lower_surface = "bz_rad"
+upper_surface = "ez_rad"
+keys = ["ex", "ey", "ez", "bx", "by", "bz", "sx", "sy", "sz", "e_mag", "b_mag", "s_mag", "ex_rad", "ey_rad", "ez_rad", "bx_rad", "by_rad", "bz_rad", "sx_rad", "sy_rad", "sz_rad", "e_rad_mag", "b_rad_mag", "s_rad_mag"]
+
+[render]
+lower_height_target = 1.00
+upper_height_target = 0.92
+lower_visual_gain = 1.00
+upper_visual_gain = 1.00
+upper_plane_shift = 5.20
+display_transform = "signed_log"
+playback_time_scale = 1.00
+
+[trajectory]
+model = "coulomb"
+
+[trajectory.coulomb]
+mass = 1.0
+center_charge = -18.0
+softening = 0.08
+center_x = 0.0
+center_y = 0.0
+center_z = 0.0
+x0 = -10.0
+y0 = 1.0
+z0 = 0.0
+vx0 = 1.0
+vy0 = 0.0
+vz0 = 0.0
+
+[trajectory.oscillator]
+mass = 1.0
+omega0 = 0.9
+gamma = 0.0
+center_x = 0.0
+center_y = 0.0
+center_z = 0.0
+x0 = 2.8
+y0 = 0.0
+z0 = 0.0
+vx0 = 0.0
+vy0 = 0.65
+vz0 = 0.0

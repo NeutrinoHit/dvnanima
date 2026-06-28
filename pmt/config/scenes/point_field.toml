@@ -1,0 +1,47 @@
+[scene]
+name = "point_field"
+title = "Point Electron In Central Field"
+kind = "point_field"
+physics_mode = "central"
+launch_mode = "point"
+
+[electrons]
+count = 1
+initial_energy_ev = 0.0
+initial_energy_spread_ev = 0.0
+angle_spread_deg = 0.0
+launch_angle_deg = 0.0
+emission_jitter_cm = 0.0
+point_radial_velocity_m_s = 0.0
+point_transverse_velocity_m_s = 0.0
+point_transverse_velocity_spread_m_s = 0.0
+
+[geometry]
+enable_cathode = false
+enable_receiver = false
+receiver_kind = "point"
+receiver_point_x_cm = 8.0
+receiver_point_y_cm = 0.0
+receiver_radius_cm = 0.40
+launch_point_x_cm = -20.0
+launch_point_y_cm = 0.0
+
+[central]
+center_x_cm = 8.0
+center_y_cm = 0.0
+kappa = 55.0
+softening_cm = 0.4
+
+[render]
+scalar_map = "field_magnitude"
+field_line_mode = "quiver"
+field_line_density = 1.0
+normalize_field_arrows = true
+field_arrow_length_cm = 2.2
+show_equipotential_lines = true
+equipotential_count = 5
+equipotential_color = "#8fb4ff"
+equipotential_linewidth = 1.0
+max_trajectories = 1
+trajectory_alpha = 1.0
+trajectory_linewidth = 2.0
