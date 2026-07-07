@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 import configparser
+import os
 import re
 import numpy as np
 from manim import *
 
 
-def load_cfg(path: Path) -> dict:
+def load_cfg(paths: list[Path]) -> dict:
     cfg = configparser.ConfigParser(inline_comment_prefixes=(";",))
-    cfg.read(path)
+    cfg.read([str(path) for path in paths])
 
     def get(section, key, cast=str, fallback=None):
         if fallback is None:
@@ -49,6 +50,10 @@ def load_cfg(path: Path) -> dict:
         "frame_height": manim_defaults["frame_height"],
         "frame_rate": get("manim", "frame_rate", int, 60),
         "background_color": get("manim", "background_color", str, "#000000"),
+    }
+
+    scene = {
+        "show_labels": get_bool("scene", "show_labels", True),
     }
 
     layout_defaults = {
@@ -147,11 +152,29 @@ def load_cfg(path: Path) -> dict:
         "continuum_stroke": get("colors", "continuum_stroke", str, "#BCE5FF"),
     }
 
-    return {"manim": manim_params, "lattice": lattice, "colors": colors}
+    return {"manim": manim_params, "scene": scene, "lattice": lattice, "colors": colors}
 
 
 BASE_DIR = Path(__file__).resolve().parent
-CFG = load_cfg(BASE_DIR / "run.cfg")
+BASE_CFG_PATH = BASE_DIR / "run.cfg"
+CFG_ENV_VAR = "COUPLED_OSCILLATORS_2D_CONFIG"
+
+
+def resolve_cfg_paths() -> list[Path]:
+    override = os.environ.get(CFG_ENV_VAR)
+    if not override:
+        return [BASE_CFG_PATH]
+
+    override_path = Path(override).expanduser()
+    if not override_path.is_absolute():
+        override_path = BASE_DIR / override_path
+
+    if override_path == BASE_CFG_PATH:
+        return [BASE_CFG_PATH]
+    return [BASE_CFG_PATH, override_path]
+
+
+CFG = load_cfg(resolve_cfg_paths())
 
 
 def apply_render_geometry(manim_params: dict) -> None:
@@ -165,6 +188,7 @@ def apply_render_geometry(manim_params: dict) -> None:
         config.pixel_width = max(1, int(round(long_side * aspect)))
     config.frame_width = manim_params["frame_width"]
     config.frame_height = manim_params["frame_height"]
+    config.frame_rate = manim_params["frame_rate"]
 
 
 apply_render_geometry(CFG["manim"])
@@ -297,6 +321,7 @@ class CoupledOscillators2D(ThreeDScene):
     def construct(self):
         p = CFG["lattice"]
         c = CFG["colors"]
+        show_labels = CFG["scene"]["show_labels"]
         self.camera.background_color = CFG["manim"]["background_color"]
         self.set_camera_orientation(
             phi=p["camera_phi"] * DEGREES,
@@ -359,57 +384,62 @@ class CoupledOscillators2D(ThreeDScene):
         def support_point(i_idx: int, j_idx: int) -> np.ndarray:
             return np.array([x_positions[i_idx], y_positions[j_idx], p["support_z"]]) + lattice_shift
 
-        title = Text("Coupled 2D Oscillators", color=c["text"]).scale(p["title_scale"])
-        eq_motion = MathTex(
-            r"m\ddot q_{ij}=-k_0 q_{ij}-k_c(4q_{ij}-q_{i+1,j}-q_{i-1,j}-q_{i,j+1}-q_{i,j-1})",
-            color=c["text"],
-        ).scale(p["formula_scale"])
-        eq_mode = MathTex(
-            r"q_{ij}^{(m,n)}(t)=A_{mn}\sin\!\left(\frac{m\pi i}{N_x+1}\right)\sin\!\left(\frac{n\pi j}{N_y+1}\right)\cos(\omega_{mn} t)",
-            color=c["text"],
-        ).scale(p["formula_scale"])
-        eq_freq = MathTex(
-            r"\omega_{mn}^2=\frac{k_0}{m}+\frac{4k_c}{m}\left[\sin^2\!\left(\frac{m\pi}{2(N_x+1)}\right)+\sin^2\!\left(\frac{n\pi}{2(N_y+1)}\right)\right]",
-            color=c["highlight"],
-        ).scale(p["formula_scale"])
-        eq_kick = MathTex(
-            r"q_{ij}(0)=A\,\delta_{i,i_0}\delta_{j,j_0},\quad \dot q_{ij}(0)=0",
-            color=c["kick"],
-        ).scale(p["formula_scale"])
-        discrete_header = VGroup(title, eq_motion, eq_mode, eq_freq, eq_kick).arrange(DOWN, buff=0.08)
-        discrete_header.to_edge(UP, buff=p["top_buff"])
-        self.add_fixed_in_frame_mobjects(discrete_header)
+        if show_labels:
+            title = Text("Coupled 2D Oscillators", color=c["text"]).scale(p["title_scale"])
+            eq_motion = MathTex(
+                r"m\ddot q_{ij}=-k_0 q_{ij}-k_c(4q_{ij}-q_{i+1,j}-q_{i-1,j}-q_{i,j+1}-q_{i,j-1})",
+                color=c["text"],
+            ).scale(p["formula_scale"])
+            eq_mode = MathTex(
+                r"q_{ij}^{(m,n)}(t)=A_{mn}\sin\!\left(\frac{m\pi i}{N_x+1}\right)\sin\!\left(\frac{n\pi j}{N_y+1}\right)\cos(\omega_{mn} t)",
+                color=c["text"],
+            ).scale(p["formula_scale"])
+            eq_freq = MathTex(
+                r"\omega_{mn}^2=\frac{k_0}{m}+\frac{4k_c}{m}\left[\sin^2\!\left(\frac{m\pi}{2(N_x+1)}\right)+\sin^2\!\left(\frac{n\pi}{2(N_y+1)}\right)\right]",
+                color=c["highlight"],
+            ).scale(p["formula_scale"])
+            eq_kick = MathTex(
+                r"q_{ij}(0)=A\,\delta_{i,i_0}\delta_{j,j_0},\quad \dot q_{ij}(0)=0",
+                color=c["kick"],
+            ).scale(p["formula_scale"])
+            discrete_header = VGroup(title, eq_motion, eq_mode, eq_freq, eq_kick).arrange(DOWN, buff=0.08)
+            discrete_header.to_edge(UP, buff=p["top_buff"])
+            self.add_fixed_in_frame_mobjects(discrete_header)
 
-        continuum_title = Text("Field", color=c["text"]).scale(p["title_scale"])
-        continuum_motion_label = Text("Equation of motion", color=c["text"]).scale(p["state_scale"] * 0.9)
-        continuum_pde = MathTex(
-            r"(\partial_t^2-c^2\nabla^2+m^2)\phi=0",
-            color=c["text"],
-        ).scale(p["formula_scale"])
-        continuum_kick_label = Text("Field kick", color=c["kick"]).scale(p["state_scale"] * 0.9)
-        continuum_init = MathTex(
-            r"\phi(0,r)=A e^{-r^2/(2\sigma^2)},\quad \dot\phi(0,r)=0",
-            color=c["kick"],
-        ).scale(p["formula_scale"])
-        continuum_solution = MathTex(
-            r"\phi(t,r)=A\sigma^2\int_0^\infty k\,dk\,J_0(kr)e^{-\sigma^2 k^2/2}\cos\!\left(t\sqrt{c^2k^2+m^2}\right)",
-            color=c["highlight"],
-        ).scale(p["formula_scale"] * 0.9)
-        continuum_header = VGroup(
-            continuum_title,
-            continuum_motion_label,
-            continuum_pde,
-            continuum_kick_label,
-            continuum_init,
-            continuum_solution,
-        ).arrange(DOWN, buff=0.08)
-        continuum_header.to_edge(UP, buff=p["top_buff"])
-        continuum_header.set_opacity(0.0)
-        self.add_fixed_in_frame_mobjects(continuum_header)
-        field_label = Text("Initial Gaussian packet", color=c["highlight"]).scale(p["state_scale"])
-        field_label.next_to(continuum_header, DOWN, buff=0.16)
-        field_label.set_opacity(0.0)
-        self.add_fixed_in_frame_mobjects(field_label)
+            continuum_title = Text("Field", color=c["text"]).scale(p["title_scale"])
+            continuum_motion_label = Text("Equation of motion", color=c["text"]).scale(p["state_scale"] * 0.9)
+            continuum_pde = MathTex(
+                r"(\partial_t^2-c^2\nabla^2+m^2)\phi=0",
+                color=c["text"],
+            ).scale(p["formula_scale"])
+            continuum_kick_label = Text("Field kick", color=c["kick"]).scale(p["state_scale"] * 0.9)
+            continuum_init = MathTex(
+                r"\phi(0,r)=A e^{-r^2/(2\sigma^2)},\quad \dot\phi(0,r)=0",
+                color=c["kick"],
+            ).scale(p["formula_scale"])
+            continuum_solution = MathTex(
+                r"\phi(t,r)=A\sigma^2\int_0^\infty k\,dk\,J_0(kr)e^{-\sigma^2 k^2/2}\cos\!\left(t\sqrt{c^2k^2+m^2}\right)",
+                color=c["highlight"],
+            ).scale(p["formula_scale"] * 0.9)
+            continuum_header = VGroup(
+                continuum_title,
+                continuum_motion_label,
+                continuum_pde,
+                continuum_kick_label,
+                continuum_init,
+                continuum_solution,
+            ).arrange(DOWN, buff=0.08)
+            continuum_header.to_edge(UP, buff=p["top_buff"])
+            continuum_header.set_opacity(0.0)
+            self.add_fixed_in_frame_mobjects(continuum_header)
+            field_label = Text("Initial Gaussian packet", color=c["highlight"]).scale(p["state_scale"])
+            field_label.next_to(continuum_header, DOWN, buff=0.16)
+            field_label.set_opacity(0.0)
+            self.add_fixed_in_frame_mobjects(field_label)
+        else:
+            discrete_header = VGroup()
+            continuum_header = VGroup()
+            field_label = VGroup()
 
         border = Polygon(
             np.array([x_positions[0], y_positions[0], 0.0]) + lattice_shift,
@@ -539,7 +569,8 @@ class CoupledOscillators2D(ThreeDScene):
                 resolution=(5, 5),
             ).set_opacity(p["node_opacity"] * mesh_opacity.get_value() if state["kind"] in {"prep", "kick"} else 0.0)
         )
-        self.play(FadeIn(discrete_header, shift=0.12 * DOWN), run_time=p["intro_time"])
+        if show_labels:
+            self.play(FadeIn(discrete_header, shift=0.12 * DOWN), run_time=p["intro_time"])
         self.play(Create(support_border), Create(border), Create(mesh), FadeIn(kick_marker), run_time=p["build_time"])
 
         state_label: Mobject | None = None
@@ -549,24 +580,25 @@ class CoupledOscillators2D(ThreeDScene):
             state["profile"] = mode_profile(mx, my, nx, ny)
             state["omega"] = mode_frequency(mx, my, nx, ny, mass_value, onsite_k, coupling_k)
             phase_tracker.set_value(0.0)
-            next_state = Text(
-                f"Mode ({mx},{my}), w = {state['omega']:.2f}",
-                color=c["highlight"],
-            ).scale(p["state_scale"])
-            next_state.next_to(discrete_header, DOWN, buff=0.18)
-            self.add_fixed_in_frame_mobjects(next_state)
             animations = [amplitude_tracker.animate.set_value(p["mode_amplitude"])]
-            if state_label is None:
-                animations.append(FadeIn(next_state, shift=0.08 * DOWN))
-            else:
-                animations.extend(
-                    [
-                        FadeOut(state_label, shift=0.06 * UP),
-                        FadeIn(next_state, shift=0.06 * DOWN),
-                    ]
-                )
+            if show_labels:
+                next_state = Text(
+                    f"Mode ({mx},{my}), w = {state['omega']:.2f}",
+                    color=c["highlight"],
+                ).scale(p["state_scale"])
+                next_state.next_to(discrete_header, DOWN, buff=0.18)
+                self.add_fixed_in_frame_mobjects(next_state)
+                if state_label is None:
+                    animations.append(FadeIn(next_state, shift=0.08 * DOWN))
+                else:
+                    animations.extend(
+                        [
+                            FadeOut(state_label, shift=0.06 * UP),
+                            FadeIn(next_state, shift=0.06 * DOWN),
+                        ]
+                    )
+                state_label = next_state
             self.play(*animations, run_time=p["mode_ramp_time"])
-            state_label = next_state
             self.play(
                 phase_tracker.animate.set_value(TAU * p["mode_periods"]),
                 run_time=p["mode_periods"] * TAU / state["omega"],
@@ -576,21 +608,22 @@ class CoupledOscillators2D(ThreeDScene):
 
         state["kind"] = "prep"
         prep_tracker.set_value(0.0)
-        kick_state = Text(
-            f"Local kick at ({kick_i+1},{kick_j+1})",
-            color=c["kick"],
-        ).scale(p["state_scale"])
-        kick_state.next_to(discrete_header, DOWN, buff=0.18)
-        self.add_fixed_in_frame_mobjects(kick_state)
-        if state_label is None:
-            self.play(FadeIn(kick_state, shift=0.06 * DOWN), run_time=0.2)
-        else:
-            self.play(
-                FadeOut(state_label, shift=0.06 * UP),
-                FadeIn(kick_state, shift=0.06 * DOWN),
-                run_time=0.2,
-            )
-        state_label = kick_state
+        if show_labels:
+            kick_state = Text(
+                f"Local kick at ({kick_i+1},{kick_j+1})",
+                color=c["kick"],
+            ).scale(p["state_scale"])
+            kick_state.next_to(discrete_header, DOWN, buff=0.18)
+            self.add_fixed_in_frame_mobjects(kick_state)
+            if state_label is None:
+                self.play(FadeIn(kick_state, shift=0.06 * DOWN), run_time=0.2)
+            else:
+                self.play(
+                    FadeOut(state_label, shift=0.06 * UP),
+                    FadeIn(kick_state, shift=0.06 * DOWN),
+                    run_time=0.2,
+                )
+            state_label = kick_state
         self.play(prep_tracker.animate.set_value(p["kick_amplitude"]), run_time=p["prep_time"])
 
         state["kind"] = "kick"
@@ -604,11 +637,13 @@ class CoupledOscillators2D(ThreeDScene):
         )
         continuum_tracker.set_value(0.0)
         self.add(continuum_surface)
-        self.play(
-            FadeOut(discrete_header),
-            FadeOut(state_label) if state_label is not None else AnimationGroup(),
-            run_time=0.4,
-        )
+        label_fadeouts = []
+        if show_labels:
+            label_fadeouts.append(FadeOut(discrete_header))
+            if state_label is not None:
+                label_fadeouts.append(FadeOut(state_label))
+        if label_fadeouts:
+            self.play(*label_fadeouts, run_time=0.4)
 
         state["kind"] = "prep"
         prep_tracker.set_value(0.0)
@@ -626,23 +661,30 @@ class CoupledOscillators2D(ThreeDScene):
             run_time=p["continuum_fade_time"],
         )
         self.wait(p["continuum_hold_time"])
-        self.play(
-            continuum_header.animate.set_opacity(1.0),
-            field_label.animate.set_opacity(1.0),
-            run_time=p["field_header_time"],
-        )
-        evolving_field_label = Text("Field wave evolution", color=c["highlight"]).scale(p["state_scale"])
-        evolving_field_label.move_to(field_label)
-        evolving_field_label.set_opacity(0.0)
-        self.add_fixed_in_frame_mobjects(evolving_field_label)
-        self.play(
-            field_label.animate.set_opacity(0.0),
-            run_time=0.15,
-        )
-        self.play(
-            evolving_field_label.animate.set_opacity(1.0),
-            continuum_tracker.animate.set_value(continuum_duration),
-            run_time=continuum_duration,
-            rate_func=linear,
-        )
+        if show_labels:
+            self.play(
+                continuum_header.animate.set_opacity(1.0),
+                field_label.animate.set_opacity(1.0),
+                run_time=p["field_header_time"],
+            )
+            evolving_field_label = Text("Field wave evolution", color=c["highlight"]).scale(p["state_scale"])
+            evolving_field_label.move_to(field_label)
+            evolving_field_label.set_opacity(0.0)
+            self.add_fixed_in_frame_mobjects(evolving_field_label)
+            self.play(
+                field_label.animate.set_opacity(0.0),
+                run_time=0.15,
+            )
+            self.play(
+                evolving_field_label.animate.set_opacity(1.0),
+                continuum_tracker.animate.set_value(continuum_duration),
+                run_time=continuum_duration,
+                rate_func=linear,
+            )
+        else:
+            self.play(
+                continuum_tracker.animate.set_value(continuum_duration),
+                run_time=continuum_duration,
+                rate_func=linear,
+            )
         self.wait(p["tail_wait"])

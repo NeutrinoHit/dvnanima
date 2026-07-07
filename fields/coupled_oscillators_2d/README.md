@@ -25,12 +25,21 @@ q_ij^(m,n)(t) ~ sin(m pi i / (Nx+1)) sin(n pi j / (Ny+1)) cos(omega_mn t)
 Render:
 
 ```bash
-cd "/Users/dmitrijnaumov/Library/Mobile Documents/com~apple~CloudDocs/Projects/dvnanima/fields/coupled_oscillators_2d"
+cd "/Users/dmitrijnaumov/NeutrinoHit/dvnanima/fields/coupled_oscillators_2d"
 manim -pqh coupled_oscillators_2d.py CoupledOscillators2D
+```
+
+Lecture render, 16:9 without labels:
+
+```bash
+cd "/Users/dmitrijnaumov/NeutrinoHit/dvnanima/fields/coupled_oscillators_2d"
+COUPLED_OSCILLATORS_2D_CONFIG=run_lecture.cfg manim -pqh coupled_oscillators_2d.py CoupledOscillators2D
 ```
 
 Main tuning in `run.cfg`:
 
+- `profile`: `shorts` or `widescreen`
+- `show_labels`
 - `mode_list`
 - `onsite_k`
 - `coupling_k`
