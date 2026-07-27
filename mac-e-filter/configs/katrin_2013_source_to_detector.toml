@@ -1,0 +1,33 @@
+[scenario]
+name = "KATRIN 2013 source-to-detector adiabatic transport"
+
+[field]
+configuration = "one_minimum"
+
+[particle]
+kinetic_energy_ev = 18600.0
+
+[beamline]
+start_z_m = -38.87
+stop_z_m = 13.78
+source_guiding_center_radius_m = 0.018
+source_flux_tube_radius_m = 0.045
+path_samples = 12001
+common_time_samples = 4201
+
+[ensemble]
+source_pitch_angles_deg = [10.0, 30.0, 50.0]
+azimuth_angles_deg = [90.0, 210.0, 330.0]
+labels = ["αист=10°", "αист=30°", "αист=50°"]
+colors = ["#52E3A4", "#35D5FF", "#FFB347"]
+
+[central_full_lorentz_validation]
+start_z_m = -6.5
+stop_z_m = 6.5
+maximum_time_ns = 300.0
+relative_tolerance = 1.0e-8
+position_atol_m = 1.0e-8
+normalized_momentum_atol = 1.0e-10
+max_gyro_phase_rad = 0.65
+field_bound_t = 1.1e-3
+output_samples = 1001

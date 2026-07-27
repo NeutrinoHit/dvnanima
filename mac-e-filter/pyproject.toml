@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mac-e-filter-animations"
+version = "0.1.0"
+description = "Physics-first field and trajectory models for MAC-E filter animations"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.14",
+]
+
+[project.optional-dependencies]
+plots = ["matplotlib>=3.9"]
+animation = [
+    "imageio[ffmpeg]>=2.35",
+    "pyqtgraph>=0.13",
+    "PyOpenGL>=3.1.7",
+    "PyQt6>=6.7",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

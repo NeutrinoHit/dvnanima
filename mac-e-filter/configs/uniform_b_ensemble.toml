@@ -1,0 +1,30 @@
+[scenario]
+name = "Exact relativistic helices in a uniform magnetic field"
+
+[field]
+magnetic_field_t = 0.002
+direction = "+z"
+
+[particle]
+kinetic_energy_ev = 18600.0
+
+[animation]
+physical_duration_ns = 160.0
+samples = 3201
+start_z_m = -7.0
+
+[ensemble]
+pitch_angles_deg = [15.0, 45.0, 75.0]
+gyro_phases_deg = [0.0, 120.0, 240.0]
+guiding_center_x_m = [-1.30, 0.0, 1.30]
+guiding_center_y_m = [0.0, 0.0, 0.0]
+labels = ["α₀=15°", "α₀=45°", "α₀=75°"]
+colors = ["#52E3A4", "#35D5FF", "#FFB347"]
+
+[validation]
+relative_tolerance = 1.0e-10
+position_atol_m = 1.0e-11
+normalized_momentum_atol = 1.0e-12
+max_gyro_phase_rad = 0.12
+output_samples = 1001
+

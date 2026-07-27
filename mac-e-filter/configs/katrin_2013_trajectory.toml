@@ -1,0 +1,29 @@
+[scenario]
+name = "KATRIN 2013 nominal field: 18.6 keV electron"
+
+[field]
+# Published configuration from Table 2 of Glück et al. (2013).
+configuration = "one_minimum"
+
+[particle]
+kinetic_energy_ev = 18600.0
+# Angle of the initial momentum to the +z flight direction, not to signed B.
+pitch_to_positive_z_deg = 30.0
+gyro_phase_deg = 0.0
+
+[trajectory]
+start_x_m = 0.0
+start_y_m = 0.0
+start_z_m = -6.5
+stop_z_m = 6.5
+maximum_time_ns = 500.0
+
+[integration]
+relative_tolerance = 1.0e-10
+position_atol_m = 1.0e-10
+normalized_momentum_atol = 1.0e-12
+# Maximum permitted phase advance based on a conservative field bound.
+max_gyro_phase_rad = 0.15
+field_bound_t = 1.5e-3
+output_samples = 3001
+

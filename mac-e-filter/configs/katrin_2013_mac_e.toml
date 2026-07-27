@@ -1,0 +1,53 @@
+[scenario]
+name = "KATRIN symmetric MAC-E transmission and reflection"
+
+[field]
+configuration = "one_minimum"
+
+[particle]
+kinetic_energy_ev = 18600.0
+
+[electrostatic]
+model = "finite cylindrical Laplace boundary"
+# Published main-spectrometer dimensions, represented here by an explicitly
+# idealized cylindrical boundary rather than an unavailable as-built 3D map.
+cylinder_radius_m = 4.90
+electrode_length_m = 23.28
+# The potential difference along the displayed guiding centre from the WGTS
+# start to z=0. This choice deliberately places the three pitch angles on both
+# sides of the transmission threshold.
+retarding_energy_ev = 18599.5
+quadrature_order = 512
+k_max_inv_m = 8.0
+
+[beamline]
+start_z_m = -38.87
+stop_z_m = 13.78
+source_guiding_center_radius_m = 0.018
+source_flux_tube_radius_m = 0.045
+path_samples = 12001
+common_time_samples = 4201
+
+[ensemble]
+source_pitch_angles_deg = [10.0, 25.0, 40.0]
+azimuth_angles_deg = [90.0, 210.0, 330.0]
+labels = ["αист=10°", "αист=25°", "αист=40°"]
+colors = ["#52E3A4", "#35D5FF", "#FFB347"]
+
+[convergence]
+check_samples = 241
+refined_quadrature_order = 768
+refined_k_max_inv_m = 10.0
+
+[central_full_lorentz_validation]
+start_z_m = -6.0
+lower_stop_z_m = -6.01
+upper_stop_z_m = 6.0
+maximum_time_us = 20.0
+relative_tolerance = 1.0e-8
+position_atol_m = 1.0e-8
+normalized_momentum_atol = 1.0e-10
+max_gyro_phase_rad = 0.50
+field_bound_t = 1.2e-3
+output_samples = 1001
+electric_quadrature_order = 128

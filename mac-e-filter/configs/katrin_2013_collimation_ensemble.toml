@@ -1,0 +1,36 @@
+[scenario]
+name = "KATRIN 2013 central-spectrometer collimation ensemble"
+
+[field]
+configuration = "one_minimum"
+
+[particle]
+kinetic_energy_ev = 18600.0
+
+[trajectory]
+start_x_m = 0.0
+start_y_m = 0.0
+start_z_m = -6.5
+stop_z_m = 6.5
+maximum_time_ns = 700.0
+
+[ensemble]
+# These are local pitch angles at z = -6.5 m, not source emission angles.
+pitch_angles_deg = [10.0, 30.0, 50.0]
+gyro_phases_deg = [0.0, 0.0, 0.0]
+labels = ["α₀=10°", "α₀=30°", "α₀=50°"]
+colors = ["#52E3A4", "#35D5FF", "#FFB347"]
+
+[source_mapping]
+# Used only for a documented adiabatic comparison displayed in metadata.
+source_field_t = 3.6
+source_pitch_angles_deg = [15.0, 45.0, 75.0, 90.0]
+
+[integration]
+relative_tolerance = 1.0e-10
+position_atol_m = 1.0e-10
+normalized_momentum_atol = 1.0e-12
+max_gyro_phase_rad = 0.15
+field_bound_t = 1.5e-3
+samples_per_track = 3001
+common_time_samples = 3601
