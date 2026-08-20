@@ -26,7 +26,7 @@
 Быстрый вертикальный просмотр:
 
 ```bash
-cd /Users/dmitrijnaumov/NeutrinoHit/dvnanima/accelerator_optics
+cd accelerator_optics
 DVN_PROFILE=shorts DVN_FRAME_RATE=15 manim -ql magnetic_optics.py DipoleMagnetScene
 ```
 
