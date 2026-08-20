@@ -71,8 +71,6 @@ class NeutrinoOscillationPhases(Scene):
         X0 = 0.0
         X1 = scene["x_max"]
 
-        s = ValueTracker(0.0)
-
         top_axes = Axes(
             x_range=[X0, X1, np.pi],
             y_range=[-1.4, 1.4, 1],
@@ -102,15 +100,16 @@ class NeutrinoOscillationPhases(Scene):
         def nu1(x): return np.sin(3 * x)   # 3 crests
         def nu2(x): return np.sin(4 * x)   # 4 crests
 
-        def x_max():
-            return max(X0, min(s.get_value(), X1))
-
-        wave1 = always_redraw(lambda: top_axes.plot(
-            nu1, x_range=[X0, x_max()], color=BLUE, stroke_width=ui["wave_stroke_width"]
-        ))
-        wave2 = always_redraw(lambda: top_axes.plot(
-            nu2, x_range=[X0, x_max()], color=ORANGE, stroke_width=ui["wave_stroke_width"]
-        ))
+        # Build every curve once over its full, fixed domain.  Replotting with a
+        # changing x_range makes Axes.plot choose a slightly different sample
+        # grid on every frame, so already visible line segments appear to jump.
+        # Create reveals the fixed vector path without changing its geometry.
+        wave1 = top_axes.plot(
+            nu1, x_range=[X0, X1], color=BLUE, stroke_width=ui["wave_stroke_width"]
+        )
+        wave2 = top_axes.plot(
+            nu2, x_range=[X0, X1], color=ORANGE, stroke_width=ui["wave_stroke_width"]
+        )
 
         leg1 = MathTex(r"\nu_1", font_size=ui["legend_font_size"]).set_color(BLUE)
         leg2 = MathTex(r"\nu_2", font_size=ui["legend_font_size"]).set_color(ORANGE)
@@ -119,23 +118,23 @@ class NeutrinoOscillationPhases(Scene):
             VGroup(Line(LEFT*0.45, RIGHT*0.45).set_stroke(ORANGE, ui["wave_stroke_width"]), leg2).arrange(RIGHT, buff=0.25),
         ).arrange(DOWN, aligned_edge=LEFT, buff=0.22).to_corner(UR, buff=0.65)
 
-        self.add(wave1, wave2, legend)
+        self.add(legend)
 
         # --- bottom probabilities ---
         def Pee(x): return np.cos(0.5 * x) ** 2
         def Pem(x): return np.sin(0.5 * x) ** 2
 
-        pee_curve = always_redraw(lambda: bot_axes.plot(
-            Pee, x_range=[X0, x_max()], color=BLUE, stroke_width=ui["prob_stroke_width"]
-        ))
-        pem_curve = always_redraw(lambda: bot_axes.plot(
-            Pem, x_range=[X0, x_max()], color=ORANGE, stroke_width=ui["prob_stroke_width"]
-        ))
+        pee_curve = bot_axes.plot(
+            Pee, x_range=[X0, X1], color=BLUE, stroke_width=ui["prob_stroke_width"]
+        )
+        pem_curve = bot_axes.plot(
+            Pem, x_range=[X0, X1], color=ORANGE, stroke_width=ui["prob_stroke_width"]
+        )
 
         pee_lbl = MathTex(r"P_{ee}", font_size=ui["legend_font_size"]).set_color(BLUE).next_to(bot_axes, LEFT, buff=0.35).shift(UP*0.65)
         pem_lbl = MathTex(r"P_{e\mu}", font_size=ui["legend_font_size"]).set_color(ORANGE).next_to(bot_axes, LEFT, buff=0.35).shift(DOWN*0.65)
 
-        self.add(pee_curve, pem_curve, pee_lbl, pem_lbl)
+        self.add(pee_lbl, pem_lbl)
 
         # ---------------- Annotations on top: x=0 and x=pi ----------------
         def vline(x, opacity=0.25):
@@ -168,12 +167,23 @@ class NeutrinoOscillationPhases(Scene):
         in_phase = label_with_arrow("in phase", 0.0)
         out_phase = label_with_arrow("out of phase", np.pi)
 
-        # Make them appear only after the drawing reaches the x-position
-        gate0  = always_redraw(lambda: VGroup(line0, in_phase).set_opacity(1 if s.get_value() >= 0.0 else 0))
-        gatepi = always_redraw(lambda: VGroup(linepi, out_phase).set_opacity(1 if s.get_value() >= np.pi else 0))
-
-        self.add(gate0, gatepi)
+        in_phase_marker = VGroup(line0, in_phase)
+        out_phase_marker = VGroup(linepi, out_phase)
+        self.add(in_phase_marker)
 
         # ---------------- Animation ----------------
-        self.play(s.animate.set_value(X1), run_time=scene["run_time"], rate_func=linear)
+        marker_fade_time = min(0.2, scene["run_time"] / 10)
+        delayed_out_phase = Succession(
+            Wait(scene["run_time"] / 2),
+            FadeIn(out_phase_marker, run_time=marker_fade_time),
+            Wait(scene["run_time"] / 2 - marker_fade_time),
+        )
+        self.play(
+            Create(wave1, rate_func=linear),
+            Create(wave2, rate_func=linear),
+            Create(pee_curve, rate_func=linear),
+            Create(pem_curve, rate_func=linear),
+            delayed_out_phase,
+            run_time=scene["run_time"],
+        )
         self.wait(scene["tail_wait"])
