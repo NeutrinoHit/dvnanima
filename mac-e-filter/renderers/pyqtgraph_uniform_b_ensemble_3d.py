@@ -47,6 +47,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--camera-distance", type=float, default=15.5)
     parser.add_argument("--camera-azimuth", type=float, default=-66.0)
     parser.add_argument("--camera-elevation", type=float, default=15.0)
+    parser.add_argument(
+        "--radial-display-scale",
+        type=float,
+        default=4.5,
+        help=(
+            "Magnify transverse coordinates around each guiding centre "
+            "for visibility; physical radii remain unchanged."
+        ),
+    )
     parser.add_argument("--interval-ms", type=int, default=25)
     return parser.parse_args()
 
@@ -155,19 +164,31 @@ def _field_arrow_segments(
     )
 
 
-def _add_uniform_field(view, gl, z_min: float, z_max: float) -> None:
+def _add_uniform_field(
+    view,
+    gl,
+    z_min: float,
+    z_max: float,
+    x_extent: float,
+    y_extent: float,
+) -> None:
     line_segments = []
     arrow_segments = []
-    for x_m in np.linspace(-2.0, 2.0, 5):
-        for y_m in (-0.65, 0.0, 0.65):
+    arrow_z = np.linspace(
+        z_min + 0.18 * (z_max - z_min),
+        z_max - 0.18 * (z_max - z_min),
+        3,
+    )
+    for x_m in np.linspace(-x_extent, x_extent, 7):
+        for y_m in np.linspace(-y_extent, y_extent, 5):
             line_segments.append(
                 np.array(
                     [[z_min, x_m, y_m], [z_max, x_m, y_m]],
                     dtype=np.float32,
                 )
             )
-            if y_m == 0.0:
-                for z_m in (-4.2, 0.0, 4.2):
+            if abs(y_m) < 1.0e-12:
+                for z_m in arrow_z:
                     arrow_segments.append(
                         _field_arrow_segments(z_m, x_m, y_m)
                     )
@@ -190,11 +211,19 @@ def _add_uniform_field(view, gl, z_min: float, z_max: float) -> None:
     view.addItem(arrows)
 
 
-def _add_field_label(view, gl, qt_core, qt_gui) -> None:
+def _add_field_label(
+    view,
+    gl,
+    qt_core,
+    qt_gui,
+    z_max: float,
+    x_extent: float,
+    y_extent: float,
+) -> None:
     font = qt_gui.QFont("Helvetica", 18)
     font.setBold(True)
     label = gl.GLTextItem(
-        pos=np.array([4.7, -2.2, 1.05]),
+        pos=np.array([z_max - 0.3, -x_extent, y_extent + 0.25]),
         color=qt_gui.QColor("#54D9FF"),
         text="B = const   → +z",
         font=font,
@@ -206,10 +235,28 @@ def _add_field_label(view, gl, qt_core, qt_gui) -> None:
     view.addItem(label)
 
 
+def _magnify_transverse_coordinates(
+    scene_paths: np.ndarray,
+    scene_guiding_centers: np.ndarray,
+    scale: float,
+) -> np.ndarray:
+    """Magnify scene transverse coordinates around each guiding centre."""
+
+    if scale <= 0.0:
+        raise ValueError("radial display scale must be positive")
+    display_paths = scene_guiding_centers + scale * (
+        scene_paths - scene_guiding_centers
+    )
+    display_paths[..., 0] = scene_paths[..., 0]
+    return np.ascontiguousarray(display_paths, dtype=np.float32)
+
+
 def main() -> None:
     args = parse_args()
     if args.fps <= 0:
         raise SystemExit("--fps must be positive")
+    if args.radial_display_scale <= 0.0:
+        raise SystemExit("--radial-display-scale must be positive")
     if args.window_width % 2 or args.window_height % 2:
         raise SystemExit("MP4 dimensions must be even")
 
@@ -237,9 +284,14 @@ def main() -> None:
     )
     tracks = list(metadata["tracks"])
     track_count = position_m.shape[0]
-    scene_paths = video_helpers._scene_coordinates(position_m)
+    physical_scene_paths = video_helpers._scene_coordinates(position_m)
     scene_guiding_centers = video_helpers._scene_coordinates(
         guiding_center_m
+    )
+    scene_paths = _magnify_transverse_coordinates(
+        physical_scene_paths,
+        scene_guiding_centers,
+        args.radial_display_scale,
     )
 
     pg.setConfigOption("background", BACKGROUND)
@@ -269,8 +321,9 @@ def main() -> None:
 
     method_caption = QtWidgets.QLabel(
         "<b>Точные винтовые траектории в однородном поле.</b> "
-        "Все электроны имеют одинаковые энергию и физическое время; "
-        "радиусы и координаты не увеличены."
+        "Одинаковые энергия и время; центры разнесены поперёк поля. "
+        f"Радиальный масштаб ×{args.radial_display_scale:g}; "
+        "значения r<sub>L</sub> физические."
     )
     method_caption.setTextFormat(QtCore.Qt.TextFormat.RichText)
     method_caption.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -314,8 +367,31 @@ def main() -> None:
 
     z_min = float(np.min(position_m[:, :, 2])) - 0.5
     z_max = float(np.max(position_m[:, :, 2])) + 0.6
-    _add_uniform_field(view, gl, z_min, z_max)
-    _add_field_label(view, gl, QtCore, QtGui)
+    x_extent = max(
+        2.0,
+        float(np.max(np.abs(scene_paths[..., 1]))) + 0.35,
+    )
+    y_extent = max(
+        0.8,
+        float(np.max(np.abs(scene_paths[..., 2]))) + 0.25,
+    )
+    _add_uniform_field(
+        view,
+        gl,
+        z_min,
+        z_max,
+        x_extent,
+        y_extent,
+    )
+    _add_field_label(
+        view,
+        gl,
+        QtCore,
+        QtGui,
+        z_max,
+        x_extent,
+        y_extent,
+    )
 
     colors = [
         tuple(float(value) for value in pg.mkColor(track["color"]).getRgbF())

@@ -180,6 +180,11 @@ Commands `04` and `24` build the standalone uniform-field scene. All three
 electrons have the same kinetic energy and evolve for the same physical time,
 but start at 15°, 45°, and 75° to the field. Their trajectories use the exact
 relativistic solution and are independently checked against DOP853 integration.
+Their guiding centres are separated transversely so the three helices remain
+visually distinct in the common 3D scene.
+The renderer magnifies transverse coordinates around each guiding centre by
+4.5 for visibility; the trajectory data and numerical Larmor-radius values remain
+physical.
 
 ## Implementation order
 
