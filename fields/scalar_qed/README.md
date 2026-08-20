@@ -53,7 +53,7 @@ and write movies to `media/` by default.
 Run from this directory:
 
 ```bash
-cd /Users/dmitrijnaumov/Documents/NeutrinoHit/dvnanima/fields/scalar_qed
+cd fields/scalar_qed
 ```
 
 Create a repulsion dataset:
