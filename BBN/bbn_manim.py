@@ -61,6 +61,11 @@ def unit(vector: np.ndarray) -> np.ndarray:
     return vector / norm
 
 
+def angle_of(vector: np.ndarray) -> float:
+    direction = unit(vector)
+    return math.atan2(float(direction[1]), float(direction[0]))
+
+
 def random_positions(
     rng: np.random.Generator,
     count: int,
@@ -137,47 +142,72 @@ def particle(kind: str, radius: float = NUCLEON_R) -> VGroup:
     return body
 
 
-def photon_wave(
-    length: float = 0.74,
-    amplitude: float = 0.075,
-    wavelength: float = 0.24,
-    angle: float = 0.0,
-    color: str = PHOTON_COLOR,
-    stroke_width: float = 3.0,
-    opacity: float = 0.92,
-) -> VMobject:
-    samples = 80
-    points = []
-    for t in np.linspace(0.0, 1.0, samples):
-        x = -length / 2 + length * t
-        envelope = math.sin(math.pi * t)
-        y = amplitude * envelope * math.sin(TAU * length * t / wavelength)
-        points.append([x, y, 0.0])
+def photon(angle: float = 0.0, ray_count: int = 5) -> VGroup:
+    ray_count = 5 if ray_count >= 5 else 3
+    offsets = np.linspace(-0.16, 0.16, ray_count)
+    lengths = np.linspace(0.48, 0.78, ray_count)
+    lengths = np.minimum(lengths, lengths[::-1])
 
-    curve = VMobject()
-    curve.set_points_smoothly(points)
-    curve.set_stroke(color=color, width=stroke_width, opacity=opacity)
-    curve.rotate(angle)
-    return curve
+    ray_glows = VGroup()
+    rays = VGroup()
+    for offset, length in zip(offsets, lengths):
+        start = np.array([-length, offset, 0.0])
+        end = np.array([-0.10, offset * 0.36, 0.0])
+        glow_ray = Line(start, end)
+        glow_ray.set_stroke(PHOTON_COLOR, width=7.0, opacity=0.10)
+        ray = Line(start, end)
+        ray.set_stroke(PHOTON_COLOR, width=2.4, opacity=0.88)
+        ray_glows.add(glow_ray)
+        rays.add(ray)
 
+    head_glow = Circle(radius=0.21).move_to([0.05, 0.0, 0.0])
+    head_glow.set_fill(PHOTON_COLOR, opacity=0.15)
+    head_glow.set_stroke(width=0)
 
-def photon(angle: float = 0.0) -> VGroup:
-    wave = photon_wave(angle=angle)
-    gamma = Text("γ", font_size=20, color=PHOTON_COLOR)
-    gamma.next_to(wave, UP, buff=0.02)
-    glow = photon_wave(
-        length=0.78,
-        amplitude=0.095,
-        wavelength=0.24,
-        angle=angle,
-        color=PHOTON_COLOR,
-        stroke_width=7.0,
-        opacity=0.13,
-    )
-    mob = VGroup(glow, wave, gamma)
+    head = Circle(radius=0.105).move_to([0.05, 0.0, 0.0])
+    head.set_fill(PHOTON_COLOR, opacity=0.96)
+    head.set_stroke(WHITE, width=0.9, opacity=0.45)
+
+    gamma = Text("γ", font_size=13, color=BG_COLOR, weight=BOLD)
+    gamma.move_to(head)
+
+    mob = VGroup(head_glow, ray_glows, rays, head, gamma)
     mob.kind = "gamma"
+    mob.photon_angle = 0.0
+    mob.photon_head = head
+    mob.photon_rays = rays
+    orient_photon(mob, angle)
     mob.set_z_index(4)
     return mob
+
+
+def photon_head_center(mob: Mobject) -> np.ndarray:
+    head = getattr(mob, "photon_head", None)
+    if head is None:
+        return mob.get_center()
+    return head.get_center()
+
+
+def place_photon_head_at(mob: Mobject, point: np.ndarray) -> Mobject:
+    mob.shift(point - photon_head_center(mob))
+    return mob
+
+
+def photon_tail_center(mob: Mobject) -> np.ndarray:
+    rays = getattr(mob, "photon_rays", None)
+    if rays is None or len(rays) == 0:
+        return mob.get_center()
+    return np.mean([ray.get_center() for ray in rays], axis=0)
+
+
+def orient_photon(mob: Mobject, angle: float) -> None:
+    current = float(getattr(mob, "photon_angle", 0.0))
+    head = photon_head_center(mob)
+    mob.rotate(angle - current, about_point=head)
+    mob.photon_angle = angle
+    direction = np.array([math.cos(angle), math.sin(angle), 0.0])
+    if np.dot(photon_head_center(mob) - photon_tail_center(mob), direction) < 0:
+        mob.rotate(PI, about_point=photon_head_center(mob))
 
 
 def reaction_flash(point: np.ndarray, color: str = WHITE) -> VGroup:
@@ -524,6 +554,8 @@ class BBNAnimation(Scene):
                 spec.velocity[1] = -abs(spec.velocity[1])
 
             mob.shift(new - pos)
+            if getattr(mob, "kind", None) == "gamma":
+                orient_photon(mob, angle_of(spec.velocity))
 
         return update
 
@@ -603,11 +635,17 @@ class BBNAnimation(Scene):
             next_eq.move_to(equation).align_to(equation, LEFT)
             self.play(Transform(equation, next_eq), run_time=0.45)
 
-            start = center + np.array([2.25, 0.95 if idx % 2 == 0 else -0.95, 0.0])
-            g.move_to(start)
+            attack_direction = unit(np.array([-1.0, -0.36 if idx % 2 == 0 else 0.36, 0.0]))
+            orient_photon(g, angle_of(attack_direction))
+            start = center - attack_direction * 2.35
+            place_photon_head_at(g, start)
             self.add(g)
-            hit = center + 0.08 * UP
-            self.play(g.animate.move_to(hit), run_time=0.56, rate_func=linear)
+            hit = center + attack_direction * 0.05
+            self.play(
+                g.animate.shift(hit - photon_head_center(g)),
+                run_time=0.56,
+                rate_func=linear,
+            )
 
             split_left = center + LEFT * 0.54 + DOWN * 0.07
             split_right = center + RIGHT * 0.54 + UP * 0.07
@@ -617,9 +655,9 @@ class BBNAnimation(Scene):
             self.play(
                 FadeIn(burst, scale=0.72),
                 FadeOut(d, scale=0.55),
+                FadeOut(g, scale=0.36),
                 FadeIn(p, scale=0.92),
                 FadeIn(n, scale=0.92),
-                g.animate.shift(unit(g.get_center() - center) * 0.65),
                 run_time=0.72,
             )
             self.play(
@@ -629,12 +667,12 @@ class BBNAnimation(Scene):
                 FadeOut(equation, shift=DOWN * 0.08),
                 run_time=0.54,
             )
-            self.remove(d, burst)
+            self.remove(d, g, burst)
+            g.absorbed = True
 
             self.set_velocity(p, np.array([-0.17, 0.06, 0.0]))
             self.set_velocity(n, np.array([0.12, -0.08, 0.0]))
-            self.set_velocity(g, unit(g.get_center() - center) * 0.44)
-            self.resume_motion(p, n, g)
+            self.resume_motion(p, n)
             self.wait(0.05)
 
         self.wait(0.18)
@@ -656,19 +694,31 @@ class BBNAnimation(Scene):
 
         photon_anims = []
         for g in photons:
+            if getattr(g, "absorbed", False):
+                continue
             self.scale_velocity(g, 0.55)
-            wave_glow, wave, gamma = g
+            head_glow, ray_glows, rays, head, gamma = g
+            head_center = photon_head_center(g)
             photon_anims.extend(
                 [
-                    wave_glow.animate.stretch(1.32, dim=0).set_stroke(
-                        color=PHOTON_DIM,
-                        width=6.0,
-                        opacity=0.09,
+                    head_glow.animate.set_fill(PHOTON_DIM, opacity=0.10).scale(
+                        1.05,
+                        about_point=head_center,
                     ),
-                    wave.animate.stretch(1.32, dim=0).set_stroke(
+                    ray_glows.animate.scale(1.22, about_point=head_center).set_stroke(
                         color=PHOTON_DIM,
-                        width=2.3,
-                        opacity=0.68,
+                        width=6.2,
+                        opacity=0.07,
+                    ),
+                    rays.animate.scale(1.22, about_point=head_center).set_stroke(
+                        color=PHOTON_DIM,
+                        width=2.0,
+                        opacity=0.58,
+                    ),
+                    head.animate.set_fill(PHOTON_DIM, opacity=0.82).set_stroke(
+                        WHITE,
+                        width=0.8,
+                        opacity=0.30,
                     ),
                     gamma.animate.set_color(PHOTON_DIM).set_opacity(0.72),
                 ]
