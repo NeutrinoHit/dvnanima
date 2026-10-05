@@ -118,7 +118,8 @@ def probe_radius(t: float, tl: dict[str, float]) -> float:
     return math.exp(math.log(3.0) + (math.log(0.13) - math.log(3.0)) * e)
 
 
-def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float | None = None) -> None:
+def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float | None = None,
+           chrome: bool = True) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -241,7 +242,7 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
         # probe
         pa.clear()
         pa.set_facecolor("none")
-        p_alpha = smooth(t, *tl["panel"])
+        p_alpha = smooth(t, *tl["panel"]) if chrome else 0.0
         r_p = probe_radius(t, tl)
         if t >= tl["probe"][0] - 0.8:
             pa_ = smooth(t, tl["probe"][0] - 0.8, tl["probe"][0] + 0.2)
@@ -252,8 +253,9 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
                     color="#ffffff", lw=0.9 * sc, alpha=0.18 * pa_, zorder=9)
             px, py = r_p * math.cos(ang_p), r_p * math.sin(ang_p)
             glow(np.array([[px, py]]), "#c6ffd2", 0.075 * unit * 1.9, np.array([pa_]), 10)
-            ax.text(cx0 + unit * (px + 0.20), cy0 + unit * (py - 0.30), "test charge / пробный заряд", color="#d9ffe2",
-                    alpha=0.8 * pa_, fontsize=10 * sc, zorder=10)
+            if chrome:
+                ax.text(cx0 + unit * (px + 0.20), cy0 + unit * (py - 0.30), "test charge / пробный заряд", color="#d9ffe2",
+                        alpha=0.8 * pa_, fontsize=10 * sc, zorder=10)
         # panel with the measured charge
         if p_alpha > 0.01:
             pa.set_xscale("log")
@@ -294,19 +296,20 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
         else:
             pa.axis("off")
             fig.texts.clear()
-        # captions on a soft dark strip
-        strip = np.linspace(0.0, 0.62, 30)[::-1]
-        ax.imshow(np.tile(strip[:, None], (1, 2)), extent=(0, W, 0, 0.14 * H), origin="upper", cmap="gray_r", alpha=None, zorder=11, aspect="auto", interpolation="bilinear", vmin=0, vmax=1) if False else None
-        ax.add_patch(matplotlib.patches.Rectangle((0, 0), W, 0.12 * H, color=(0.01, 0.02, 0.05, 0.62), zorder=11, lw=0))
-        if t < tl["charge_on"][0]:
-            cap = ("vacuum: virtual e⁺e⁻ pairs appear and vanish, orientation random", "вакуум: виртуальные пары e⁺e⁻ рождаются и исчезают, ориентация случайна")
-        elif t < tl["probe"][0]:
-            cap = ("near the electron the pairs line up: positrons in, electrons out, the charge is screened",
-                   "вблизи электрона пары выстраиваются: позитроны внутрь, электроны наружу, заряд экранируется")
-        else:
-            cap = ("the closer, the less screening: a test charge sees a larger charge", "чем ближе, тем слабее экранировка: пробный заряд видит больший заряд")
-        fig.text(0.03, 0.058, cap[0], color=(0.86, 0.92, 1.0, 0.92), fontsize=13 * sc)
-        fig.text(0.03, 0.022, cap[1], color=(0.58, 0.67, 0.8, 0.9), fontsize=11 * sc)
+        if chrome:
+            # captions on a soft dark strip
+            strip = np.linspace(0.0, 0.62, 30)[::-1]
+            ax.imshow(np.tile(strip[:, None], (1, 2)), extent=(0, W, 0, 0.14 * H), origin="upper", cmap="gray_r", alpha=None, zorder=11, aspect="auto", interpolation="bilinear", vmin=0, vmax=1) if False else None
+            ax.add_patch(matplotlib.patches.Rectangle((0, 0), W, 0.12 * H, color=(0.01, 0.02, 0.05, 0.62), zorder=11, lw=0))
+            if t < tl["charge_on"][0]:
+                cap = ("vacuum: virtual e⁺e⁻ pairs appear and vanish, orientation random", "вакуум: виртуальные пары e⁺e⁻ рождаются и исчезают, ориентация случайна")
+            elif t < tl["probe"][0]:
+                cap = ("near the electron the pairs line up: positrons in, electrons out, the charge is screened",
+                       "вблизи электрона пары выстраиваются: позитроны внутрь, электроны наружу, заряд экранируется")
+            else:
+                cap = ("the closer, the less screening: a test charge sees a larger charge", "чем ближе, тем слабее экранировка: пробный заряд видит больший заряд")
+            fig.text(0.03, 0.058, cap[0], color=(0.86, 0.92, 1.0, 0.92), fontsize=13 * sc)
+            fig.text(0.03, 0.022, cap[1], color=(0.58, 0.67, 0.8, 0.9), fontsize=11 * sc)
         fig.canvas.draw()
         if writer is None:
             fig.savefig(out, dpi=dpi, facecolor=fig.get_facecolor())
@@ -323,11 +326,20 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--snapshot", type=float, default=None)
+    ap.add_argument("--still", type=float, default=None,
+                    help="clean 2560x1440 still without captions and graph at this film time (for book previews)")
     ap.add_argument("--seconds", type=float, default=26.0)
     ap.add_argument("--out", type=Path, default=HERE / "media" / "running_charge.mp4")
     args = ap.parse_args()
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    if args.snapshot is not None:
+    if args.still is not None:
+        from PIL import Image
+        target = args.out.with_name(args.out.stem + "_still.png")
+        render(target, (2560, 1440), 30, args.seconds, snap=args.still, chrome=False)
+        img = Image.open(target)
+        img.crop((0, 0, int(0.70 * img.width), img.height)).save(target)
+        print(f"cropped {target}")
+    elif args.snapshot is not None:
         render(args.out.with_suffix(".png"), (1280, 720), 30, args.seconds, snap=args.snapshot)
     elif args.preview:
         render(args.out.with_name("running_charge_preview.mp4"), (640, 360), 15, 6.0)
