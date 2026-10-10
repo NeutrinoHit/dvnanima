@@ -226,10 +226,10 @@ class ThreePlusOneTest(unittest.TestCase):
 
 
 class PionTest(unittest.TestCase):
-    ALPHA, MPI, FPI, HBAR = 1.0 / 137.035999, 134.9768e6, 92.2e6, 6.582119569e-16          # eV, eV, eV, eV s
+    ALPHA, MPI, FPI, HBAR = 1.0 / 137.035999, 134.9768e6, 92.1e6, 6.582119569e-16          # eV, eV, eV, eV s
 
     def test_width_matches_the_book(self) -> None:
-        self.assertAlmostEqual(sf.pi0_width(self.ALPHA, self.MPI, self.FPI), 7.76, delta=0.02)
+        self.assertAlmostEqual(sf.pi0_width(self.ALPHA, self.MPI, self.FPI), 7.78, delta=0.02)
 
     def test_width_follows_from_the_amplitude(self) -> None:
         a = sf.pi0_amplitude(self.ALPHA, self.FPI)

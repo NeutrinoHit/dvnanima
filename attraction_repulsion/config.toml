@@ -1,0 +1,144 @@
+# Every number of the films "Attraction" and "Repulsion" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set scalar_qed.mass=7 --set timeline.sim_rate=0.8
+# Units: "sim" is the time and length unit of the scalar-QED model (scalar_qed_numerics.py), "film s" are seconds of the content (the cards are inserted);
+# font sizes are points at 720 p; positions in [0, 1] are fractions of the frame.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 21
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[scalar_qed]
+nx = 400                          # grid of the model
+ny = 288
+lx = 28.0
+ly = 20.0
+t_end = 32.0
+sim_samples = 641
+mass = 6.0
+charge_q = 0.88
+sigma = 0.38                      # width parameter of the Gaussian packets
+charge_ratio = 4.2                # |charge| of both packets (the sign is set by the case)
+momentum = 1.8                    # |p| along x of the two packets, moving towards each other
+x0 = 4.4
+y0 = 0.54                         # packet 1 at (-x0, +y0), packet 2 at (+x0, -y0)
+
+[cases.attraction]
+charge_signs = [1, -1]
+[cases.repulsion]
+charge_signs = [1, 1]
+
+[view]
+x = [-8.0, 8.0]                   # the drawn part of the plane
+y = [-5.4, 5.4]
+frame_samples_per_s = 12          # stored map frames per film second (linear interpolation in between)
+interf_samples_per_s = 12
+line_half_length = 3.2            # the line through packet 1 along the direction to packet 2: half length
+line_points = 512
+pad_factor = 16                   # zero padding of the line before the Fourier transform
+momentum_range = 1.4              # the momentum axis: +- this around the free mean
+diff_ylim = 0.55                  # the lower limit of the momentum panel (the interference term is drawn below the axis too)
+diff_gain = 1.0                   # the interference term (sum - free) is drawn magnified by this factor
+window_pixels = 192               # the window around packet 1 (grid pixels) for the 2D Fourier transform
+cache_dir = ".cache"
+
+[timeline]
+card_s = 1.8
+card_at = [0.0, 0.0, 12.0, 58.0]  # cards: title, 1 the waves and the fields, 2 the motion, 3 the interference (content time)
+intro = [0.0, 12.0]               # the packets at t = 0, the fields appear
+motion = [12.0, 58.0]             # sim time runs from 0 to t_end
+interf = [58.0, 88.0]             # sim time sweeps from interf_t0 to interf_t1 slowly, the panels of the phase and the momentum
+outro = [88.0, 98.0]
+sim_rate_motion = 0.0             # (computed) sim seconds per film second of the motion part: t_end / duration
+interf_t0 = 0.0
+interf_t1 = 15.0
+card_fade_in = [0.0, 0.16]
+card_fade_out = [0.84, 1.0]
+outro_in = [0.0, 1.6, 3.2, 4.8]
+outro_fade = 0.9
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+warm = [1.00, 0.55, 0.40]         # positive charge
+blue = [0.40, 0.72, 1.00]         # negative charge
+gold = [1.00, 0.84, 0.35]
+green = [0.50, 0.86, 0.58]
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+axes_edge = [0.35, 0.42, 0.55]
+axes_edge_width = 0.8
+map_gamma = 1.5                   # the density image: (rho / rho_max)^gamma
+map_gain = 1.15
+map_floor = 0.03                  # below this relative density the image is the background
+potential_levels = [0.12, 0.25, 0.45, 0.75, 1.2]    # contour levels of |A_0| in units of the value at the packet width from the centre
+potential_alpha = 0.55
+potential_width = 0.9
+trail_alpha = 0.8
+trail_width = 1.6
+trail_seconds = 14.0              # sim time of the visible trail
+free_alpha = 0.55
+force_scale = 1.6                 # arrow length = force_scale * |a| / a_ref
+force_ref = 0.012
+force_width = 2.4
+marker_size = 8.0
+curve_width = 2.0
+level_dash = [4, 3]
+
+[fonts]
+title = 19
+chapter_label = 13
+formula = 16
+formula_small = 13.5
+caption = 12.5
+sub_caption = 11.5
+axis_label = 11
+tick = 10
+panel_title = 11.5
+legend = 10.5
+readout = 12.5
+tag = 10
+card_title = 34
+card_subtitle = 17
+card_number = 54
+card_chapter = 31
+card_chapter_sub = 16
+outro = 18
+sign = 11
+min_scale = 0.6
+
+[layout]
+title_pos = [0.03, 0.935]
+chapter_label_pos = [0.97, 0.938]
+tag_pos = [0.03, 0.903]
+formula_pos = [0.03, 0.865]
+formula_row = 0.062
+caption_pos = [0.03, 0.035]
+sub_caption_pos = [0.03, 0.075]
+caption_max_width = 0.94
+card_title_y = 0.54
+card_subtitle_y = 0.45
+card_number_y = 0.64
+card_chapter_y = 0.52
+card_chapter_sub_y = 0.43
+map_axes = [0.03, 0.15, 0.62, 0.68]
+panel_a_axes = [0.70, 0.54, 0.27, 0.26]
+panel_b_axes = [0.70, 0.17, 0.27, 0.26]
+outro_x = 0.07
+outro_y = 0.70
+outro_row = 0.16
+outro_width = 0.86
+outro_line = 0.05

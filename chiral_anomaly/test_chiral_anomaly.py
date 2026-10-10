@@ -194,7 +194,7 @@ class NumbersOnTheScreenTest(unittest.TestCase):
     def test_pion_numbers(self) -> None:
         P = ca.PN
         g = sf.pi0_width(P.alpha, P.m_pi_ev, P.f_pi_ev)
-        self.assertAlmostEqual(g, 7.76, delta=0.02)
+        self.assertAlmostEqual(g, 7.78, delta=0.02)
         meas = P.branching * P.hbar_ev_s / P.tau_s
         self.assertAlmostEqual(meas, 7.72, delta=0.03)
         self.assertLess(abs(g - meas), 2.0 * P.gamma_meas_err)

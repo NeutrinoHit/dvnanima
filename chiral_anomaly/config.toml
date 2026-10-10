@@ -423,7 +423,7 @@ err_width = 3.0
 [pion]
 alpha = 0.007297352569                   # 1 / 137.036
 m_pi_ev = 134976800.0                    # m(pi0) = 134.9768 MeV
-f_pi_ev = 92200000.0                     # f_pi = 92.2 MeV
+f_pi_ev = 92100000.0                     # f_pi = 92.1 MeV (PDG: 130.2 MeV / sqrt 2)
 hbar_ev_s = 6.582119569e-16
 branching = 0.98823                      # Br(pi0 -> gamma gamma)
 tau_s = 8.43e-17                         # lifetime of pi0
