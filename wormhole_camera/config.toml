@@ -1,0 +1,335 @@
+# Every number of the film "A camera at a wormhole" lives here (the scripts contain only algorithms).
+# Override on the command line:  --config other.toml   or   --set sky.n_galaxies=2000 --set video.fps=24
+# Lengths in the wormhole units are in units of the throat radius b (b = 1), angles in degrees unless the key says "rad".
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 22
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.8
+reference_height = 720
+
+[physics]
+b = 1.0                    # the throat radius (the unit of length)
+b_si_m = 1000.0            # the throat radius used for the energy estimate of the book (1 km)
+c_si = 299792458.0
+g_si = 6.67430e-11
+sun_rest_energy_j = 1.8e47 # E_sun = M_sun c^2, the number of the book
+
+[sky]
+width = 6144               # equirectangular maps (two orientations of the pole, see wormhole_sky.py), height = width / 2
+cache_dir = ".cache"
+mip_levels = 9
+seed_ours = 11
+seed_theirs = 23
+pole_margin_deg = 52.0     # an object is drawn into a map when its latitude in that map is below this angle
+star_psf_sigma_px = 0.85
+star_flux_min = 0.10
+star_flux_slope = 1.5
+star_flux_max = 2.5
+bright_flux_min = 12.0
+bright_flux_slope = 1.6
+bright_flux_max = 80.0
+spike_length_deg = 1.0
+spike_weight = 0.05
+star_halo_weight = 0.03
+spike_width_px = 0.6
+exposure = 1.0
+
+[sky.ours]                 # the sky on our side: warm, golden
+n_galaxies = 16000
+n_stars = 36000
+n_bright_stars = 70
+size_min_deg = 0.05
+size_max_deg = 2.4
+size_slope = 1.35           # number of galaxies larger than s ~ s^-slope
+spiral_fraction = 0.55
+elliptical_fraction = 0.30
+star_colors = [[1.0, 0.82, 0.62], [1.0, 0.95, 0.85], [0.78, 0.86, 1.0]]
+galaxy_colors = [[1.0, 0.78, 0.50], [1.0, 0.65, 0.40], [0.80, 0.88, 1.0]]
+arm_color = [0.62, 0.78, 1.0]
+bulge_color = [1.0, 0.80, 0.52]
+nebula_colors = [[0.95, 0.38, 0.18], [0.20, 0.62, 0.78]]
+nebula_strength = [0.105, 0.075]
+nebula_waves = 70
+nebula_seed_offset = 5
+
+[sky.theirs]               # the sky on the other side: cold, violet and blue
+n_galaxies = 16000
+n_stars = 36000
+n_bright_stars = 70
+size_min_deg = 0.05
+size_max_deg = 2.4
+size_slope = 1.35
+spiral_fraction = 0.50
+elliptical_fraction = 0.25
+star_colors = [[0.70, 0.80, 1.0], [0.92, 0.95, 1.0], [1.0, 0.85, 0.90]]
+galaxy_colors = [[0.55, 0.70, 1.0], [0.75, 0.55, 1.0], [0.60, 0.95, 0.95]]
+arm_color = [0.50, 0.90, 1.0]
+bulge_color = [0.85, 0.80, 1.0]
+nebula_colors = [[0.62, 0.28, 0.95], [0.15, 0.78, 0.70]]
+nebula_strength = [0.115, 0.075]
+nebula_waves = 70
+nebula_seed_offset = 9
+
+[galaxy]
+spiral_arms = [2, 3]
+spiral_pitch_deg = [14.0, 28.0]
+arm_sharpness = 2.2
+arm_amplitude = 0.85
+disk_scale_over_size = 0.22   # exponential scale length / the angular size
+bulge_over_size = 0.05
+bulge_weight = 1.6
+knots_per_galaxy = 14
+knot_weight = 2.4
+dust_lane_width = 0.035
+surface_brightness = 22.0
+brightness_slope = 0.55       # smaller galaxies are fainter: peak ~ size^slope
+inclination_deg = [0.0, 88.0]
+elliptical_axis_ratio = [0.45, 1.0]
+
+# the hero objects of each sky: directions are in the world frame (x, y in the plane of the camera's orbit, z up)
+[[sky.ours.heroes]]
+kind = "spiral"
+dir = [-0.35, -0.90, 0.25]
+size_deg = 7.0
+incl_deg = 28.0
+arms = 2
+pitch_deg = 17.0
+phase = 0.6
+pa_deg = 35.0
+gain = 0.70
+seed = 101
+
+[[sky.ours.heroes]]
+kind = "spiral"
+dir = [0.80, 0.45, -0.40]
+size_deg = 4.5
+incl_deg = 80.0
+arms = 2
+pitch_deg = 20.0
+phase = 1.9
+pa_deg = 110.0
+gain = 0.80
+seed = 102
+
+[[sky.ours.heroes]]
+kind = "elliptical"
+dir = [0.10, 0.95, 0.30]
+size_deg = 4.0
+axis_ratio = 0.7
+pa_deg = 60.0
+gain = 6.0
+seed = 103
+
+[[sky.theirs.heroes]]
+kind = "texture"
+file = "assets/hero_merger.png"
+dir = [0.80, -0.35, 0.50]
+size_deg = 10.0
+pa_deg = 0.0
+gain = 1.4
+
+[[sky.theirs.heroes]]
+kind = "spiral"
+dir = [-0.60, 0.70, -0.35]
+size_deg = 6.0
+incl_deg = 35.0
+arms = 3
+pitch_deg = 22.0
+phase = 2.5
+pa_deg = 80.0
+gain = 0.70
+seed = 201
+
+[[sky.theirs.heroes]]
+kind = "elliptical"
+dir = [-0.20, -0.80, 0.55]
+size_deg = 3.5
+axis_ratio = 0.55
+pa_deg = 20.0
+gain = 6.0
+seed = 202
+
+[view]
+fov_deg = 78.0
+exposure = 1.45
+bloom_threshold = 1.0
+bloom_strength = 0.20
+bloom_sigmas_px = [2.0, 6.0, 18.0]
+vignette = 0.28
+grain = 0.012
+table_n = 6000
+lod_bias = -0.6
+ssaa = 1
+
+[timeline]
+title_card = 2.6
+card_fade_in = [0.0, 0.2]
+card_fade_out = [0.8, 1.0]
+part_bounds = [0.0, 34.0, 64.0, 94.0, 128.0, 168.0]      # content time: parts 1 .. 5
+
+[style]
+background = "#03060c"
+text = [0.90, 0.94, 1.0]
+dim = [0.62, 0.70, 0.82]
+blue = [0.42, 0.74, 1.00]
+warm = [1.00, 0.62, 0.34]
+gold = [1.00, 0.84, 0.35]
+violet = [0.74, 0.50, 1.00]
+cyan = [0.35, 0.90, 0.95]
+title_color = [0.92, 0.96, 1.0, 0.95]
+strip_alpha = 0.62
+strip_height = 0.20
+panel_alpha = 0.50
+
+[fonts]
+title = 19
+chapter_label = 12.5
+formula = 17
+formula_big = 21
+caption = 13
+card_title = 38
+card_subtitle = 17
+label = 13
+readout = 13
+readout_small = 11
+tick = 10
+summary = 20
+summary_big = 26
+
+[layout]
+title_pos = [0.025, 0.955]
+chapter_label_pos = [0.975, 0.955]
+caption_pos = [0.5, 0.075]
+caption_spacing = 1.3
+surface_axes = [0.02, 0.12, 0.62, 0.80]
+formula_x = 0.655
+formula_y = [0.80, 0.66, 0.52, 0.38]
+formula_min_alpha = 0.02
+inset_axes = [0.012, 0.545, 0.245, 0.40]
+readout_pos = [0.025, 0.28]
+readout_row = 0.045
+graph_axes = [0.775, 0.64, 0.195, 0.22]
+card_title_y = 0.54
+card_subtitle_y = 0.44
+
+[surface]
+u_max = 1.9
+n_phi = 84
+n_u = 56
+face_alpha = 0.74
+edge_alpha = 0.16
+edge_width = 0.35
+light_dir = [0.35, -0.55, 0.75]
+ambient = 0.30
+rim_power = 2.4
+rim_weight = 0.38
+cool = [0.20, 0.45, 0.95]
+warm = [0.95, 0.52, 0.22]
+tint_width = 0.45
+throat_width = 3.0
+throat_glow_width = 9.0
+view_half_height = 3.95          # half of the vertical span of the picture in units of b
+exotic_color = [0.80, 0.30, 1.00]
+exotic_gain = 1.7
+camera_size = 70.0
+ray_count = 11
+ray_psi_max_deg = 70.0
+ray_points = 520
+ray_width = 2.0
+ray_alpha = 0.92
+pulse_speed = 0.16
+pulse_count = 1
+pulse_size = 38.0
+stars_count = 140
+stars_seed = 5
+
+[surface_views]                  # [time in the part, elevation (deg), azimuth (deg)] for each part
+part1 = [[0.0, 66.0, 20.0], [10.0, 24.0, 55.0], [34.0, 16.0, 135.0]]
+part2 = [[0.0, 16.0, 135.0], [30.0, 14.0, 185.0]]
+
+[part1]
+surface_fade = [0.5, 3.5]
+metric_times = [2.0, 4.5]
+throat_times = [9.5, 12.0]
+sheet_label_times = [17.0, 19.5]
+profile_times = [12.0, 14.5]
+exotic_times = [21.0, 25.0]
+exotic_formula_times = [22.0, 24.5]
+energy_times = [26.5, 29.0]
+fade_out = [32.5, 34.0]
+caption_times = [[1.0, 8.5], [9.5, 16.5], [16.5, 21.0], [21.0, 27.0], [27.0, 33.0]]
+
+[part2]
+camera_l = [[0.0, 2.8], [14.0, 2.8], [22.0, 0.9], [30.0, 0.9]]
+fan_times = [1.5, 5.0]
+class_times = [8.0, 11.0]
+cone_times = [18.0, 21.0]
+caption_times = [[1.0, 8.5], [8.5, 17.5], [17.5, 29.0]]
+fade_out = [29.0, 30.0]
+
+[camera]                         # key frames of the film camera: [content time, l/b, orbit angle (deg), yaw (deg), pitch (deg), roll (deg), horizontal field of view (deg)]
+frames = [
+ [64.0, 11.0,   0.0, -14.0,  3.0, 0.0, 55.0],
+ [72.0, 10.5,  60.0, -18.0,  4.0, 1.5, 56.0],
+ [80.0,  9.0, 130.0, -12.0,  2.0, -1.0, 62.0],
+ [88.0,  7.0, 200.0,  -6.0,  0.0, 0.0, 66.0],
+ [94.0,  6.0, 235.0,   0.0,  0.0, 0.0, 70.0],
+ [100.0, 4.2, 262.0,   0.0,  0.0, 0.0, 76.0],
+ [108.0, 2.6, 285.0,   0.0,  0.0, 0.0, 84.0],
+ [114.0, 1.0, 300.0,   0.0,  0.0, 0.0, 94.0],
+ [118.0, 0.0, 308.0,   0.0,  0.0, 0.0, 100.0],
+ [122.0, -1.2, 314.0,  0.0,  0.0, 0.0, 94.0],
+ [128.0, -3.0, 322.0,  60.0, 0.0, 0.0, 84.0],
+ [135.0, -5.0, 335.0, 150.0, 0.0, 0.0, 76.0],
+ [142.0, -7.0, 352.0, 180.0, 0.0, 0.0, 70.0],
+ [150.0, -9.5, 375.0, 180.0, 2.0, 0.0, 66.0],
+ [158.0, -11.0, 395.0, 178.0, 3.0, 0.0, 64.0],
+ [168.0, -12.5, 420.0, 176.0, 3.0, 0.0, 62.0],
+]
+
+[inset]
+alpha_in = [0.0, 1.5]
+elevation = 20.0
+azimuth = 118.0
+view_half_height = 4.1
+l_max = 3.0
+ray_psi_deg = [0.0, 25.0, 70.0]
+camera_size = 40.0
+panel_pad = 0.008
+bg_color = [0.01, 0.02, 0.05]
+bg_alpha = 0.52
+
+[graph]
+l_max = 10.0
+psi_max_deg = 90.0
+line_width = 2.0
+dot_size = 7.0
+times = [4.0, 6.5]
+
+[part3]
+caption_times = [[1.0, 14.0], [15.0, 29.0]]
+readout_times = [3.0, 5.0]
+fade_in = [0.0, 1.8]
+
+[part4]
+caption_times = [[0.5, 14.0], [19.5, 31.0]]
+readout_times = [0.0, 1.0]
+
+[part5]
+caption_times = [[0.5, 12.0], [13.5, 22.0], [22.5, 31.0]]
+graph_times = [9.0, 12.0]
+summary_lines = ["s1", "s2", "s3"]
+summary_times = [[31.5, 32.7], [33.7, 34.9], [35.6, 36.8]]
+summary_y = [0.62, 0.52, 0.40]
+summary_fonts = ["summary", "summary", "summary_big"]
+summary_gold = [false, false, true]
+summary_dim_view = [31.0, 33.0, 0.34]
+fade_out = [38.8, 40.0]

@@ -1,0 +1,13 @@
+# Card of the film "A camera at a wormhole" (a new animation, the number in the catalogue is assigned when it goes to the site)
+
+**Title RU:** Камера у кротовой норы: свет двух Вселенных
+**Title EN:** A camera at a wormhole: the light of two universes
+**Book:** volume 1, chapter "Гравитация" / "Gravity" (`chapters/Gravity.tex`, `en/chapters/Gravity.tex`), after the exercise "Фотография Вселенной у кротовой норы" (`Gravity_tasks.tex`); in the QFT catalogue it is volume 1, chapter 4; it also belongs to the book "General Relativity for Experimentalists".
+**QR files (proposal):** `Wormhole_Camera.pdf`, `Wormhole_Camera_image.pdf`.
+**poster_time:** 76.0 s of the film (the camera far from the throat, the window with the other universe, the inset with the surface).
+
+**Caption RU:** Кротовая нора Морриса и Торна — решение уравнений Эйнштейна для статического сферически симметричного пространства без горизонта; оно требует отрицательной плотности энергии. На экваториальной плоскости поверхность $r=b\cosh(z/b)$ соединяет две Вселенные, самая узкая окружность имеет радиус $b$. Свет движется по геодезическим этой поверхности: луч с прицельным параметром $p<b$ проходит через горловину, луч с $p>b$ возвращается. Камера издалека видит всю другую Вселенную в круглом окне, а небо вокруг него изогнуто в кольца; при $\sin\psi_c=b/\sqrt{l^2+b^2}$ радиус окна $\psi_c$ зависит только от расстояния до горловины, и движущаяся камера может измерить $b$.
+**Caption EN:** The Morris-Thorne wormhole is a solution of Einstein's equations for a static, spherically symmetric space without a horizon; it requires a negative energy density. In the equatorial plane the surface $r=b\cosh(z/b)$ joins two universes, the narrowest circle has radius $b$. Light moves along the geodesics of this surface: a ray with the impact parameter $p<b$ crosses the throat, a ray with $p>b$ turns back. A camera far away sees the whole other universe in a round window, and the sky around it is bent into rings; with $\sin\psi_c=b/\sqrt{l^2+b^2}$ the radius $\psi_c$ of the window depends only on the distance to the throat, so a moving camera can measure $b$.
+
+**Credit note RU:** Лучи вычислены точно (эллиптические интегралы, как в решении задачи), небо — собственная процедурная модель (галактики, звёзды, туманности; пара взаимодействующих галактик — из N-body-расчёта книги). Параметры: $b=1$ (единица длины); для оценки энергии $b=1$ км.
+**Credit note EN:** The rays are computed exactly (elliptic integrals, as in the solution of the exercise); the sky is our own procedural model (galaxies, stars, nebulae; the pair of interacting galaxies comes from the N-body calculation of the book). Parameters: $b=1$ (the unit of length); for the energy estimate $b=1$ km.
