@@ -18,7 +18,7 @@ FILMS = ["coupled_chain", "coupled_lattice_2d", "coupled_lattice_3d", "sm_fields
          "cherenkov_radiation", "pmt_multiplication", "thomson_tube", "simultaneity", "oam_beams", "circular_polarization",
          "electron_kick", "spinor_mobius", "hulse_taylor", "path_integral", "scattering_experiment", "running_charge", "rutherford",
          "meissner_photon_mass", "chiral_fermion_mass", "z_decay_asymmetry", "air_shower_cascade", "higgs_ff_spin",
-         "quantum_tunneling", "kaon_oscillations", "chiral_anomaly", "gauge_principle", "attraction_repulsion", "wormhole_camera"]
+         "quantum_tunneling", "kaon_oscillations", "chiral_anomaly", "gauge_principle", "attraction_repulsion", "wormhole_camera", "earth_shield"]
 # a frame made of panels, not 16:9: only the text and the script rules apply (its own video section is tested in its own file)
 PANEL_FILMS = ["penrose_terrell"]
 
