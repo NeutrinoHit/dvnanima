@@ -44,8 +44,18 @@ python test_wormhole_camera.py
 ./render.sh                                                     # both languages
 ```
 
-A bigger picture (for example 4K) needs only `--set video.width=3840 --set video.height=2160` (the sky maps are 6144 pixels wide, `--set sky.width=12288` and a new `--build` give more detail).
-The render is about 9 times longer.
+A bigger picture (for example 4K) needs only `--set video.width=3840 --set video.height=2160`; the sky maps are 6144 pixels wide, `--set sky.width=12288` (after `python wormhole_sky.py --build --set sky.width=12288`, about 1 min and 2.8 GB) gives a sharper sky with the same look.
+The render is about 9 times longer (about 13 s per frame at 4K, 3 GB of memory per process).
+
+**Night render in the background, resumable:**
+
+```bash
+python3 render_night.py --set sky.width=12288      # waits for 22:00, works until 08:00 with 3 low-priority processes, then stops
+python3 render_night.py --status                   # finished chunks
+```
+
+The film is cut into 60 chunks per language (`media/render_3840x2160/`); an unfinished chunk is dropped, so a stop or a reboot loses at most 15 minutes of work; running the command again continues.
+When all chunks of a language exist they are joined into `media/wormhole_camera_<lang>_4k.mp4`. The machine must stay awake (the script holds it with `caffeinate`): keep it on the power adapter, lid open.
 
 ## Configuration
 
@@ -55,5 +65,5 @@ Override: `--config other.toml` or `--set camera.frames=...`, `--set view.bloom_
 
 ## Files
 
-`wormhole_camera.py` (the film), `wormhole_physics.py` (rays, surface, energy), `wormhole_sky.py` (the skies), `wormhole_view.py` (the ray-traced picture), `config.toml`, `texts.toml`,
+`wormhole_camera.py` (the film), `render_night.py` (night render in chunks), `wormhole_physics.py` (rays, surface, energy), `wormhole_sky.py` (the skies), `wormhole_view.py` (the ray-traced picture), `config.toml`, `texts.toml`,
 `test_wormhole_camera.py`, `assets/hero_merger.png`, `CARD.md`, `render.sh`.

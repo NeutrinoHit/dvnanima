@@ -138,6 +138,7 @@ def sprite_star(flux, hue, sigma_deg, spikes):
     L, w = spikes
     x0 = 3.0 * sigma_deg
     S = CFG.sky
+    flux = flux * (S.width / S.reference_width) ** 2        # the star keeps its integrated flux when the map has more pixels
 
     def f(x, y):
         r2 = x * x + y * y

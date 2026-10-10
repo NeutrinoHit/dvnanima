@@ -24,6 +24,7 @@ sun_rest_energy_j = 1.8e47 # E_sun = M_sun c^2, the number of the book
 
 [sky]
 width = 6144               # equirectangular maps (two orientations of the pole, see wormhole_sky.py), height = width / 2
+reference_width = 6144     # the map width for which the brightnesses below were set (a wider map keeps the same look, only sharper)
 cache_dir = ".cache"
 mip_levels = 9
 seed_ours = 11
