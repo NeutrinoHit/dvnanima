@@ -1,0 +1,100 @@
+# Every number of the film "Spin 1/2 and the Moebius strip" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set camera.elevation_deg=35 --set timeline.hold_s=2.0
+# Film seconds; angles in degrees unless the name says otherwise; font sizes are points at 720 p (the script scales them with the frame height);
+# line widths and marker sizes are points of the frame (not scaled), as in the first version of the film.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 20
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.0                      # no fade in this film
+reference_height = 720
+
+[timeline]
+film_length = 20.0                # seconds; the angle runs 0 -> 360 -> 720 degrees
+preview_length = 6.0              # length of the --preview film
+hold_s = 1.6                      # pause after the first turn
+start_delay_s = 0.5               # pause before the motion starts
+slack_s = 1.0                     # total of the start delay and of the pause at the end (not used by the two turns)
+message_tol_deg = 1.0             # the caption "360 degrees" / "720 degrees" is shown within this tolerance
+
+[model]
+half_width = 0.5                  # half-width of the strip
+u_samples = 120                   # points along the strip
+v_samples = 9                     # points across the strip
+core_samples = 200
+dial_samples = 200
+turn_samples = 80                 # points of the arc that shows the turns on the dial
+spinor_samples = 120              # points of the spinor trace in a snapshot
+
+[camera]
+elevation_deg = 42
+azimuth_deg = -62
+azimuth_swing_deg = 14            # the camera swings by +-this angle during the film
+xlim = [-1.35, 1.35]
+ylim = [-1.35, 1.35]
+zlim = [-0.9, 0.9]
+box_aspect = [1.0, 1.0, 0.55]
+
+[layout]
+axes_3d = [0.0, 0.03, 0.56, 0.86]
+axes_dial = [0.60, 0.50, 0.17, 0.30]
+axes_spinor = [0.80, 0.50, 0.17, 0.30]
+axes_text = [0.60, 0.08, 0.37, 0.28]
+dial_lim = 1.25
+spinor_lim = 1.3
+dial_arc_radius = 0.35            # radius of the arc on the dial (fraction of the dial)
+phi_pos = [0.0, 0.85]             # axes coordinates of the angle read-out
+message_pos = [0.0, 0.45]
+title_pos = [0.02, 0.93]
+footer_pos = [0.02, 0.02]
+plus_one_pos = [1.12, 0.06]
+minus_one_pos = [-1.42, 0.06]
+
+[fonts]
+panel_title = 12
+plus_minus = 10
+phi = 22
+message = 17
+title = 19
+footer = 9.5
+
+[style]
+background = "#0a0d14"
+text = "#e8edf5"
+dim = "#8b96ad"
+title_colour = "white"
+accent = "#ff9a1f"                # the rotating vector, the angle
+blue = "#7fd1ff"                  # the spinor
+circle = "#3a445c"
+circle_width = 1.2
+mesh = "#c8d3e6"
+mesh_width = 0.25
+mesh_alpha = 0.35
+mesh_stride = [8, 6]              # wireframe: every 8th line along the strip, every 6th across
+core_width = 0.8
+core_alpha = 0.6
+colormap = "twilight_shifted"
+colormap_range = [0.15, 0.7]      # the part of the colour map that colours the strip
+surface_alpha = 0.42
+reference = "#ffffff"             # the starting vector
+reference_width = 3.0
+reference_alpha = 0.9
+reference_marker_size = 70
+vector_width = 4.0
+vector_marker_size = 110
+dial_reference_width = 1.6
+dial_reference_alpha = 0.8
+dial_arrow_width = 2.6
+dial_arc_width = 1.0
+dial_arc_alpha = 0.7
+spinor_arrow_width = 2.4
+trace_width = 1.0
+trace_alpha = 0.5
+point_size = 14                   # the points +1 and -1

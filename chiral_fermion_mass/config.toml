@@ -1,0 +1,332 @@
+# Every number of the film "Chiral waves and the fermion mass" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set style.background='"#000000"' --set stage.view_half=10
+# Units: the physics is in the units hbar = c = 1 with arbitrary length and mass units ("toy units", the film says so);
+# "film s" are seconds of the content (the cards are inserted by the timeline); "phys" is the physical time of the equation.
+# Figure fractions are fractions of the width / height of the frame, font sizes are points at 720 p (they scale with the height).
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 24
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[grid]                            # the periodic grid of the exact Fourier solution
+length = 64.0
+n = 1024
+dt = 0.004                        # the largest step of the integration of a time dependent mass (phys)
+sample_rate = 30                  # frames of the stored simulations per film second (the film is drawn from them)
+
+[higgs]                           # m = f v / sqrt(2)  (the book, the Standard Model chapter, the section "Fermion masses")
+v = 4.242640687119285             # the condensate in toy units, so that f = 1 gives m = 3
+f_ref = 1.0
+v_max = 4.242640687119285         # the end of the dial of v
+f_max = 2.0                       # the end of the dial of f
+
+[packet]
+sigma = 1.6                       # standard deviation of |psi|^2 of a moving packet
+carrier_p = 3.0
+start_x = -5.5
+rest_sigma = 3.0                  # a packet at rest is wider (the momentum spread is smaller, so that the flips stay close to cos(2 m t))
+rest_phase_deg = 45.0             # the global phase of the pure-chirality packet at rest (both Re psi_R and Re psi_L are then non-zero)
+
+[timeline]
+card_s = 1.6
+part_bounds = [0.0, 13.0, 30.0, 48.0, 66.0, 80.0]
+card_at = [0.0, 0.0, 13.0, 30.0, 48.0, 66.0]
+card_fade_in = [0.0, 0.16]
+card_fade_out = [0.84, 1.0]
+part_fade_in = [0.0, 0.5]         # the content of a part (below the title) fades in after its card
+part_fade_top = 0.10              # the top of the frame (the title) does not fade: fraction of the height
+
+# ----------------------------------------------------------------------------------------------- the parts
+
+[part1]                           # m = 0: two independent waves
+rate = 1.2                        # phys time per film second
+r_start = -7.0
+l_start = 7.0
+captions = [[0.0, "c1a"], [6.0, "c1b"]]
+formulas = [
+  { key = "f1a", color = "warm", x = 0.03, row = 0, appear = [0.3, 1.3] },
+  { key = "f1b", color = "cold", x = 0.03, row = 1, appear = [1.3, 2.3] },
+]
+
+[part2]                           # the condensate switches on
+segments = [[0.0, 3.0, 1.0], [3.0, 5.0, 0.15], [5.0, 100.0, 0.8]]    # film s from, to, phys time per film second (slow motion in the ramp)
+ramp_start = 3.0                  # phys
+ramp_duration = 0.3               # phys; slow motion makes it 2 film s: the dial is seen turning
+f = 1.0
+window = 6.0                      # the chirality plot shows the last ... phys time units
+window_lead = 0.5                 # the pen is this far from the right edge of the plot
+captions = [[0.0, "c2a"], [3.0, "c2b"], [5.0, "c2c"], [9.0, "c2d"]]
+formulas = [
+  { key = "f2a", color = "warm", x = 0.03, row = 0, appear = [0.3, 1.2] },
+  { key = "f2b", color = "cold", x = 0.03, row = 1, appear = [0.3, 1.2] },
+]
+slow_label = [3.0, 5.0]           # film s from, to: the "slow motion" tag
+mean_from = 6.5                   # film s: the dashed line of the mean chirality appears
+freq_from = 6.5                   # film s: the label of the oscillation frequency 2E appears
+centroid_from = 3.5               # film s: the centroid marker appears
+branch_from = 9.0                 # film s: the labels E > 0 and E < 0 of the two parts of the wave appear
+
+[part3]                           # a pure psi_R wave at rest, three Yukawa constants
+rate = 1.0
+runs = [
+  { f = 0.5, from = 0.0, to = 6.0 },
+  { f = 1.0, from = 6.0, to = 12.0 },
+  { f = 2.0, from = 12.0, to = 18.0 },
+]
+fade_s = 0.5
+dial_turn_s = 0.8                 # the dial moves to the next f during the last ... s of a run
+captions = [[0.0, "c3a"], [6.0, "c3b"], [12.0, "c3c"]]
+formulas = [
+  { key = "f3a", color = "text", x = 0.03, row = 0, appear = [0.3, 1.2] },
+  { key = "f3b", color = "text", x = 0.03, row = 1, appear = [0.3, 1.2] },
+]
+
+[part4]                           # eigenstate packets: both chiralities travel together
+rate = 1.0
+f_values = [0.0, 1.0, 2.0]
+lead_s = 2.0                      # film s before the packets start to move
+captions = [[0.0, "c4a"], [6.0, "c4b"], [12.0, "c4c"]]
+formulas = [
+  { key = "f4a", color = "text", x = 0.03, row = 0, appear = [0.3, 1.2] },
+  { key = "f4b", color = "text", x = 0.03, row = 1, appear = [2.0, 3.0] },
+]
+readout_from = 2.5
+
+[part5]                           # why the spring exists: the Yukawa term
+f = 1.0
+rate = 1.0
+relabel = [4.0, 5.0]              # film s: the lane labels turn into the electron doublet and singlet
+rows = [
+  { key = "f5a", from = 0.4, y = 0.282 },
+  { key = "f5b", from = 3.6, y = 0.220 },
+  { key = "f5c", from = 7.2, y = 0.158 },
+  { key = "f5d", from = 10.4, y = 0.098 },
+]
+row_fade_s = 0.8
+captions = [[0.0, "c5a"]]
+
+# ----------------------------------------------------------------------------------------------- the pictures
+
+[stage]
+view_half = 9.5                   # the lanes show x in [-view_half, view_half]
+view_pad = 0.3
+headroom = 1.30                   # the lane height is headroom * the peak of |psi| of the initial packet
+envelope_alpha = 0.20
+outline_alpha = 0.55
+outline_width = 0.9
+line_width = 1.7
+baseline_alpha = 0.18
+baseline_width = 0.8
+baseline_dash = [2, 4]
+sheet_alpha = 0.045               # the faint tint of a lane
+sheet_edge_alpha = 0.40
+sheet_edge_width = 1.2
+label_pos = [0.012, 0.84]         # lane label inside the lane (axes fractions)
+label_size = 15
+light_alpha = 0.55
+light_width = 1.1
+light_dash = [4, 3]
+light_label_size = 11
+light_label_y = 0.90              # fraction of the lane height
+centroid_width = 1.6
+centroid_alpha = 0.9
+centroid_label_size = 11
+branch_label_y = 0.80             # fraction of the half height of the lane L
+branch_label_size = 12.5
+slow_pos = [0.985, 0.90]
+slow_size = 12
+note_pos = [0.03, 0.903]          # the units note under the title (figure fractions)
+note_size = 10.5
+tag_size = 11.5
+note_alpha = 0.7
+density_scale = 0.9               # the ribbon of a track: the peak density of a massless packet fills this fraction of the half track
+track_y = [2.5, 1.5, 0.5]
+track_label_x = 0.092             # figure fractions of the labels of the tracks, right aligned
+track_label_size = 13
+track_readout_size = 11.5
+track_label_dy = 0.032            # figure fractions: m above, <gamma5> below the label centre
+track_ribbon_alpha = 0.55
+track_outline_alpha = 0.9
+track_outline_width = 1.0
+track_base_alpha = 0.25
+track_dot_size = 38.0
+track_light_alpha = 0.5
+
+[springs]
+count = 11
+x_margin = 0.9                    # the outer springs are this far from the edges of the lanes (x units)
+turns = 4
+amplitude_px = 6.5
+lead_px = 6.0
+points = 60
+ramp = 0.08
+lead_max = 0.3
+width_min = 0.9
+width_gain = 1.8
+alpha_min = 0.25
+alpha_gain = 0.65
+m_ref = 3.0                       # the mass at which the springs are at their full strength
+color = [1.00, 0.84, 0.35]
+rail_alpha = 0.5
+
+[dial]
+title_pos = [0.0, 1.02]
+title_size = 11
+row_y = [0.74, 0.44]
+track_x = [0.13, 0.72]
+value_x = 0.76
+label_x = 0.0
+label_size = 15
+value_size = 13
+track_width = 3.0
+track_alpha = 0.3
+knob_size = 70.0
+m_pos = [0.0, 0.02]
+m_size = 17
+tick_alpha = 0.5
+
+[chirality]
+ylim = 1.18
+fill_alpha = 0.32
+line_width = 2.0
+base_alpha = 0.35
+base_width = 0.8
+base_dash = [2, 4]
+title_pos = [0.0, 1.08]
+title_size = 12
+value_pos = [1.0, 1.08]
+value_size = 12
+tick_x = -0.012
+tick_size = 12
+tick_values = [1.0, 0.0, -1.0]
+old_alpha = 0.55
+old_width = 1.3
+old_dash = [4, 3]
+mean_width = 1.4
+mean_dash = [5, 3]
+mean_alpha = 0.85
+mean_label_pos = [0.995, 0.27]
+mean_label_size = 11.5
+freq_pos = [0.995, 0.06]
+freq_size = 12
+run_label_x = [0.60, 0.72, 0.84]     # right edges (axes fractions) of the legends of the three runs
+run_label_y = 1.08
+run_label_size = 12
+flat_x = 0.99                     # the labels of the two flat lines: at this fraction of the time axis
+flat_y = 0.62
+flat_label_size = 11.5
+flat_alpha = 0.95
+
+[dispersion]
+p_max = 6.0
+e_max = 9.0
+curve_points = 241
+curve_width = 2.0
+curve_alpha = 0.95
+bare_alpha = 0.28
+bare_width = 1.0
+bare_dash = [4, 3]
+axis_alpha = 0.45
+axis_width = 0.9
+dot_area = 170.0                   # pt^2 at 720 p of the dot that marks the wave packet when all its probability is on the branch
+cluster_cutoff = 0.004            # a group of momenta counts as a packet when its density exceeds this fraction of the peak density
+dot_edge_alpha = 0.7
+dot_edge_width = 0.8
+title_pos = [0.0, 1.035]
+title_size = 12
+label_size = 12
+xlabel_pos = [0.97, -0.6]          # the labels at the ends of the axes: p in units of p_max, E (x offset in data units, y in units of e_max)
+xlabel_size = 12
+ylabel_pos = [0.35, 0.99]
+ylabel_size = 12
+cone_label_size = 11.5
+cone_label_p = 3.2
+cone_label_e = 7.0
+gap_label_dx = 0.35
+gap_label_size = 12
+gap_width = 1.4
+gap_alpha = 0.95
+gap_min = 0.2                     # the gap bracket is drawn when m exceeds this
+mass_label_size = 11.5
+tangent_half = 3.0
+lower_alpha = 0.45
+lower_width = 0.7
+tangent_width = 1.1
+tangent_alpha = 0.8
+dot_size = 46.0
+
+[layout]
+title_pos = [0.03, 0.935]
+chapter_label_pos = [0.97, 0.938]
+caption_pos = [0.03, 0.035]
+formula_y = 0.850
+formula_row = 0.073
+formula_min_alpha = 0.01
+lane_r_axes = [0.10, 0.575, 0.61, 0.17]
+lane_l_axes = [0.10, 0.330, 0.61, 0.17]
+gap_axes = [0.10, 0.500, 0.61, 0.075]
+track_axes = [0.10, 0.330, 0.61, 0.415]
+chirality_axes = [0.10, 0.085, 0.61, 0.17]
+dispersion_axes = [0.775, 0.115, 0.19, 0.52]
+dial_axes = [0.745, 0.735, 0.225, 0.150]
+potential_axes = [0.80, 0.30, 0.16, 0.26]
+lane_label_x = 0.092
+card_title_y = 0.52
+card_subtitle_y = 0.43
+card_number_y = 0.62
+card_chapter_y = 0.50
+card_chapter_sub_y = 0.41
+rows_x = 0.03
+
+[fonts]
+title = 19
+chapter_label = 13
+formula = 17
+caption = 12
+row = 15
+card_title = 36
+card_subtitle = 17
+card_number = 54
+card_chapter = 32
+card_chapter_sub = 16
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+warm = [1.00, 0.55, 0.40]
+cold = [0.40, 0.72, 1.00]
+gold = [1.00, 0.84, 0.35]
+violet = [0.78, 0.66, 1.00]
+light = [0.82, 0.87, 0.96]
+mass_colors = [[0.82, 0.87, 0.96], [1.00, 0.84, 0.35], [0.78, 0.66, 1.00]]
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+panel_cutoff = 0.01
+
+[potential]                       # the Higgs potential of part 5 (schematic: V = (phi^2 - 1)^2 in units of v/sqrt(2))
+phi_max = 1.75
+points = 200
+y_max = 3.2
+y_below = 1.0
+curve_alpha = 0.9
+curve_width = 2.0
+axis_alpha = 0.45
+axis_width = 0.9
+ball_size = 110.0
+title_pos = [0.0, 1.03]
+title_size = 11.5
+label_size = 12.5

@@ -1,0 +1,131 @@
+# Every number of the film "Twisted beams: orbital angular momentum" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set beam.kappa=5 --set helicoid.radius=1.0
+# Units: film seconds; "beam units" are the length units of the transverse plane (the images span +-extent); font sizes are points at 720 p;
+# positions in [0, 1] are fractions of the frame.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[beam]
+kappa = 4.0                       # transverse wave number of the Bessel beams, 1 / length unit
+kz = 14.0                         # longitudinal wave number of the 3D wave fronts
+omega_cycles = 0.35               # the film frequency of the phase rotation: omega = 2 pi * this, rad per unit time
+w_gauss = 0.55                    # waist of the Gaussian beam
+
+[grid]
+extent = 1.5                      # the images span [-extent, extent]^2
+points_full = 220                 # grid points for a wide frame
+points_preview = 120
+wide_width = 1000                 # a frame at least this wide is "wide"
+
+[timeline]
+total = 56.0
+scene_ends = [15.0, 33.0, 50.0]   # scenes 1, 2, 3 end; scene 4 follows
+scene2_m_changes = [21.0, 26.5, 31.0]      # m = 1, 2, 3, -2
+scene3_start = 33.0
+scene3_m_changes = [5.5, 11.0]             # m = 1, 2, 3
+scene_fade_s = 0.4
+scene_fade_floor = 0.25
+
+[phase_image]
+gamma = 0.65
+saturation = 0.9
+vmax_plane = 1.0
+vmax_vortex = 0.6
+
+[helicoid]                        # the 3D wave fronts
+view = { azimuth_deg = -58.0, elevation_deg = 18.0 }
+axes = [0.0, 0.10, 0.62, 0.80]
+xlim = [-2.2, 2.2]
+ylim = [-1.6, 1.9]
+z0 = -1.2
+radius = 1.15
+core_fraction = 0.22              # the dark core: r_in = core_fraction * radius
+length = 2.4
+z_samples = 90
+r_samples = 3
+hue_offset = 0.08
+saturation = 0.70
+value = 1.0
+shade_base = 0.55
+shade_gain = 0.45
+alpha_base = 0.30
+alpha_gain = 0.38
+edge_exponent = 0.5
+edge_colour = [1.0, 1.0, 1.0, 0.05]
+edge_width = 0.3
+axis_margin = [0.25, 2.65]        # the axis runs from z0 - first to z0 + second
+axis_alpha = 0.55
+axis_width = 1.2
+axis_dash = [3, 4]
+arrow_alpha = 0.6
+arrow_width = 1.0
+z_label = { dx = 0.05, dy = 0.02, size = 14 }
+ring_alpha = 0.3
+ring_width = 1.0
+ring_points = 120
+arrow_head = 0.001              # the length of the arrow head of the z axis
+
+[inset]
+axes = [0.675, 0.40, 0.29, 0.40]
+lz_pos = [0.675, 0.30]
+lz_size = 15
+f3_pos = [0.675, 0.22]
+f3_size = 14.5
+
+[panels]
+x0 = 0.035
+dx = 0.2375
+width = 0.215
+y = 0.25
+height = 0.5
+centre_dx = 0.1075                # the centre of a panel: x0 + i * dx + centre_dx
+label_y = 0.20
+label_size = 12.5
+title_size = 13
+sub_size = 10
+loop_radius = 0.55
+loop_alpha = 0.45
+loop_width = 1.0
+loop_dash = [3, 3]
+ring_alpha = 0.35
+ring_width = 1.0
+ring_dash = [3, 3]
+border = [0.5, 0.6, 0.75, 0.6]
+border_width = 0.8
+scene3_title_y = 0.775
+scene3_title_size = 11.5
+arrow = { y = 0.50, start = -0.001, end = 0.0215, pad = 0.004, mutation = 12, alpha = 0.75, lw = 1.8 }
+m_label = { y = 0.20, size = 14, colour = [1.0, 0.82, 0.4] }
+f5_size = 13
+title_pad = 6
+loop_points = 200
+
+[layout]
+formula1_pos = [0.035, 0.115]
+formula2_pos = [0.50, 0.115]
+formula_size = 15
+title_pos = [0.035, 0.925]
+title_size = 19
+subtitle_pos = [0.035, 0.890]
+subtitle_size = 13
+caption_pos = [0.035, 0.032]
+caption_size = 11.5
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+title_color = [0.9, 0.95, 1.0, 0.95]
+axis_colour = [1.0, 1.0, 1.0]
+ring_colour = [0.7, 0.8, 0.95]

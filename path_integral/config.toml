@@ -1,0 +1,163 @@
+# Every number of the film "The path integral" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set model.c_phase=12 --set layout.spiral_axes=[0.7,0.25,0.29,0.52]
+# Units: film seconds; "scene units" are the units of the slit scene (the source is at 0, the detector at x = detector_x); positions in [0, 1]
+# are fractions of the frame; font sizes are points at 720 p; line widths and "px" are points / pixels at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.0                      # this film has no fade in and out (the fade between the scenes is timeline.scene_fade_s)
+reference_height = 720
+
+[model]
+screen_x = [0.25, 0.50, 0.75]     # positions of the three screens between the source (x = 0) and the detector
+slit_counts = [3, 7, 5]           # slits in the screens (3, 21 and 105 paths)
+slit_spacing = 0.085
+slit_half_width = 0.012           # half the width of a slit in the drawing
+screen_half_height = 0.5          # the screens and the detector span [-this, this]
+detector_x = 1.0
+wavelength = 0.0165               # of the particle, scene units (the phase of a path is 2 pi L / wavelength)
+c_phase = 9.0                     # c = m pi^2 / (4 T hbar) in scene 2, 1/a^2 units
+c_growth = 9.0                    # in scene 3 c grows from c_phase to c_phase * (1 + c_growth) (hbar decreases)
+a_max = 1.8                       # the largest deviation of a path from the classical one
+cornu_points = 4001               # points of the numerical sum of the tests
+profile_half_width = 0.45         # the brightness profile is computed for y in [-this, this]
+profile_points = 181
+detector_amplitude = 0.36         # the detector moves up and down: y = amplitude * sin(...)
+detector_sweep = 0.9              # number of radians per radian of the stage (see below) and phase
+detector_phase = 0.4
+path_points = 60                  # points of a path of scene 2
+a_grid_points = 401               # paths of scene 2 (every second one is drawn)
+path_stride = 2
+spiral_points = 1200
+
+[timeline]
+film_length = 40.0                # the nominal length of the film; all the times below scale with the real length
+scene_starts = [0.0, 15.0, 29.0]  # scenes 1, 2, 3
+stage_starts = [0.0, 4.8, 9.6]    # the three stages of scene 1 (3, 7, 5 slits), relative to the start of scene 1
+stage_length = 4.8
+scene_fade_s = 0.5                # fade to the background at the end of a scene and from it at the start of the next one (scaled)
+caption_change = 2.2              # the caption of scene 1 changes this long before its end (scaled)
+reveal = [0.8, 11.5]              # scene 2: the paths and the spiral grow in this interval after the start of the scene
+classical_limit = [1.0, 8.5]      # scene 3: hbar decreases in this interval after the start of the scene
+
+[layout]
+slit_origin = [0.06, 0.52]        # x of the source and y of the axis, fractions of the frame
+slit_size = [0.50, 0.70]          # width of the slit scene and height of a unit of y, fractions of the frame
+spiral_axes = [0.705, 0.25, 0.285, 0.52]     # the phasor / spiral panel
+phasor_xlim = [-0.35, 1.0]        # in units of the limit below
+phasor_ylim = 0.7
+phasor_lim_min = 3.0
+phasor_lim_margin = 1.1
+phasor_lim_max = 110.0
+spiral_xlim = [-0.40, 0.80]
+spiral_ylim = [-0.55, 0.55]
+profile_scale = 0.16              # width of the brightness profile, fraction of the frame width
+intensity_label_pos = [0.17, -18.0]   # fraction of the width from the detector, px below the screens
+paths_panel_x = [0.07, 0.62]      # scenes 2 and 3: the picture of the paths
+paths_panel_y = [0.23, 0.86]
+point_label_offset = [6.0, -26.0]
+classical_label_dy = 12.0
+phasor_title_pos = [0.715, 0.835]
+readout_pos = [0.715, 0.795]
+formula_pos = [0.715, 0.20]
+chip_pos = [0.03, 0.915]
+spiral_title_pos = [0.715, 0.835]
+spiral_title_sub_pos = [0.715, 0.795]
+spiral_readout_pos = [0.715, 0.215]
+spiral_c_pos = [0.715, 0.17]
+action_title_pos = [0.03, 0.915]
+action_formula_pos = [0.03, 0.872]
+caption_box = [0.70, 0.105]
+caption_pos = [0.03, 0.040]
+
+[formats]
+amp = ".1f"                       # |A| in scene 1
+amp2 = ".0f"                      # |A|^2 in scene 1
+amp_spiral = ".2f"                # |A| in scenes 2, 3
+limit = ".2f"                     # sqrt(pi / c)
+c = ".1f"                         # c
+
+[fonts]
+intensity_label = 13
+phasor_title = 12
+readout = 12
+chip = 18
+formula = 12.5
+point_label = 13
+classical_label = 10
+spiral_title = 12.5
+spiral_title_sub = 10.5
+spiral_readout = 10.5
+spiral_c = 10.5
+action_title = 18
+action_formula = 11
+caption = 13
+
+[style]
+background = "#03060c"
+fade_colour = [0.01, 0.02, 0.05]
+screen_colour = [0.85, 0.9, 1.0]
+screen_alpha_on = 0.9
+screen_alpha_off = 0.12
+screen_width = 3.0
+source_colour = [1.0, 0.85, 0.4, 1.0]
+source_size = 14.0
+detector_colour = [0.7, 0.8, 0.95, 0.35]
+detector_width = 1.0
+detector_marker = [1.0, 1.0, 1.0, 1.0]
+detector_marker_size = 11.0
+few_paths = 30                    # up to this number of paths the paths are drawn thicker and more opaque
+path_alpha_few = 0.50
+path_alpha_many = 0.30
+path_width_few = 1.5
+path_width_many = 0.9
+profile_fill = [1.0, 0.8, 0.4, 0.35]
+profile_line = [1.0, 0.85, 0.5, 0.9]
+profile_width = 1.6
+intensity_colour = [1.0, 0.85, 0.5, 0.95]
+phasor_width = 2.0
+arrow_colour = "white"
+arrow_width = 2.6
+phasor_title_colour = [0.82, 0.9, 1.0, 0.95]
+readout_colour = [1.0, 0.85, 0.5, 1.0]
+chip_colour = [0.9, 0.95, 1.0, 0.95]
+formula_colour = [0.9, 0.95, 1.0, 0.9]
+paths_axis_colour = [0.7, 0.8, 0.95, 0.3]
+paths_axis_width = 1.0
+point_a_colour = [1.0, 0.85, 0.5, 1.0]
+point_b_colour = [0.6, 0.9, 1.0, 1.0]
+point_a_dot = [1.0, 0.85, 0.4, 1.0]
+point_b_dot = [0.6, 0.9, 1.0, 1.0]
+point_dot_size = 13.0
+path_alpha_inside = 0.9
+path_alpha_outside_scene2 = 0.5
+path_alpha_outside_scene3 = 0.28
+path_width_inside = 2.2
+path_width_outside = 0.8
+classical_colour = "white"
+classical_alpha = 0.95
+classical_width = 2.6
+classical_label_colour = [1.0, 1.0, 1.0, 0.9]
+spiral_hue_rate = 0.3             # hue = phase * rate + offset
+spiral_hue_offset = 1.0
+spiral_width = 1.8
+spiral_arrow_width = 2.4
+stationary_colour = [1.0, 0.85, 0.4, 0.6]
+stationary_width = 1.0
+stationary_dash = [3, 3]
+spiral_title_colour = [0.82, 0.9, 1.0, 0.95]
+spiral_title_sub_colour = [0.6, 0.68, 0.8, 0.9]
+spiral_readout_colour = [1.0, 0.85, 0.5, 1.0]
+spiral_c_colour = [0.8, 0.88, 1.0, 0.95]
+action_title_colour = [0.9, 0.95, 1.0, 0.95]
+action_formula_colour = [0.6, 0.68, 0.8, 0.9]
+caption_box_colour = [0.01, 0.02, 0.05, 0.8]
+caption_colour = [0.88, 0.93, 1.0, 0.93]

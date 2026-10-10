@@ -1,0 +1,50 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# {beta} and {gamma} in beta_line are replaced by the numbers (decimal comma in Russian).
+
+[en]
+title = '''A kick to an electron'''
+beta_line = '''$\beta=v/c={beta}$,   $\gamma={gamma}$'''
+x_label = '''$x=0$'''
+kick = '''kick'''
+v_label = '''$v$'''
+front_label = '''radiation front $r=ct$'''
+marker = '''━'''
+zone_outer = '''$r>ct$'''
+zone_front = '''$r=ct$'''
+zone_inner = '''$r<ct$'''
+body_outer = '''field of the charge at rest'''
+body_front = '''radiation front: field $\perp$ radius'''
+body_inner = '''field of the moving charge,
+crowded to the plane $\perp\ \vec{v}$'''
+gauss = '''Gauss's law: flux conservation'''
+formula1 = '''$\cos\theta=\dfrac{\cos\psi}{\sqrt{1-\beta^{2}\sin^{2}\psi}}$'''
+formula2 = '''$\tan\theta=\tan\psi\,/\,\gamma$'''
+note = '''$\theta$: angle at the origin ($r>ct$)
+$\psi$: angle at the charge ($r<ct$)'''
+cap_rest = '''an electron at rest: the field lines are radial'''
+cap_near = '''the field near the electron has changed, the far field has not yet heard about the kick'''
+cap_front = '''the lines are joined along the shell: the front of the electromagnetic wave'''
+
+[ru]
+title = '''Пинок электрону'''
+beta_line = '''$\beta=v/c={beta}$,   $\gamma={gamma}$'''
+x_label = '''$x=0$'''
+kick = '''пинок'''
+v_label = '''$v$'''
+front_label = '''фронт излучения $r=ct$'''
+marker = '''━'''
+zone_outer = '''$r>ct$'''
+zone_front = '''$r=ct$'''
+zone_inner = '''$r<ct$'''
+body_outer = '''поле покоящегося заряда'''
+body_front = '''фронт волны: поле $\perp$ радиусу'''
+body_inner = '''поле движущегося заряда,
+сжатое к плоскости $\perp\ \vec{v}$'''
+gauss = '''закон Гаусса: сохранение потока'''
+formula1 = '''$\cos\theta=\dfrac{\cos\psi}{\sqrt{1-\beta^{2}\sin^{2}\psi}}$'''
+formula2 = '''$\tan\theta=\tan\psi\,/\,\gamma$'''
+note = '''$\theta$ — угол из начала координат ($r>ct$)
+$\psi$ — угол из заряда ($r<ct$)'''
+cap_rest = '''покоящийся электрон: силовые линии радиальны'''
+cap_near = '''вблизи электрона поле уже изменилось, дальнее ещё «не знает» о пинке'''
+cap_front = '''линии соединяются вдоль оболочки: фронт электромагнитной волны'''

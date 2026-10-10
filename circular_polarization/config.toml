@@ -1,0 +1,147 @@
+# Every number of the film "Circular polarization" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set wave.period=4.0 --set camera.phi_deg=60
+# Units: film seconds; "wave units" are the units of the 3D scene (amplitude 1 = the unit circle of the panels); font sizes are points at 720 p;
+# positions in [0, 1] are fractions of the frame.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[wave]
+period = 3.6                      # film seconds per period of the rotation of E
+wavelength = 1.7                  # of the 3D snapshot
+length = 6.0                      # length of the 3D wave
+
+[timeline]
+total = 52.0
+scene_ends = [15.0, 28.0, 47.0]   # scenes 1, 2, 3 end; scene 4 follows
+scene_fade_s = 0.4
+scene_fade_floor = 0.25
+caption_steps = [40.0, 45.0]      # the captions of the third part change here
+
+[mix]                             # the third part: linear -> tilted -> elliptical -> circular
+start = 28.0
+delta_ramp = [33.0, 38.0]
+delta_max = 1.2
+shrink_ramp = [40.0, 46.0]
+
+[camera]
+phi_deg = 70.0                    # the orthographic view of the 3D wave
+theta_deg = 22.0
+
+[scene3d]
+axes = [0.0, 0.10, 0.60, 0.80]
+xlim = [-1.7, 3.5]
+ylim = [-1.1, 2.9]
+samples = 400
+amplitude = 0.62
+axis_arrow = { extra = 0.25, alpha = 0.5, lw = 1.2, mutation = 11 }
+z_label = { dx = 0.06, dy = -0.05, size = 14 }
+depth_scale = 2.0
+tip_alpha = [0.30, 0.70]          # alpha = first + second * nearness
+tip_width = [1.6, 1.6]
+stem_step = 9
+stem_alpha = [0.15, 0.35]
+stem_width = 0.9
+observer_z = 1.2
+observer_arrow = { alpha = 0.95, lw = 2.4, mutation = 13 }
+observer_ring = { alpha = 0.45, width = 1.0, dash = [3, 3], points = 100 }
+
+[panels]
+view1_axes = [0.62, 0.52, 0.17, 0.30]
+view2_axes = [0.80, 0.52, 0.17, 0.30]
+big_axes = [0.05, 0.14, 0.52, 0.72]
+spin_axes = { x0 = 0.08, dx = 0.27, y = 0.30, w = 0.24, h = 0.42 }
+lim = 1.35
+circle_alpha = 0.35
+circle_width = 1.0
+cross_half = 1.15
+cross_alpha = 0.15
+cross_width = 0.8
+trail_seconds = 1.2
+trail_points = 40
+trail_alpha = [0.08, 0.7]
+trail_width = 2.2
+arrow = { lw = 2.6, mutation = 14 }
+rotation_arc = { radius = 0.62, start = 0.35, end = 1.25, points = 30, alpha = 0.65, width = 1.4, head_from = 1.20, head_to = 1.30, head_alpha = 0.8, head_mutation = 10 }
+title_size = 9.5
+title_pad = 3
+label_size = 11
+label_pad = 2
+circle_points = 200
+
+[mixing]
+lim = 1.45
+circle_alpha = 0.25
+cross_half = 1.3
+cross_alpha = 0.15
+ellipse_alpha = 0.35
+ellipse_width = 1.4
+ellipse_dash = [4, 3]
+ellipse_samples = 200
+vector = { lw = 2.4, mutation = 12, alpha = 0.95, sum_lw = 3.0, sum_mutation = 14 }
+trail_seconds = 0.8
+trail_points = 30
+trail_alpha = [0.1, 0.8]
+trail_width = 2.4
+e_label = { x = 1.4, y = 1.3, size = 14 }
+linear_ratio = 0.02               # minor / major below this: linear
+circle_ratio = 0.98               # above this: circular
+circle_ar = 0.02                  # a_R below this: circular
+tilt_zero = 0.5                   # degrees: a tilt smaller than this is shown as 0
+circle_points = 200
+
+[readouts]
+x = 0.64
+kind = { y = 0.80, size = 17 }
+formula = { y = 0.72, size = 15 }
+ar = { y = 0.62, size = 13 }
+al = { y = 0.56, size = 13 }
+delta = { y = 0.50, size = 13 }
+axes_title = { y = 0.40, size = 11 }
+axes_value = { y = 0.34, size = 12 }
+tilt_title = { y = 0.275, size = 11 }
+tilt_value = { y = 0.225, size = 12 }
+legend_y = 0.15
+legend_x = [0.64, 0.72, 0.80]
+legend_size = 12
+spin_label = { x = 0.64, y = 0.50, size = 24 }
+spin_value = { y = 0.23, dx = 0.12, size = 17 }
+
+[panel_text]
+x = 0.62
+name = { y = 0.43, size = 14 }
+names = { y = 0.385, size = 11 }
+formula_eps = { y = 0.29, size = 15 }
+formula_e = { y = 0.21, size = 11.5 }
+convention = { y = 0.17, size = 9, linespacing = 1.35 }
+snap = { x = 0.04, y = 0.17, size = 11 }
+time = { x = 0.04, y = 0.135, size = 10 }
+
+[layout]
+title_pos = [0.04, 0.925]
+title_size = 19
+subtitle_pos = [0.04, 0.893]
+subtitle_size = 11.5
+caption_pos = [0.04, 0.035]
+caption_size = 11.5
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+title_color = [0.9, 0.95, 1.0, 0.95]
+positive = [1.0, 0.58, 0.36]
+negative = [0.45, 0.82, 1.0]
+sum = [1.0, 1.0, 1.0]
+panel_edge = [0.7, 0.8, 0.95]
+axis_arrow = [1.0, 1.0, 1.0]

@@ -1,0 +1,158 @@
+# Every number of the film "Thomson's experiment" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set physics.v0=6 --set schedule.e_on=[7,10]
+# Units: e/m = 1, lengths in tube units; film seconds; font sizes are points at 720 p; positions in [0, 1] are fractions of the frame.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[physics]
+v0 = 8.0                          # speed after the gun
+e0 = 6.0                          # electric field strength of the film
+x_cathode = 0.5
+x_anode = 1.5
+x_plates_start = 6.5              # the region with E and B (plate length ell = 3)
+x_plates_end = 9.5
+x_screen = 13.0
+emission_rate = 220.0             # emitted electrons per second
+steps_per_s = 240                 # integration steps per film second (dt = 1 / this)
+spread = 0.012                    # sigma of the initial y of the electrons
+lost_y = 3.4                      # the electrons beyond this are dropped
+seed = 4
+screen_steps = 200000
+
+[schedule]                        # film seconds; smooth ramps
+total = 52.0
+e_on = [7.0, 9.0]
+e_off = [17.0, 19.0]
+e_on_again = [29.0, 31.0]
+b_on = [19.0, 21.0]
+b_off = [27.0, 29.0]
+sweep_start = 29.0                # B is swept through the balance
+sweep_ramp = [29.0, 30.0]
+sweep_up = [30.0, 36.5]
+sweep_down = [36.5, 39.0]
+sweep_base = 0.55                 # the sweep: B_bal * (base + up * ramp_up - down * ramp_down)
+sweep_gain = 0.9
+sweep_back = 0.45
+sweep_end = 42.5                  # B is fine-tuned back to the balance until this time
+b_off_final = [42.5, 44.5]        # then B is switched off for the measurement
+stages = [7.0, 18.0, 29.0, 38.0, 42.0, 49.0]   # captions and formulas change at these times
+balance_tolerance = 0.03
+balance_window = [29.0, 40.0]
+balance_hold = [38.0, 42.0]
+measure_from = 38.0
+result_from = 44.5
+
+[scene]
+axes = [0.025, 0.125, 0.715, 0.74]
+xlim = [-0.6, 15.2]
+ylim = [-3.45, 3.45]
+envelope = { x = 0.0, y = -3.1, w = 14.6, h = 6.2, rounding = 0.9, face = [0.10, 0.18, 0.30, 0.22], edge = [0.6, 0.72, 0.9, 0.55], lw = 1.4 }
+cathode = { half = 0.45, width = 5, glow = 0.5 }
+anode_plates = [[0.07, 1.4], [-1.4, -0.07]]
+anode_width = 4
+focus_plates = [[0.05, 1.6], [-1.6, -0.05]]
+focus_x = 3.2
+focus_width = 3
+cathode_label = { dy = -0.95, size = 10 }
+anode_label = { dx = 0.1, y = 1.6, size = 10 }
+plates_y = 1.15
+plate_width = 5
+sign_count = 6
+sign_margin = 0.3
+sign_dy = 0.22
+sign_size = 11
+field_arrows = { count = 5, margin = 0.35, y = 0.78, lw = 1.6, mutation = 9 }
+field_threshold = 0.02
+e_label = { dx = 0.12, size = 14 }
+pole = { y_top = 1.9, y_bottom = -2.25, h = 0.35, face = [0.35, 0.37, 0.45, 0.8], edge = [0.7, 0.72, 0.85, 0.7], lw = 1 }
+crosses = { count = 6, margin = 0.3, rows = [-1.55, 0.0, 1.55], radius = 0.15, half = 0.1, lw = 1.2, alpha_base = 0.1, alpha_gain = 0.8 }
+b_divisor = 1.5                   # B / B_bal / this = the opacity of the crosses
+b_label = { y = 2.55, size = 14 }
+apparatus_label = { y = -2.9, size = 9.5 }
+screen = { half = 2.6, width = 6, alpha = 0.55 }
+ruler = { lo = -2.5, hi = 2.51, step = 0.5, x0 = 0.1, x1_major = 0.28, x1_minor = 0.2, alpha = 0.6 }
+screen_label = { dx = 0.4, y = 2.9, size = 9.5 }
+electron_size = 3.4
+electron_halo_size = 8.0
+electron_alpha = 0.9
+electron_halo_alpha = 0.12
+spot_recent = 0.5                 # hits younger than this (film seconds) are drawn
+spot_history = 400
+spot_decay = 0.16
+spot_layers = [[14.0, 0.05], [8.0, 0.1], [4.5, 0.25]]
+spot_average_window = 0.3
+spot_average_hits = 60
+focus_alpha = 0.9
+plate_alpha = 0.95
+sign_alpha = [0.4, 0.6]            # alpha = first + second * field strength
+e_label_alpha = [0.4, 0.6]
+arrow_alpha = 0.85
+
+[front_view]
+axes = [0.775, 0.60, 0.20, 0.265]
+lim = 3.0
+radius = 2.6
+rim_width = 2
+ticks = { lo = -2.0, hi = 2.01, step = 1.0, half = 0.12, lw = 1 }
+cross = { half = 0.4, lw = 0.8, alpha = 0.3 }
+spot_layers = [[28.0, 0.05], [16.0, 0.1], [8.0, 0.25]]
+title_pos = [0.775, 0.885]
+title_size = 10
+value_pos = [0.875, 0.575]
+value_size = 14
+rim_points = 200
+tick_alpha = 0.6
+
+[layout]
+title_pos = [0.025, 0.925]
+title_size = 17
+subtitle_pos = [0.025, 0.893]
+subtitle_size = 11
+caption_pos = [0.025, 0.045]
+caption_size = 11.0
+caption_box = [0.74, 0.1]
+caption_box_colour = [0.01, 0.02, 0.05, 0.8]
+readout_e_pos = [0.775, 0.50]
+readout_b_pos = [0.875, 0.50]
+readout_size = 14
+units_pos = [0.775, 0.47]
+units_size = 8.5
+formula_x = 0.775
+formula_y = 0.385
+formula_row = 0.095
+formula_size = 14.5
+balance_pos = [0.775, 0.17]
+balance_size = 14
+result_pos = [0.775, 0.17]
+result_size = 14
+reference_pos = [0.775, 0.095]
+reference_size = 9
+reference_linespacing = 1.4
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+electron = [0.4, 0.82, 1.0]
+electric = [1.0, 0.45, 0.45]
+magnetic = [1.0, 0.86, 0.45]
+cathode = [1.0, 0.55, 0.3]
+anode = [0.8, 0.85, 0.95]
+screen = [0.5, 1.0, 0.7]
+ruler = [0.7, 0.9, 0.8]
+spot = [0.55, 1.0, 0.75]
+measured = [0.55, 1.0, 0.75]
+glow_alpha = 0.12
+title_color = [0.9, 0.95, 1.0, 0.95]
+front_cross = [0.6, 0.7, 0.8]

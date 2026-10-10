@@ -18,12 +18,32 @@ Three scenes, 40 s.
 Schematic: the family of paths is one-parameter, the action is quadratic in `a`, and the values of `c` are
 chosen for clarity (`hbar ~ 1/c`).
 
+## Configuration
+
+Every number of the film (frame size and encoder, timeline, the slits and the wavelength, the action and the values of `c`, sizes of the
+dots, lines and fonts, the layout of the frame, colours, opacities, the number formats of the readouts) is in `config.toml`
+(7 sections: `video`, `model`, `timeline`, `layout`, `formats`, `fonts`, `style`); all the words and formulas are in `texts.toml`
+(one table per language, the same keys in both). The script contains only algorithms. A value can be changed without editing a file:
+
+```bash
+python path_integral.py --lang en --snapshot 20 --set model.c_phase=12 --set video.crf=18
+python path_integral.py --lang en --config my_config.toml
+```
+
+`--set section.key=value` is repeatable (the value is a Python/TOML literal), `--config` takes another file with the same
+structure, a misspelt key is an error (see `../dvconfig.py`, tests in `../test_dvconfig.py`).
+
+The film exists in two separate versions, English and Russian (`--lang en`, `--lang ru`); all formulas and labels are typeset
+with matplotlib mathtext (LaTeX), words stay outside the formulas. The first version of the film was bilingual (an English and a Russian
+line in the same frame); the two versions now have one language each.
+
 Run from this directory (numpy, matplotlib and ffmpeg are required):
 
 ```bash
-./render.sh                 # media/path_integral.mp4, 40 s
-./render.sh --preview       # low-resolution check
-./render.sh --snapshot 12   # one PNG at film time 12 s
+./render.sh --lang en                # media/path_integral_en.mp4, 40 s
+./render.sh --lang ru                # media/path_integral_ru.mp4
+./render.sh --lang en --preview      # low-resolution check
+./render.sh --lang en --snapshot 12  # one PNG at film time 12 s
 python -m unittest test_path_integral
 ```
 

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import math
+import tomllib
 import unittest
+from pathlib import Path
 
 import numpy as np
 
 import spinor_mobius as sm
+
+HERE = Path(__file__).resolve().parent
 
 
 class SpinorTest(unittest.TestCase):
@@ -39,6 +43,37 @@ class SpinorTest(unittest.TestCase):
         values = [sm.angle_at(t, total) for t in np.linspace(0, total, 400)]
         self.assertTrue(all(b >= a - 1e-12 for a, b in zip(values, values[1:])))
         self.assertTrue(any(abs(v - 2 * math.pi) < 1e-9 for v in values))
+
+
+class ConfigTest(unittest.TestCase):
+    def test_texts_have_the_same_keys_in_both_languages_and_balanced_formulas(self) -> None:
+        texts = tomllib.loads((HERE / "texts.toml").read_text(encoding="utf-8"))
+        self.assertEqual(set(texts), {"en", "ru"})
+        self.assertEqual(set(texts["en"]), set(texts["ru"]))
+        for lang, table in texts.items():
+            for key, value in table.items():
+                self.assertEqual(value.count("$") % 2, 0, f"{lang}.{key}: unbalanced $")
+            self.assertIn("{deg}", table["phi_line"])
+
+    def test_schedule_uses_the_configured_pauses(self) -> None:
+        total = sm.CFG.timeline.film_length
+        hold, delay = sm.CFG.timeline.hold_s, sm.CFG.timeline.start_delay_s
+        move = (total - 2 * hold - sm.CFG.timeline.slack_s) / 2
+        self.assertAlmostEqual(sm.angle_at(delay + move + hold / 2, total), 2 * math.pi)   # the hold after the first turn
+        self.assertAlmostEqual(sm.angle_at(delay + 2 * move + hold, total), 4 * math.pi)
+
+    def test_video_section_is_complete(self) -> None:
+        v = sm.CFG.video
+        self.assertEqual(v.width * 9, v.height * 16)
+        self.assertGreater(v.width, v.preview_width)
+        self.assertGreater(v.fps, 0)
+        self.assertEqual(sm.HALF_WIDTH, sm.CFG.model.half_width)
+
+    def test_the_script_has_no_hard_coded_video_settings(self) -> None:
+        src = (HERE / "spinor_mobius.py").read_text(encoding="utf-8")
+        self.assertIn("load_config", src)
+        for forbidden in ('"libx264", "-preset", "slow"', "(1280, 720)", "dpi = 100\n"):
+            self.assertNotIn(forbidden, src)
 
 
 if __name__ == "__main__":

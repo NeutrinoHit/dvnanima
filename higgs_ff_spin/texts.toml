@@ -1,0 +1,208 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# In the Russian texts the decimal comma is written {,} inside formulas; numbers that the script computes use its num() helper.
+
+[en]
+title = '''Spin and orbital structure of the $f\bar{f}$ pair in Higgs decays'''
+h0 = '''Spin and orbital structure of the $f\bar{f}$ pair
+in Higgs decays'''
+h0s = '''decays of a spin-zero boson into a fermion and an antifermion'''
+h1 = '''Back-to-back pairs build a wave'''
+h1s = '''from the directions of the momenta to the relative coordinate'''
+h2 = '''Scalar decay: the spins select $m$'''
+h2s = '''$H(0^+)\to f\bar{f}$, a P-wave'''
+h3 = '''Pseudoscalar decay: an S-wave'''
+h3s = '''$A(0^-)\to f\bar{f}$, $L=0$'''
+h4 = '''Scalar and pseudoscalar together'''
+h4s = '''interference: a CP-odd handedness'''
+h5 = '''What a detector sees'''
+h5s = '''momentum eigenstates and spin correlations'''
+w0 = '''$0$'''
+w1 = '''$\pi/2$'''
+w2 = '''$\pi$'''
+w3 = '''$3\pi/2$'''
+axis_s = '''$\hat{\mathbf{s}}$'''
+f = '''$f$'''
+fbar = '''$\bar{f}$'''
+xi1 = '''$\vec{\xi}_1$'''
+xi2 = '''$\vec{\xi}_2$'''
+
+p1_left = '''directions $\mathbf{n}$ of the pair, colour $=\arg M$'''
+p1_right = '''relative coordinate $\mathbf{r}$, plane $z=0$'''
+p1_sum = '''$\sum_{\mathbf{n}}\,e^{ip\mathbf{n}\cdot\mathbf{r}}\,M(\mathbf{n})$'''
+p1_phase = '''phase of $\psi$'''
+p1_n1 = '''dark core:
+$j_1(0)=0$'''
+p1_n2 = '''one turn of
+the phase: $m=+1$'''
+p1_f1 = '''$\psi(\mathbf{r})=\int d\Omega_{\mathbf{n}}\;e^{ip\mathbf{n}\cdot\mathbf{r}}\,M(\mathbf{n}),\qquad M(\mathbf{n})\propto\bar{u}(p\mathbf{n})\,v(-p\mathbf{n})\propto\chi^\dagger(\vec\sigma\cdot\mathbf{n})\,\eta$'''
+p1_f2 = '''$M\propto n_x+i\,n_y\ \Rightarrow\ \psi(\mathbf{r})=4\pi i\,j_1(pr)\,(\hat{r}_x+i\,\hat{r}_y)$'''
+p1_c1 = '''The pair flies apart back to back: the fermion along $\mathbf{n}$, the antifermion along $-\mathbf{n}$.
+For both spins down along $z$ the amplitude to emit it along $\mathbf{n}$ is $M\propto n_x+i\,n_y$: its phase winds with the azimuth.'''
+p1_c2 = '''Relative coordinate $\mathbf{r}=\mathbf{x}_1-\mathbf{x}_2$: add the plane waves $e^{ip\mathbf{n}\cdot\mathbf{r}}$ of more and more directions.
+Colour is the phase of $\psi$, brightness is its modulus.'''
+p1_c3 = '''All directions give a vortex: a pure P-wave, $\psi\propto j_1(pr)$, with $L=1$ and $m=+1$.
+Back-to-back momenta do not contradict $L\neq0$: the angular momentum $L$ belongs to the relative coordinate.'''
+
+p2_h0 = '''$\rho_1=-\rho_2$:  $m=0$'''
+p2_h1 = '''$\rho_1=\rho_2=+$:  $m=-1$'''
+p2_h2 = '''$\rho_1=\rho_2=-$:  $m=+1$'''
+p2_plot = '''angular factor of $|\psi|^2$'''
+p2_phase = '''phase of $\psi$'''
+p2_f1 = '''$\psi_{\rho_1\rho_2}(\mathbf{r})\propto j_1(pr)\,\chi^\dagger_{\rho_1}(\hat{\mathbf{s}})\,(\vec\sigma\cdot\hat{\mathbf{r}})\,\eta_{\rho_2}(\hat{\mathbf{s}})\propto j_1(pr)\,Y_{1m}(\hat{\mathbf{r}}),\qquad m=-\frac{\rho_1+\rho_2}{2}$'''
+p2_f2 = '''$|\psi|^2\propto j_1^2(pr)\,\frac{1}{2}\left[1+\vec\xi_1\!\cdot\!\vec\xi_2-2(\vec\xi_1\!\cdot\!\hat{\mathbf{r}})(\vec\xi_2\!\cdot\!\hat{\mathbf{r}})\right]=j_1^2(pr)\,\frac{1}{2}\left[1+\rho_1\rho_2\,(1-2\cos^2\theta)\right]$'''
+p2_fth0 = '''$\theta=0$:  $|\psi|^2\propto 1-\rho_1\rho_2$, so only $\rho_1=-\rho_2$ survives ($m=0$)'''
+p2_fth90 = '''$\theta=\pi/2$:  $|\psi|^2\propto 1+\rho_1\rho_2$, so only $\rho_1=\rho_2$ survives ($m=\pm1$)'''
+p2_c1 = '''Fix both spin projections on one axis $\hat{\mathbf{s}}$: $\vec\xi_i=\rho_i\hat{\mathbf{s}}$. Antiparallel spins: two lobes along the axis, $m=0$.
+Surfaces of constant $|\psi|^2$; the colour is the phase of $\psi$ and turns with the common factor $e^{-i\omega t}$.'''
+p2_c2 = '''Parallel spins: a ring around the axis. The phase winds once around it, in opposite senses for $\rho_1=\rho_2=\pm$: $m=\mp1$.
+The golden arrow shows the direction in which the phase grows.'''
+p2_c3 = '''A spin-zero parent has no net projection: $J_{\hat{s}}=m+(\rho_1+\rho_2)/2=0$.
+The spin state of the pair fixes its orbital state.'''
+p2_c4 = '''Look in a direction $\hat{\mathbf{r}}$ at the polar angle $\theta$ to the axis: which spin outcome is likely there?
+The curves are the angular factors of $|\psi|^2$ of the three states.'''
+p2_c5 = '''On the axis ($\theta=0$) only antiparallel spins occur, $m=0$; in the equatorial plane ($\theta=\pi/2$) only parallel ones, $m=\pm1$.
+Spin and direction are correlated: this is what survives of the orbital structure.'''
+
+p3_h0 = '''$\rho_1=-\rho_2$:  $L=0$'''
+p3_h1 = '''$\rho_1=\rho_2=+$:  forbidden'''
+p3_h2 = '''$\rho_1=\rho_2=-$:  forbidden'''
+p3_zero = '''$\psi=0$'''
+p3_f1 = '''$\psi_{\rho_1\rho_2}(\mathbf{r})\propto j_0(pr)\,\chi^\dagger_{\rho_1}(\hat{\mathbf{s}})\,\eta_{\rho_2}(\hat{\mathbf{s}}),\qquad |\psi|^2\propto j_0^2(pr)\,\frac{1}{2}\left[1-\rho_1\rho_2\right]$'''
+p3_f2 = '''$\Gamma\propto\beta^{2L+1}$:   $\beta^3$ for $L=1$ ($0^+$),   $\beta$ for $L=0$ ($0^-$)'''
+p3_c1 = '''A pseudoscalar parent, $0^-$: the bilinear $\bar{u}\gamma_5 v\propto\chi^\dagger\eta$ does not depend on the direction.
+The pair is in an S-wave, $L=0$, in the spin singlet.'''
+p3_c2 = '''With one common axis only antiparallel spins occur, and $|\psi|^2$ does not depend on $\hat{\mathbf{r}}$ at all:
+the curves are flat, the density is a sphere.'''
+p3_c3 = '''The P-wave vanishes at $r=0$ ($j_1(0)=0$), the S-wave does not ($j_0(0)=1$):
+this is the origin of $\Gamma\propto\beta^3$ for the scalar and $\Gamma\propto\beta$ for the pseudoscalar.'''
+
+p4_state = '''$\vec\xi_1\perp\vec\xi_2$'''
+p4_swapped = '''exchanged: $\vec\xi_1\leftrightarrow\vec\xi_2$'''
+p4_f1 = '''$|\psi|^2=\frac{1}{2}a^2\left[1+\vec\xi_1\!\cdot\!\vec\xi_2-2(\vec\xi_1\!\cdot\!\hat{\mathbf{r}})(\vec\xi_2\!\cdot\!\hat{\mathbf{r}})\right]+\frac{1}{2}b^2\left[1-\vec\xi_1\!\cdot\!\vec\xi_2\right]+a\,b\;\vec\xi_1\cdot(\hat{\mathbf{r}}\times\vec\xi_2)$'''
+p4_f2 = '''$\psi=\varepsilon_1\psi_S+\varepsilon_2\psi_P,\qquad a=\varepsilon_1\beta\,j_1(pr),\qquad b=\varepsilon_2\,j_0(pr)$   ($\varepsilon_1\varepsilon_2$ real)'''
+p4_plot = '''$|\psi|^2$ on the axis'''
+p4_lg_add = '''$\hat{\mathbf{r}}\parallel\vec\xi_2\times\vec\xi_1$:  $\frac{1}{2}(a+b)^2$'''
+p4_lg_sub = '''$\hat{\mathbf{r}}\parallel-\vec\xi_2\times\vec\xi_1$:  $\frac{1}{2}(a-b)^2$'''
+p4_lg_avg = '''no interference: $\frac{1}{2}(a^2+b^2)$'''
+p4_cancel = '''$a=b$'''
+p4_c1 = '''A mixed state, $\varepsilon_1\psi_S+\varepsilon_2\psi_P$. Start with the pure scalar and two perpendicular spins, $\vec\xi_1=\hat{x}$, $\vec\xi_2=\hat{y}$:
+the cloud is symmetric with respect to the plane of the two spins.'''
+p4_c2 = '''Switch on the pseudoscalar part. The S- and P-waves interfere, the term $a\,b\,\vec\xi_1\cdot(\hat{\mathbf{r}}\times\vec\xi_2)$ is odd under $\vec\xi_1\leftrightarrow\vec\xi_2$:
+the cloud leans along the normal to the plane of the spins.'''
+p4_c3 = '''Exchange the spins of the fermion and the antifermion (the C P image of the pair): the term changes sign, the cloud leans the other way.
+A pure $0^+$ or $0^-$ state does not lean.'''
+p4_c4 = '''Along the normal the S- and P-waves add on one side, $\frac{1}{2}(a+b)^2$, and subtract on the other, $\frac{1}{2}(a-b)^2$.
+Where $a=b$ the density on that side vanishes completely: the ratio $\varepsilon_2/\varepsilon_1=1$ is chosen for illustration.'''
+
+p5_left = '''the amplitude $M(\mathbf{n})$, colour $=\arg M$'''
+p5_right = '''what is measured: $|M(\mathbf{n})|^2$'''
+p5_proj = '''project on $|\mathbf{p}\rangle$'''
+p5_f1 = '''$\frac{d\Gamma}{d\Omega}\propto 1+\vec\xi_1\!\cdot\!\vec\xi_2-2(\vec\xi_1\!\cdot\!\mathbf{n})(\vec\xi_2\!\cdot\!\mathbf{n})\ \ (0^+),\qquad \frac{d\Gamma}{d\Omega}\propto 1-\vec\xi_1\!\cdot\!\vec\xi_2\ \ (0^-)$'''
+p5_c1 = '''A detector projects the pair onto momentum eigenstates: it measures $|M(\mathbf{n})|^2$ and the phase $e^{im\varphi}$ of the orbital state is lost.
+Back-to-back momenta and $L=1$ do not conflict.'''
+p5_c2 = '''What survives are spin-angle correlations of the decay products: the dependence of the rates on $\vec\xi_1$, $\vec\xi_2$ and $\mathbf{n}$,
+and, for a scalar-pseudoscalar mixture, CP-odd triple products of the spins and the momentum.'''
+p5_c3 = '''In practice the spins of a $\tau^+\tau^-$ pair are read from the angular distributions of the decay products of the $\tau$.'''
+
+[ru]
+title = '''Спин и орбитальная структура пары $f\bar{f}$ в распадах Хиггса'''
+h0 = '''Спиновая и орбитальная структура пары $f\bar{f}$
+в распадах бозона Хиггса'''
+h0s = '''распады бозона со спином нуль на фермион и антифермион'''
+h1 = '''Пары «спиной к спине» строят волну'''
+h1s = '''от направлений импульсов к относительной координате'''
+h2 = '''Скалярный распад: спины выбирают $m$'''
+h2s = '''$H(0^+)\to f\bar{f}$, P-волна'''
+h3 = '''Псевдоскалярный распад: S-волна'''
+h3s = '''$A(0^-)\to f\bar{f}$, $L=0$'''
+h4 = '''Скаляр и псевдоскаляр вместе'''
+h4s = '''интерференция: CP-нечётная «рукость»'''
+h5 = '''Что видит детектор'''
+h5s = '''состояния с определённым импульсом и спиновые корреляции'''
+w0 = '''$0$'''
+w1 = '''$\pi/2$'''
+w2 = '''$\pi$'''
+w3 = '''$3\pi/2$'''
+axis_s = '''$\hat{\mathbf{s}}$'''
+f = '''$f$'''
+fbar = '''$\bar{f}$'''
+xi1 = '''$\vec{\xi}_1$'''
+xi2 = '''$\vec{\xi}_2$'''
+
+p1_left = '''направления $\mathbf{n}$ пары, цвет $=\arg M$'''
+p1_right = '''относительная координата $\mathbf{r}$, плоскость $z=0$'''
+p1_sum = '''$\sum_{\mathbf{n}}\,e^{ip\mathbf{n}\cdot\mathbf{r}}\,M(\mathbf{n})$'''
+p1_phase = '''фаза $\psi$'''
+p1_n1 = '''тёмная сердцевина:
+$j_1(0)=0$'''
+p1_n2 = '''один оборот фазы:
+$m=+1$'''
+p1_f1 = '''$\psi(\mathbf{r})=\int d\Omega_{\mathbf{n}}\;e^{ip\mathbf{n}\cdot\mathbf{r}}\,M(\mathbf{n}),\qquad M(\mathbf{n})\propto\bar{u}(p\mathbf{n})\,v(-p\mathbf{n})\propto\chi^\dagger(\vec\sigma\cdot\mathbf{n})\,\eta$'''
+p1_f2 = '''$M\propto n_x+i\,n_y\ \Rightarrow\ \psi(\mathbf{r})=4\pi i\,j_1(pr)\,(\hat{r}_x+i\,\hat{r}_y)$'''
+p1_c1 = '''Пара разлетается «спиной к спине»: фермион вдоль $\mathbf{n}$, антифермион вдоль $-\mathbf{n}$.
+Если оба спина направлены вниз по $z$, амплитуда испускания вдоль $\mathbf{n}$ равна $M\propto n_x+i\,n_y$: её фаза растёт с азимутом.'''
+p1_c2 = '''Относительная координата $\mathbf{r}=\mathbf{x}_1-\mathbf{x}_2$: складываем плоские волны $e^{ip\mathbf{n}\cdot\mathbf{r}}$ всё большего числа направлений.
+Цвет — фаза $\psi$, яркость — её модуль.'''
+p1_c3 = '''Все направления дают вихрь: чистая P-волна, $\psi\propto j_1(pr)$, $L=1$, $m=+1$.
+Импульсы «спиной к спине» не противоречат $L\neq0$: момент $L$ относится к относительной координате.'''
+
+p2_h0 = '''$\rho_1=-\rho_2$:  $m=0$'''
+p2_h1 = '''$\rho_1=\rho_2=+$:  $m=-1$'''
+p2_h2 = '''$\rho_1=\rho_2=-$:  $m=+1$'''
+p2_plot = '''угловой множитель $|\psi|^2$'''
+p2_phase = '''фаза $\psi$'''
+p2_f1 = '''$\psi_{\rho_1\rho_2}(\mathbf{r})\propto j_1(pr)\,\chi^\dagger_{\rho_1}(\hat{\mathbf{s}})\,(\vec\sigma\cdot\hat{\mathbf{r}})\,\eta_{\rho_2}(\hat{\mathbf{s}})\propto j_1(pr)\,Y_{1m}(\hat{\mathbf{r}}),\qquad m=-\frac{\rho_1+\rho_2}{2}$'''
+p2_f2 = '''$|\psi|^2\propto j_1^2(pr)\,\frac{1}{2}\left[1+\vec\xi_1\!\cdot\!\vec\xi_2-2(\vec\xi_1\!\cdot\!\hat{\mathbf{r}})(\vec\xi_2\!\cdot\!\hat{\mathbf{r}})\right]=j_1^2(pr)\,\frac{1}{2}\left[1+\rho_1\rho_2\,(1-2\cos^2\theta)\right]$'''
+p2_fth0 = '''$\theta=0$:  $|\psi|^2\propto 1-\rho_1\rho_2$, остаются только $\rho_1=-\rho_2$ ($m=0$)'''
+p2_fth90 = '''$\theta=\pi/2$:  $|\psi|^2\propto 1+\rho_1\rho_2$, остаются только $\rho_1=\rho_2$ ($m=\pm1$)'''
+p2_c1 = '''Зафиксируем проекции обоих спинов на одну ось $\hat{\mathbf{s}}$: $\vec\xi_i=\rho_i\hat{\mathbf{s}}$. Антипараллельные спины: две доли вдоль оси, $m=0$.
+Поверхности постоянного $|\psi|^2$; цвет — фаза $\psi$, он вращается с общим множителем $e^{-i\omega t}$.'''
+p2_c2 = '''Параллельные спины: кольцо вокруг оси. Фаза делает один оборот вокруг неё, при $\rho_1=\rho_2=\pm$ в разные стороны: $m=\mp1$.
+Золотая стрелка показывает направление, в котором фаза растёт.'''
+p2_c3 = '''У родителя со спином нуль нет полной проекции: $J_{\hat{s}}=m+(\rho_1+\rho_2)/2=0$.
+Спиновое состояние пары определяет её орбитальное состояние.'''
+p2_c4 = '''Посмотрим в направлении $\hat{\mathbf{r}}$ под полярным углом $\theta$ к оси: какой спиновый исход вероятен там?
+Кривые — угловые множители $|\psi|^2$ трёх состояний.'''
+p2_c5 = '''На оси ($\theta=0$) бывают только антипараллельные спины, $m=0$; в экваториальной плоскости ($\theta=\pi/2$) — только параллельные, $m=\pm1$.
+Спин и направление коррелированы: от орбитальной структуры остаётся именно это.'''
+
+p3_h0 = '''$\rho_1=-\rho_2$:  $L=0$'''
+p3_h1 = '''$\rho_1=\rho_2=+$:  запрещено'''
+p3_h2 = '''$\rho_1=\rho_2=-$:  запрещено'''
+p3_zero = '''$\psi=0$'''
+p3_f1 = '''$\psi_{\rho_1\rho_2}(\mathbf{r})\propto j_0(pr)\,\chi^\dagger_{\rho_1}(\hat{\mathbf{s}})\,\eta_{\rho_2}(\hat{\mathbf{s}}),\qquad |\psi|^2\propto j_0^2(pr)\,\frac{1}{2}\left[1-\rho_1\rho_2\right]$'''
+p3_f2 = '''$\Gamma\propto\beta^{2L+1}$:   $\beta^3$ при $L=1$ ($0^+$),   $\beta$ при $L=0$ ($0^-$)'''
+p3_c1 = '''Псевдоскалярный родитель, $0^-$: билинейная форма $\bar{u}\gamma_5 v\propto\chi^\dagger\eta$ не зависит от направления.
+Пара находится в S-волне, $L=0$, в спиновом синглете.'''
+p3_c2 = '''При одной общей оси бывают только антипараллельные спины, а $|\psi|^2$ вообще не зависит от $\hat{\mathbf{r}}$:
+кривые плоские, плотность — шар.'''
+p3_c3 = '''P-волна обращается в нуль при $r=0$ ($j_1(0)=0$), S-волна — нет ($j_0(0)=1$):
+отсюда $\Gamma\propto\beta^3$ для скаляра и $\Gamma\propto\beta$ для псевдоскаляра.'''
+
+p4_state = '''$\vec\xi_1\perp\vec\xi_2$'''
+p4_swapped = '''обмен: $\vec\xi_1\leftrightarrow\vec\xi_2$'''
+p4_f1 = '''$|\psi|^2=\frac{1}{2}a^2\left[1+\vec\xi_1\!\cdot\!\vec\xi_2-2(\vec\xi_1\!\cdot\!\hat{\mathbf{r}})(\vec\xi_2\!\cdot\!\hat{\mathbf{r}})\right]+\frac{1}{2}b^2\left[1-\vec\xi_1\!\cdot\!\vec\xi_2\right]+a\,b\;\vec\xi_1\cdot(\hat{\mathbf{r}}\times\vec\xi_2)$'''
+p4_f2 = '''$\psi=\varepsilon_1\psi_S+\varepsilon_2\psi_P,\qquad a=\varepsilon_1\beta\,j_1(pr),\qquad b=\varepsilon_2\,j_0(pr)$   ($\varepsilon_1\varepsilon_2$ вещественно)'''
+p4_plot = '''$|\psi|^2$ на оси'''
+p4_lg_add = '''$\hat{\mathbf{r}}\parallel\vec\xi_2\times\vec\xi_1$:  $\frac{1}{2}(a+b)^2$'''
+p4_lg_sub = '''$\hat{\mathbf{r}}\parallel-\vec\xi_2\times\vec\xi_1$:  $\frac{1}{2}(a-b)^2$'''
+p4_lg_avg = '''без интерференции: $\frac{1}{2}(a^2+b^2)$'''
+p4_cancel = '''$a=b$'''
+p4_c1 = '''Смешанное состояние $\varepsilon_1\psi_S+\varepsilon_2\psi_P$. Начнём с чистого скаляра и двух перпендикулярных спинов, $\vec\xi_1=\hat{x}$, $\vec\xi_2=\hat{y}$:
+облако симметрично относительно плоскости двух спинов.'''
+p4_c2 = '''Включим псевдоскалярную часть. S- и P-волны интерферируют, член $a\,b\,\vec\xi_1\cdot(\hat{\mathbf{r}}\times\vec\xi_2)$ нечётен при $\vec\xi_1\leftrightarrow\vec\xi_2$:
+облако наклоняется вдоль нормали к плоскости спинов.'''
+p4_c3 = '''Обменяем спины фермиона и антифермиона (C P-образ пары): член меняет знак, облако наклоняется в другую сторону.
+Чистое состояние $0^+$ или $0^-$ не наклоняется.'''
+p4_c4 = '''Вдоль нормали S- и P-волны с одной стороны складываются, $\frac{1}{2}(a+b)^2$, а с другой вычитаются, $\frac{1}{2}(a-b)^2$.
+При $a=b$ плотность с этой стороны обращается в нуль: отношение $\varepsilon_2/\varepsilon_1=1$ выбрано для наглядности.'''
+
+p5_left = '''амплитуда $M(\mathbf{n})$, цвет $=\arg M$'''
+p5_right = '''что измеряется: $|M(\mathbf{n})|^2$'''
+p5_proj = '''проекция на $|\mathbf{p}\rangle$'''
+p5_f1 = '''$\frac{d\Gamma}{d\Omega}\propto 1+\vec\xi_1\!\cdot\!\vec\xi_2-2(\vec\xi_1\!\cdot\!\mathbf{n})(\vec\xi_2\!\cdot\!\mathbf{n})\ \ (0^+),\qquad \frac{d\Gamma}{d\Omega}\propto 1-\vec\xi_1\!\cdot\!\vec\xi_2\ \ (0^-)$'''
+p5_c1 = '''Детектор проецирует пару на состояния с определённым импульсом: измеряется $|M(\mathbf{n})|^2$, а фаза $e^{im\varphi}$ теряется.
+Импульсы «спиной к спине» и $L=1$ не конфликтуют.'''
+p5_c2 = '''Остаются спин-угловые корреляции продуктов распада: зависимость скоростей от $\vec\xi_1$, $\vec\xi_2$ и $\mathbf{n}$ и, для смеси скаляра и псевдоскаляра,
+CP-нечётные тройные произведения спинов и импульса.'''
+p5_c3 = '''На практике спины пары $\tau^+\tau^-$ считывают по угловым распределениям продуктов распада $\tau$.'''

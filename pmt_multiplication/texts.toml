@@ -1,0 +1,33 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+
+[en]
+title1 = '''Photomultiplier tube'''
+title2 = '''Photomultiplier tube: pulse height'''
+cathode = '''photocathode'''
+anode = '''anode'''
+volts = '''$\approx100$ V between neighbouring dynodes'''
+pe = '''photoelectrons'''
+at_dyn = '''electrons at dynode {j}'''
+stage = '''stage $j$ (0 = photocathode)'''
+per_stage = '''electrons per stage'''
+signal = '''anode signal'''
+gain = '''gain'''
+pe_label = '''PE'''
+cap1 = '''one photoelectron: each electron knocks out several secondary electrons from the next dynode, the number grows as $\delta^{\,j}$'''
+cap2 = '''a scintillation flash of more light gives more photoelectrons: the pulse height measures the number of photons (the energy)'''
+
+[ru]
+title1 = '''Фотоэлектронный умножитель'''
+title2 = '''ФЭУ: амплитуда импульса'''
+cathode = '''фотокатод'''
+anode = '''анод'''
+volts = '''$\approx100$ В между соседними динодами'''
+pe = '''фотоэлектронов'''
+at_dyn = '''электронов на диноде {j}'''
+stage = '''стадия $j$ (0 — фотокатод)'''
+per_stage = '''электронов на стадии'''
+signal = '''сигнал на аноде'''
+gain = '''усиление'''
+pe_label = '''ФЭ'''
+cap1 = '''один фотоэлектрон: каждый электрон выбивает из следующего динода несколько вторичных, число растёт как $\delta^{\,j}$'''
+cap2 = '''вспышка сцинтиллятора с большим светом даёт больше фотоэлектронов: амплитуда импульса измеряет число фотонов (энергию)'''

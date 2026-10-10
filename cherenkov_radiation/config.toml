@@ -1,0 +1,126 @@
+# Every number of the film "Cherenkov radiation" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set physics.n_index=1.5 --set layout.world_axes=[0.03,0.17,0.62,0.7]
+# Units: c = 1 length unit per second of film; font sizes are points at 720 p; positions in [0, 1] are fractions of the frame.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[physics]
+n_index = 1.33                    # refractive index of water
+electron_mass_mev = 0.511
+muon_mass_mev = 105.658
+detector_distance = 1.0           # radiator-to-detector distance, units of the ring panel
+emit_dt = 0.10                    # wavelet emission period, s
+window_back = 4.4                 # the world window relative to the particle
+window_front = 1.3
+trajectory_per_s = 120            # samples of the trajectory per second (dt = 1 / this)
+
+[timeline]
+film_length = 40.0                # the nominal length of the film; the times scale with the real length
+beta_knots = [[0.0, 0.55], [10.0, 0.55], [11.5, 0.85], [19.0, 0.85], [20.5, 0.99], [28.0, 0.99], [29.5, 0.80], [40.0, 0.99]]   # (time, beta)
+transitions = [[10.0, 11.5], [19.0, 20.5], [28.0, 29.5]]    # the cone and the rays are dimmed while beta changes
+transition_alpha = 0.25
+caption_switch = [10.0, 28.0]
+
+[wavelets]
+points = 80
+keep_factor = 1.25                # wavelets are kept while their radius is below keep_factor * window_back
+alpha_base = 0.08
+alpha_gain = 0.55
+decay_time = 4.0
+width = 1.0
+colour = [0.55, 0.8, 1.0]
+medium_colour = [0.10, 0.22, 0.34, 0.45]
+
+[scene]
+track_alpha = 0.35
+track_width = 1.0
+track_dash = ":"
+particle_size = 9
+velocity_arrow = { x0 = 0.25, x1 = 0.95, lw = 1.6 }
+velocity_label = { dx = 0.62, y = 0.18, size = 13 }
+cone_length = 5.0
+cone_alpha = 0.9
+cone_width = 2.2
+ray_lags = [0.7, 1.5, 2.3, 3.1]
+ray_length = 0.62
+ray_alpha = 0.9
+ray_width = 1.5
+arc_points = 30
+arc_centre_dx = -2.3
+arc_radius = 0.38
+arc_width = 1.2
+theta_label = { dx = -1.78, y = 0.12, size = 13 }
+info1_offset = [0.12, 0.2]        # from the top left corner of the window
+info2_offset = [0.12, 0.55]
+info1_size = 12
+info2_size = 11.5
+
+[angle_panel]
+axes = [0.715, 0.585, 0.27, 0.275]
+grid_points = 200
+beta_epsilon = 1.0e-6
+beta_max = 0.9999
+xlim = [0.5, 1.0]
+ylim = [0.0, 52.0]
+curve_width = 1.8
+curve_alpha = 0.95
+threshold_alpha = 0.45
+threshold_width = 0.9
+max_alpha = 0.3
+max_width = 0.8
+threshold_label = { dx = 0.01, y = 3.0, size = 9.5 }
+max_label = { x = 0.995, dy = 1.5, size = 10.0 }
+marker_size = 7
+label_size = 11
+title_size = 10.5
+
+[ring_panel]
+axes = [0.715, 0.15, 0.27, 0.31]
+lim = 1.35
+detector_radius = 1.25
+detector_alpha = 0.6
+detector_width = 1.0
+centre_marker_size = 8
+ring_points = 200
+ring_width = 3.0
+ring_alpha = 0.95
+halo_alpha = 0.25
+halo_width = 9
+text_y = -1.33
+radius_size = 11.5
+none_size = 10.5
+title_size = 10.5
+
+[layout]
+world_axes = [0.03, 0.17, 0.62, 0.70]
+caption_pos = [0.03, 0.04]
+caption_size = 11.5
+title_pos = [0.03, 0.915]
+title_size = 17
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+particle = [1.0, 0.8, 0.3]
+track = [1.0, 0.85, 0.4]
+light = [0.45, 0.85, 1.0]
+cone = [1.0, 1.0, 1.0]
+spine_colour = [0.5, 0.6, 0.75, 0.6]
+spine_width = 0.8
+tick_colour = [0.65, 0.72, 0.85]
+tick_size = 9
+tick_length = 3
+guide = [1.0, 1.0, 1.0]
+detector = [0.5, 0.6, 0.75]      # the edge of the detector

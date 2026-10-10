@@ -1,0 +1,389 @@
+# Every number of the film "Oscillations of neutral kaons" lives here (the scripts contain only algorithms).
+# Override on the command line:  --config other.toml   or   --set physics.delta_m_ev=7e-6 --set video.crf=18
+# Units: "film s" are seconds of the content (the chapter cards are inserted by the timeline); the time of the kaon is in tau_S
+# (proper time in the rest frame of the kaon); positions are fractions of the frame (x from the left, y from the BOTTOM);
+# sizes marked "px" are pixels of the 1280 x 720 reference frame (they scale with the frame height); font sizes and line widths are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 22
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[physics]
+# The numbers of the book (chapter "The Mysteries of Neutral Kaons"): tau_S = 8.954e-11 s, tau_L = 5.116e-8 s, Delta m = 3.5e-15 GeV = 3.5e-6 eV.
+hbar_ev_s = 6.582119569e-16
+tau_s_s = 8.954e-11
+tau_l_s = 5.116e-8
+delta_m_ev = 3.5e-6
+c_m_per_s = 299792458.0
+cp_violation = 2e-3               # the book: K_L -> 2 pi with the probability of the order of 2e-3 (the film neglects CP violation)
+t_max_in_tau_l = 4.0              # the numerical run of the beam goes up to this many tau_L
+stable_t_end = 14.0               # tau_S, the run without decays (one period is 13.25 tau_S)
+# an illustrative thin absorber (regeneration): the amplitudes of K0 and K0bar are multiplied by f and fbar (not a model of a real nucleus)
+f_k0 = 0.9
+f_k0bar = 0.1
+slab_time = 10.0                  # tau_S: the absorber stands here in the beam (only K_L is left by then)
+regen_before = 3.0                # tau_S shown before the absorber
+regen_after = 9.0                 # tau_S shown behind the absorber
+
+[integrator]
+method = "DOP853"
+rtol = 1e-11
+atol = 1e-13
+fine_until = 60.0                 # tau_S
+fine_dt = 0.01
+coarse_dt = 0.05
+
+# ------------------------------------------------------------------------------------------------ the timeline
+# part 1: production and the two states, 2: the oscillation, 3: what the detector sees, 4: regeneration
+[timeline]
+card_s = [3.0, 2.0, 2.0, 2.0]                   # the title card, then the cards of the parts 2, 3, 4
+card_at = [0.0, 20.0, 52.0, 74.0]               # content time before which a card is shown
+part_bounds = [0.0, 20.0, 52.0, 74.0, 94.0]
+card_fade_in = [0.0, 0.18]
+card_fade_out = [0.80, 1.0]
+
+# ------------------------------------------------------------------------------------------------ part 1
+[part1]
+reaction_in = [0.4, 1.6]
+strangeness_in = [2.2, 3.4]
+formula_in = [[0.3, 1.2], [3.6, 4.6], [9.8, 10.8]]      # the three formula rows
+plane_in = [4.4, 5.8]
+arrow_in = [6.2, 7.6]
+eigen_in = [8.2, 9.6]
+proj_in = [10.2, 12.2]
+cards_in = [[13.0, 14.0], [14.6, 15.6], [16.2, 17.2]]   # the three cards: tau_S, tau_L, Delta m
+caption_at = [0.0, 4.4, 8.2, 13.0, 18.0]               # c1a ... c1e
+
+# ------------------------------------------------------------------------------------------------ part 2
+[part2]
+ghost_hide_above = 60.0           # tau_S: the ghosts of the stable curves are not drawn when the axis is longer than this
+ghost_legend_fade = [14.0, 30.0]  # tau_S (right end of the axis): the legend entry of the ghosts fades out
+stable_ramp = [0.5, 0.5]           # s: the cursor of the stable stage starts and stops this long after / before the ends of the stage
+ghost_fade_to = 0.5
+ghost_fade_s = 2.0
+phasor_in = [0.2, 1.4]            # s after the start of the part
+stable = [20.0, 29.0]             # kaons without decays: the full oscillation over one period
+real = [29.0, 43.0]               # the real decay widths
+zoom = [43.0, 52.0]               # the time axis is rescaled from tau_S to tau_L
+x_hi_early = 14.0                 # tau_S, the right end of the axis in the first two stages
+cursor_real_end = 12.0            # tau_S, where the cursor stops in the stage 2
+cursor_power = 1.5                # the cursor moves as u^power: slower at the beginning, where the interference happens
+cursor_zoom_end = 1.0             # in tau_L: the cursor at the end of the zoom
+formula_in = [[0.2, 1.2], [0.6, 1.6], [0.6, 1.6]]
+caption_at = [20.0, 24.5, 29.0, 43.0, 47.0]            # c2a ... c2e
+tick_switch = [20.0, 45.0]        # in tau_S, the right end of the axis: the ticks in units of tau_S fade out here
+tick_switch_l = [0.06, 0.12]      # in tau_L: the ticks in units of tau_L fade in
+trail_max = 40.0                  # tau_S, the trails of the phasor tips are drawn up to this time
+phasor_zoom_floor = 0.40          # the panels never zoom beyond this amplitude
+
+# ------------------------------------------------------------------------------------------------ part 3
+[part3]
+formula_delay = 0.6
+cursor_ramp = [0.8, 0.5]
+foils = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]  # tau_S, positions of the thin targets along the beam
+foils_in = [53.0, 54.5]           # content time: the foils appear
+foil_start = 55.5                 # the yields appear one after another
+foil_dt = 0.9
+x_hi = 10.0                       # tau_S, the right end of the axis
+lepton = [66.0, 74.0]             # the second half: the charge of the lepton
+lepton_x_hi = 8.0
+lepton_cursor_end = 7.0
+lepton_curve_in = [66.5, 67.5]
+table_in = [[52.4, 53.4], [53.6, 54.6]]
+counters_in = [66.6, 67.6]
+caption_at = [52.0, 56.0, 61.5, 66.0, 70.0]            # c3a ... c3e
+formula_in = [[52.2, 53.2], [60.0, 61.0], [66.0, 67.0]]
+
+# ------------------------------------------------------------------------------------------------ part 4
+[part4]
+jump_alpha = 0.6                  # the vertical segments of the intensities at the absorber
+pass_alpha = 0.8
+slab_in = [74.2, 75.4]
+progress = [76.0, 80.0]           # the beam goes through the absorber (the amplitude of K0bar is absorbed)
+phasor_in = [81.0, 82.5]          # the plane gives way to the phasor panels
+sweep = [82.0, 94.0]              # the time behind the absorber from 0 to sweep_end
+sweep_end = 8.0                   # tau_S
+stub = 0.35                       # tau_S, the stub of the tube behind the absorber while the beam is in it
+phasor_zoom = 2.0                 # the phasor panels are enlarged this many times (the amplitudes behind the absorber are small)
+x_lo = -3.0                       # tau_S, the left end of the axis (before the absorber)
+x_hi = 9.0
+formula_in = [[74.2, 75.4], [77.5, 78.5], [84.0, 85.0]]
+caption_at = [74.0, 77.0, 81.0, 86.0, 91.0]            # c4a ... c4e
+
+# ------------------------------------------------------------------------------------------------ layout
+[layout]
+title_pos = [0.03, 0.945]
+chapter_label_pos = [0.97, 0.945]
+formula_x = 0.03
+formula_rows = [0.875, 0.800, 0.725]
+caption_pos = [0.03, 0.045]
+card_title_y = 0.55
+card_subtitle_y = 0.44
+card_number_y = 0.64
+card_chapter_y = 0.50
+card_chapter_sub_y = 0.40
+formula_min_alpha = 0.02
+curve_axes = [0.075, 0.290, 0.52, 0.335]
+tube_axes = [0.075, 0.135, 0.52, 0.095]
+legend_row_y = 0.660
+legend_x = [0.075, 0.215, 0.375, 0.500]
+phasor_axes = [[0.610, 0.370, 0.190, 0.320], [0.795, 0.370, 0.190, 0.320]]
+phasor_title_y = 0.690
+readout_y = [0.335, 0.285]
+phasor_legend_y = [0.215, 0.165]
+phasor_text_x = 0.615
+reaction_axes = [0.03, 0.34, 0.50, 0.285]
+reaction2_axes = [0.635, 0.130, 0.350, 0.300]
+plane_axes = [0.560, 0.120, 0.420, 0.600]
+cards_x = [0.03, 0.215, 0.400]
+cards_y = 0.105
+cards_w = 0.175
+cards_h = 0.205
+table_x = 0.635
+table_y = [0.865, 0.700]
+table_dy = [0.050, 0.095]
+lepton_rows = [0.860, 0.800, 0.740]
+counter_axes = [0.660, 0.190, 0.300, 0.370]
+counter_readout_dy = -0.075
+slab_label_y = 0.100
+
+# ------------------------------------------------------------------------------------------------ fonts
+[fonts]
+title = 19
+chapter_label = 13
+formula = 16.5
+caption = 12.5
+card_title = 32
+card_subtitle = 17
+card_number = 54
+card_chapter = 32
+card_chapter_sub = 16
+tick = 11
+axis_label = 12.5
+legend = 12.5
+phasor_title = 13
+readout = 13
+box_title = 13
+box_value = 14
+box_note = 11.5
+plane_label = 15
+plane_small = 12
+reaction_label = 14
+reaction_small = 11.5
+table_row = 15
+table_note = 12
+counter_label = 13
+
+# ------------------------------------------------------------------------------------------------ style
+[style]
+arrow_scale = 10.0                   # pt: the unit of the arrow heads
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+gold = [1.00, 0.84, 0.35]
+k0 = [0.40, 0.72, 1.00]               # K0 (blue)
+k0bar = [1.00, 0.58, 0.30]            # K0bar (warm)
+ks = [0.30, 0.86, 0.76]               # K_S (teal)
+kl = [0.75, 0.55, 1.00]               # K_L (violet)
+good = [0.45, 0.92, 0.65]
+bad = [1.00, 0.45, 0.50]
+white = [0.95, 0.97, 1.0]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+panel_cutoff = 0.02
+
+[curves]
+ghost_legend_k = 1.4              # the legend sample of a ghost line is this much stronger than the ghost itself
+axis_zero_k = 0.6                 # the vertical axis of the plots is this much fainter than the horizontal one
+grid_width = 0.8
+ytick_dx = -0.012                 # axes fraction
+ring_scale = 0.6                  # the hollow markers of the legend
+ring_lw = 1.4
+sum1_k = 0.8                      # the line 'sum = 1' of the stable stage is this much fainter than the dashed sum
+line_width = 2.4
+ghost_width = 1.4
+ghost_alpha = 0.40
+ghost_dash = [4, 3]
+total_width = 1.6
+total_alpha = 0.75
+total_dash = [5, 3]
+axis_alpha = 0.55
+axis_width = 1.0
+tick_len = 0.012                  # fraction of the height of the axes
+grid_alpha = 0.10
+cursor_alpha = 0.7
+cursor_width = 1.2
+cursor_dot = 42.0                 # pt^2
+x_lo_frac = 0.03                  # the axis starts this fraction of its length to the left of t = 0
+y_hi = 1.06
+y_lo_asym = -1.08
+samples_lin = 700
+samples_geo = 500
+geo_start = 1e-3                  # tau_S
+tick_target = 6                   # about this many ticks on the time axis
+y_ticks = [0.0, 0.5, 1.0]
+y_ticks_asym = [-1.0, 0.0, 1.0]
+label_pad = 0.045                 # axes fraction: the labels of the ticks below the axis
+xlabel_pos = [1.0, -0.115]
+legend_line_len = 0.020           # figure fraction
+legend_gap = 0.006
+
+[tube]
+slab_lw = 1.2
+target_fill = 0.55
+target_edge = 0.7
+target_lw = 1.0
+alpha = 0.92
+edge_alpha = 0.55
+edge_width = 1.0
+y_half = 0.62                     # data half-height of the axes (the beam of the full intensity is 1.0 thick)
+x_lo_frac = 0.03
+target_w = 0.022                  # fraction of the axis length
+label_pos = [1.0, -0.10]
+front_alpha = 0.9
+front_width = 2.0
+foil_half = 0.50
+foil_width = 0.011                # fraction of the axis length
+foil_alpha = 0.85
+slab_width = 0.010                # fraction of the axis length
+slab_half = 0.56                  # data half-height of the absorber (the tube is 1.0 thick)
+slab_fill = 0.55
+slab_edge = 0.9
+
+[foils]
+k0_marker_lw = 1.4
+curve_width_k = 0.8                # the curves of the plot of the yields are thinner than in the part 2
+k0_curve_alpha = 0.35
+kb_curve_alpha = 0.9
+stem_grow_s = 0.8
+stem_width = 2.2
+dot_size = 54.0
+k0_marker_size = 5.0
+value_decimals = 2
+value_dy = 0.055
+label_size = 11
+
+[phasor]
+join_width = 1.2
+ring_width = 0.9
+cross_width = 0.8
+tag_min = 1.02                    # the zoom tag is shown above this factor
+tag_inset = 0.004
+limit = 1.12
+arrow_lw = 2.2
+sum_lw = 4.6
+sum_alpha = 0.85
+head = [0.30, 0.225]              # the arrow head: length, width in units of style.arrow_scale
+trail_alpha = 0.45
+trail_width = 1.3
+trail_samples = 400
+ring_alpha = 0.16
+ring_clip = 0.98                  # a ring is drawn only if its radius is smaller than this fraction of the half-width of the panel
+ring_radii = [0.5, 1.0]
+axis_alpha = 0.22
+join_alpha = 0.45                 # the dashed completion of the parallelogram
+join_dash = [3, 2]
+tip_dot = 18.0
+value_decimals = 2
+
+[plane]
+state_label_k = 1.2
+axis_neg = 0.95
+axis_pos = 0.97                   # the K0 and K0bar axes reach this fraction of the limit
+axis_alpha = 0.8
+k0_label_dy = 0.17
+kb_label_dx = 0.11
+eigen_extent = 0.98
+eigen_alpha = 0.9
+eigen_label_gap = 0.03
+limit = 1.32
+axis_width = 1.6
+eigen_width = 1.5
+eigen_dash = [6, 3]
+arrow_lw = 3.6
+comp_lw = 2.8
+head = [0.55, 0.35]
+drop_alpha = 0.55
+drop_dash = [3, 2]
+drop_width = 1.1
+label_gap = 0.09
+state_dot = 36.0
+comp_label_l4 = [0.27, 0.60]
+comp_gap = 0.06
+min_label_amp = 0.05
+comp_label_l = [0.40, 0.70]           # data coordinates of the labels of the components along K_L and K_S
+comp_label_s = [0.40, -0.70]
+
+[reaction]
+vertex_fill = 0.25
+vertex_lw = 1.8
+in_label_dy = 0.28
+target_label_dy = 0.2
+str_dx = -0.1
+s_in_dy = 0.35
+x_lim = [0.0, 13.6]
+y_lim = [0.0, 4.4]
+beam = [[0.4, 2.2], [4.7, 2.2]]
+vertex = [5.5, 2.2]
+vertex_radius = 0.42
+str_dy = 0.57                     # the label of the interaction: above (positive) or below (negative) the vertex
+out1 = [11.0, 3.9]
+label_dx = 0.25                   # the particle labels stand this far to the right of the tips
+s_dy = 0.62                       # the strangeness labels stand this far below the particle labels
+out2 = [11.0, 0.5]
+arrow_lw = 2.6
+head = [0.55, 0.35]
+
+[reaction2]
+x_lim = [0.0, 9.6]
+y_lim = [0.0, 5.2]
+beam = [[0.3, 2.6], [3.4, 2.6]]
+vertex = [4.1, 2.6]
+vertex_radius = 0.38
+str_dy = -1.45
+out1 = [7.4, 4.5]
+out2 = [7.4, 0.7]
+
+[box]
+rounding = 0.008
+title_dy = 0.030
+value_at = 0.58
+note_pad = 0.014
+linespacing = 1.35
+alpha_fill = 0.10
+edge_alpha = 0.55
+edge_width = 1.2
+pad = 0.012
+
+[lepton]
+zero_width = 0.9
+zero_alpha = 0.35
+zero_dash = [3, 3]
+ref_alpha = 0.55
+bar_x = [0.75, 2.25]
+x_hi = 3.0
+label_dy = 0.06
+value_dy = 0.04
+base_width = 1.0
+base_alpha = 0.5
+bar_width = 0.88
+y_hi = 1.05
+bar_alpha = 0.85
+
+
+[check]
+min_alpha = 0.15                  # texts fainter than this are ignored by the overlap test
+pad_px = 1.0                      # the boxes of two texts may overlap by this many pixels

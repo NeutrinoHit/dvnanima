@@ -1,0 +1,43 @@
+# Every number of the film "Penrose-Terrell rotation" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set scene.beta=0.9 --set video.crf=18
+# Units: c = 1, ball radius R = 1; the lengths of the picture are fractions of the panel size (px) so that the film scales with it.
+# The frame is three square panels with a header, so it is not 16:9: width = 3 * panel + 2 * gap, height = panel + header.
+
+[video]
+panel_size = 480                  # px: one square panel
+fps = 30
+dpi = 100                         # only for the text of the header (matplotlib)
+crf = 20
+preset = "slow"
+preview_panel_size = 210
+preview_fps = 15
+preview_seconds = 3.0
+
+[scene]
+beta = 0.99
+span = 1.9                        # field of view of a panel: x, y in [-span, span]
+tau_margin = 1.5                  # the film starts and ends this far (in units of R) outside the field of view
+film_length = 12.0                # seconds
+
+[ball]
+seam_width = 0.012                # relative width of the dark seams between the faces
+albedo_pentagon = 0.07            # black pentagons
+albedo_hexagon = 0.96             # white hexagons
+albedo_seam = 0.12
+shade_floor = 0.5                 # headlight shading: shade = floor + (1 - floor) * cos of the angle to the camera
+tint = [1.0, 0.98, 0.92]          # warm tint of the grey
+highlight = [0.95, 0.45, 0.08]    # the orange pentagon that faces the camera when the ball is at rest
+
+[layout]
+header = 0.2                      # height of the header, fraction of the panel
+gap = 6                           # px between the panels
+title_pos = [0.03, 0.02]          # fraction of the panel, measured from the top-left corner of the panel
+subtitle_pos = [0.03, 0.105]
+title_size = 0.062                # height of the title text, fraction of the panel
+subtitle_size = 0.045
+
+[style]
+background = [0.035, 0.045, 0.07] # outside the ball
+canvas = [8, 11, 18]              # 0-255, behind the panels and the header
+title_colours = [[210, 210, 215], [245, 245, 245], [150, 155, 170]]   # at rest / camera / snapshot
+subtitle_colour = [140, 195, 225]

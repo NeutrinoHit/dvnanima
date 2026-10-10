@@ -1,0 +1,367 @@
+# Every number of the film "The gauge principle: two friends and a field" lives here (the scripts contain only algorithms).
+# Override on the command line:  --config other.toml   or   --set chain.alpha_slope=2.0 --set plane.flux_over_pi=0.5
+# Units: "content s" are seconds of the film without the chapter cards (the timeline inserts the cards); times inside a part are measured from the start of the part;
+# the positions of the panels are fractions of the width / height of the frame, "data" units belong to the axes they are drawn in; font sizes are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 24
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[timeline]
+card_durations = [2.0, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]      # the film title, then one card before each of the six parts
+part_bounds = [0.0, 15.0, 30.0, 44.0, 59.0, 77.0, 86.0]   # content time: parts 1 .. 6
+card_at = [0.0, 0.0, 15.0, 30.0, 44.0, 59.0, 77.0]
+card_fade_in = [0.0, 0.16]
+card_fade_out = [0.84, 1.0]
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+blue = [0.40, 0.72, 1.00]
+warm = [1.00, 0.55, 0.40]
+gold = [1.00, 0.84, 0.35]
+violet = [0.66, 0.48, 1.00]
+green = [0.45, 0.88, 0.62]
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+
+[fonts]
+title = 19
+chapter_label = 13
+formula = 17
+caption = 11.5
+card_title = 36
+card_subtitle = 17
+card_number = 54
+card_chapter = 32
+card_chapter_sub = 16
+panel_title = 11.5
+label = 12.5
+readout = 14
+readout_label = 11
+table_head = 10
+tick = 10
+dial_label = 10.5
+row_label = 11.5
+strip_label = 9.5
+question = 30
+tag = 10
+summary_big = 24
+summary_mid = 19
+summary_text = 15
+
+[layout]
+title_pos = [0.03, 0.935]
+chapter_label_pos = [0.97, 0.938]
+formula_pos = [0.03, 0.838]
+formula_row = 0.072
+formula_min_alpha = 0.01
+caption_pos = [0.03, 0.035]
+caption_spacing = 1.25
+text_min_alpha = 0.05
+card_title_y = 0.52
+card_subtitle_y = 0.43
+card_number_y = 0.62
+card_chapter_y = 0.50
+card_chapter_sub_y = 0.41
+scene_axes = [0.0, 0.10, 1.0, 0.80]
+map_axes = [0.03, 0.12, 0.66, 0.62]
+profile_axes = [0.70, 0.12, 0.10, 0.62]
+wheel_axes = [0.885, 0.615, 0.07, 0.124]
+row_axes = [[0.05, 0.545, 0.66, 0.19], [0.05, 0.325, 0.66, 0.19], [0.05, 0.115, 0.66, 0.16]]
+plane_a_axes = [0.03, 0.30, 0.52, 0.445]
+plane_f_axes = [0.60, 0.50, 0.37, 0.235]
+plane_profile_axes = [0.60, 0.16, 0.37, 0.20]
+readout_x = 0.745
+readout_w = 0.23
+table_cols = [0.915, 0.975]       # right edges of the "simulation" and "formula" columns
+time_pos = [0.71, 0.742]
+
+[dial]
+image_size = 200
+ring_value = 1.0
+ring_saturation = 0.85
+inner_radius = 0.78
+face_alpha = 0.85
+face_color = [0.02, 0.04, 0.09]
+rim_radius = 0.78
+rim_alpha = 0.5
+rim_width = 0.8
+hand_length = 0.72
+hand_width = 2.2
+tip_size = 5.0
+tip_edge = 0.8
+hub_size = 3.0
+ghost_alpha = 0.55
+ghost_dash = [2, 2]
+
+[interf]                          # the two-path experiment (paraxial Gaussian beams), lengths in the units of the film plane
+wavelength = 0.30
+slit_sigma = 0.12
+slit_separation = 2.4
+barrier_x = -4.0
+screen_x = 4.0
+screen_half = 2.5
+screen_samples = 501
+
+[chain]                           # the particle on a line (hbar = 1)
+n = 1364
+half_width = 16.0
+view_half = 12.0                  # the rows show x in [-view_half, view_half]
+mass = 1.0
+charge = 1.0
+alpha_slope = 1.6                 # alpha(x) = alpha_slope x + alpha_amp sin(alpha_k x): the experimenter's convention
+alpha_amp = 0.9
+alpha_k = 2.2
+packet_x0 = -6.0
+packet_sigma = 0.9
+packet_k0 = 3.0
+t_end = 2.0
+
+[plane]                           # part 5: a flux tube in the plane of the interferometer
+charge = 1.0
+flux_over_pi = 0.7                # q Phi / pi
+tube_sigma = 0.25
+tube_centre = [-1.8, 0.0]
+source = [-5.5, 0.0]
+alpha_terms = [[0.85, 0.9, 0.5, 0.3], [0.5, -0.6, 1.1, 1.2]]       # alpha = sum amp sin(kx x + ky y + phase)
+loop2_centre = [1.6, -1.2]
+loop2_half = 0.5
+line_step = 0.05
+fringe_samples = 201
+quadrature_n = 300
+
+[rows]                            # the rows of parts 3 and 4
+ymax = 0.70
+image_rows = 90
+saturation = 0.8
+edge_soft = 1.0
+fill_bottom = 0.55
+fill_top = 0.18
+strip_height = 0.11
+strip_gap = 0.35
+strip_saturation = 0.8
+line_width = 2.4
+ghost_alpha = 0.8
+ghost_width = 1.5
+ghost_dash = [4, 3]
+label_room = 0.17
+strip_label_dx = 0.0
+strip_label_dy = 0.01
+label_pos = [0.01, 0.97]
+label_pos3 = 0.97
+row3_ylim = [-4.2, 6.0]
+row3_fill_alpha = 0.22
+row3_width = 2.0
+baseline_alpha = 0.5
+arrow_start = -11.5
+arrow_step = 1.0
+arrow_y = -3.2
+arrow_scale = 0.26
+arrow_min = 0.06
+dot_size = 2.0
+arrow_alpha = 0.9
+arrow_width = 1.4
+arrow_head = 9
+
+[part1]
+scene_width = 16.0
+stars = 70
+stars_seed = 7
+star_size = [0.6, 1.8]
+star_alpha = [0.15, 0.55]
+phase_difference = 1.1            # phase(y) - phase(x) of psi in the theorist's convention, rad
+alpha = [2.4, -1.6]               # the conventions of the two experimenters alpha(x), alpha(y), rad
+earth_in = [0.0, 0.8]
+earth_centre = [8.0, 1.2]
+earth_radius = 0.85
+earth_glow = [[1.2, 0.07], [1.1, 0.10]]
+ocean_color = [0.07, 0.22, 0.45]
+land_color = [0.20, 0.50, 0.38]
+land = [[[-0.55, 0.15], [-0.2, 0.55], [0.1, 0.35], [0.0, 0.0], [-0.35, -0.2]], [[0.25, 0.7], [0.65, 0.45], [0.55, 0.1], [0.2, 0.25]], [[-0.9, -0.1], [-0.65, 0.2], [-0.8, 0.45], [-1.05, 0.2]]]
+earth_label_offset = [0.07, 0.3]
+launch_offset = 1.0
+launch_spread = 0.45
+fly = [0.5, 4.5]
+dials_in = [4.3, 5.2]
+hands_in = [5.3, 6.5]
+turn = [7.2, 9.2]
+signals = [9.0, 11.4]
+target_x = [3.4, 4.7]
+target_y = [12.6, 4.7]
+rocket_offset = [2.3, 0.0]
+arc_ctrl = [0.5, 5.0]
+rocket_scale = 0.8
+trail_alpha = 0.5
+trail_dash = [2, 3]
+signal_end = 1.0
+signal_line_alpha = 0.35
+signal_dots = 3
+signal_gap = 0.25
+signal_size = 4.0
+dial_radius = 1.1
+hand_length = 0.72
+arc_radius = 0.95
+label_offset = [1.3, 1.3]
+rows_in = [[10.6, 11.6], [12.2, 13.2]]
+row_label_x = 0.40
+row_x = 0.415
+row_y = [0.50, 0.415]
+question_in = [13.4, 14.4]
+question_pos = [0.79, 0.41]
+tag_pos = [0.97, 0.895]
+tag_alpha = 0.8
+caption_times = [5.0, 10.0]
+
+[part1.rocket]
+window = [0.0, 0.0]
+window_radius = 0.1
+edge_alpha = 0.6
+edge_width = 0.8
+polygons = [
+  { pts = [[-0.6, -0.2], [0.3, -0.2], [0.3, 0.2], [-0.6, 0.2]], color = "text", alpha = 0.92 },
+  { pts = [[0.3, -0.2], [0.8, 0.0], [0.3, 0.2]], color = "warm", alpha = 0.95 },
+  { pts = [[-0.6, 0.2], [-0.9, 0.46], [-0.25, 0.2]], color = "warm", alpha = 0.95 },
+  { pts = [[-0.6, -0.2], [-0.9, -0.46], [-0.25, -0.2]], color = "warm", alpha = 0.95 },
+  { pts = [[-0.6, -0.12], [-1.05, 0.0], [-0.6, 0.12]], color = "gold", alpha = 0.9 },
+]
+
+[part2]
+cmap = [[0.0, 0.012, 0.024, 0.047], [0.35, 0.04, 0.17, 0.40], [0.7, 0.24, 0.60, 1.0], [1.0, 0.92, 0.97, 1.0]]
+cmap_samples = 256
+map_scale = 1.0                   # the field map has map_scale pixels per pixel of the frame
+gamma = 0.5
+ripple = 0.12                     # the modulation of the brightness by cos(phase): the wave crests
+view_x = [-6.0, 4.0]
+appear = [0.0, 1.0]
+formula_in = [[0.8, 1.8], [5.0, 6.0]]
+common_turn = [2.0, 6.2]
+relative_turn = [7.6, 12.0]
+caption_times = [2.0, 7.2, 12.6]
+readout_in = [1.0, 2.0]
+dial_x = -4.9
+dial_y = 1.75
+dial_radius = 0.5
+dial_label_gap = 0.3
+link_alpha = 0.45
+link_dash = [2, 3]
+slit_gap = 0.1
+barrier_alpha = 0.95
+barrier_width = 3.0
+screen_alpha = 0.9
+screen_width = 3.0
+source_size = 5.0
+profile_xmax = 1.25
+profile_fill_alpha = 0.35
+ghost_alpha = 0.7
+ghost_width = 1.2
+ghost_dash = [3, 3]
+profile_width = 1.8
+profile_title_y = 1.01
+wheel_pos = [0.92, 0.80]
+wheel_tick = 1.45
+readout_pos = [0.82, 0.50]
+readout_row = 0.10
+readout_label_dy = 0.032
+shifter_in = [7.0, 7.8]
+shifter_out = [12.0, 12.8]
+shifter_frac = 0.55
+shifter_size = [0.12, 0.2]
+shifter_fill = 0.35
+shifter_label_dx = 0.55
+shifter_label_dy = 0.28
+
+[part3]
+appear = [0.0, 0.8]
+run = [3.0, 10.0]
+formula_in = [[0.5, 1.5], [3.0, 4.0]]
+caption_times = [3.0, 10.5]
+row3_in = [1.0, 2.0]
+readout_in = [2.5, 3.5]
+table_y = 0.58
+table_row = 0.075
+speed_min_t = 0.3
+
+[part4]
+appear = [0.0, 0.6]
+run = [4.5, 11.5]
+formula_in = [[0.5, 1.5], [2.5, 3.5]]
+caption_times = [3.0, 12.0]
+row3_in = [0.0, 0.6]
+morph = [1.0, 2.5]
+readout_in = [4.0, 5.0]
+block_y = 0.55
+block_dy = 0.14
+block_gap = 0.0
+floor = 1e-16
+
+[part5]
+f_cmap = [[0.0, 0.012, 0.024, 0.047], [0.5, 0.55, 0.22, 0.12], [1.0, 1.0, 0.78, 0.35]]
+appear = [0.0, 0.8]
+formula_in = [[0.5, 1.5], [7.0, 8.0]]
+formula_pos = [[0.03, 0.838], [0.40, 0.838]]
+caption_times = [4.6, 9.4]
+f_zero_fade = [0.0, 0.05]
+f_zero_pos = [-0.6, 0.0]
+gauge1 = [0.8, 3.4]
+gauge1_off = [4.8, 6.0]
+tube_on = [4.8, 8.0]
+gauge2 = [9.6, 13.2]
+gauge2_gain = 1.2
+readout_in = [1.0, 2.0]
+arrow_x = [-5.2, 3.9]
+arrow_step = 0.5
+arrow_y_half = 2.3
+arrow_scale = 0.5
+arrow_max = 0.62
+arrow_min = 0.04
+arrow_barrier_gap = 0.35
+arrow_alpha = 0.85
+arrow_width = 2.4
+arrow_head = [4.0, 5.0, 4.5]
+tube_mark = 2.0
+loop_fill_alpha = 0.10
+loop_alpha = 0.95
+loop_width = 1.8
+loop_label_pos = [[2.4, 0.75], [2.4, -1.2]]
+panel_title_pos = [0.01, 1.01]
+f_scale = 0.6
+f_title_pos = [0.01, 1.02]
+fd_step = 0.02
+fd_half = [2.0, 1.0]
+floor = 1e-16
+readout_x = 0.03
+readout_y = 0.245
+readout_row = 0.052
+readout_w = 0.40
+profile_ymax = 1.3
+profile_fill_alpha = 0.35
+ghost_alpha = 0.7
+ghost_width = 1.2
+ghost_dash = [3, 3]
+profile_width = 1.8
+profile_title_pos = [0.01, 1.02]
+shift_pos = [0.99, 0.98]
+shift_sign = 1
+peak_alpha = 0.8
+
+[part6]
+lines = ["e0", "e1", "e2", "e3", "e4"]
+times = [[0.3, 1.3], [1.8, 2.8], [3.2, 4.2], [4.8, 5.8], [6.4, 7.4]]
+fonts = ["summary_mid", "summary_big", "summary_big", "summary_text", "summary_text"]
+y = [0.74, 0.62, 0.50, 0.36, 0.22]
+gold = [true, false, false, false, true]

@@ -16,10 +16,15 @@ The picture is schematic: nuclei are drawn much larger than they are and the foi
 is only a few layers thick, so that rare large-angle events appear within a short
 film.  In the real experiment about one alpha particle in 8000 turns back.
 
+All the numbers are in config.toml and all the words in texts.toml (see ../dvconfig.py for --config / --set).
+The tracks are computed once (--simulate) and stored in media/rutherford_tracks.npz; the film only reads them.
+
 Usage:
     python rutherford.py --simulate            # trajectories -> media/rutherford_tracks.npz
-    python rutherford.py                       # film -> media/rutherford.mp4
+    python rutherford.py --lang en             # film -> media/rutherford_en.mp4
+    python rutherford.py --lang ru             # film -> media/rutherford_ru.mp4
     python rutherford.py --preview             # 4 s low-resolution film
+    python rutherford.py --snapshot 14         # one PNG at film time 14 s
 """
 
 from __future__ import annotations
@@ -34,20 +39,32 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from dvconfig import load_config, load_texts  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
 MEDIA = HERE / "media"
+CFG = load_config(HERE)
 
 # ---------------------------------------------------------------- parameters
-R_MIN = 1.0                    # head-on distance of closest approach (length unit)
-LAYERS = 4
-LAYER_GAP = 14.0
-SPACING = 50.0                 # mean spacing of nuclei inside a layer
-HALF = 125.0                   # lateral half-size of the foil (x-z/y plane of the layer)
-BEAM_HALF = 90.0               # beam cross section: |y|, |z| <= BEAM_HALF
-X_START = -150.0
-R_STOP = 260.0                 # trajectories stop at this distance from the foil centre
-N_ALPHA = 6000
-SCREEN = 25.0                  # atomic screening length: electrons make the atoms neutral
+R_MIN = CFG.foil.r_min                    # head-on distance of closest approach (length unit)
+LAYERS = CFG.foil.layers
+LAYER_GAP = CFG.foil.layer_gap
+SPACING = CFG.foil.spacing                # mean spacing of nuclei inside a layer
+HALF = CFG.foil.half                      # lateral half-size of the foil (x-z/y plane of the layer)
+BEAM_HALF = CFG.foil.beam_half            # beam cross section: |y|, |z| <= BEAM_HALF
+X_START = CFG.foil.x_start
+R_STOP = CFG.foil.r_stop                  # trajectories stop at this distance from the foil centre
+N_ALPHA = CFG.foil.n_alpha
+SCREEN = CFG.foil.screen                  # atomic screening length: electrons make the atoms neutral
+
+TEXT = {lang: load_texts(HERE, lang) for lang in ("en", "ru")}     # texts.toml
+
+
+def num(x: float, fmt: str, lang: str) -> str:
+    """A number for use inside $...$: decimal comma in Russian."""
+    s = format(x, fmt)
+    return s.replace(".", "{,}") if lang == "ru" else s
 
 
 def make_foil(rng: np.random.Generator, layers: int = LAYERS) -> np.ndarray:
@@ -59,7 +76,7 @@ def make_foil(rng: np.random.Generator, layers: int = LAYERS) -> np.ndarray:
         x = (k - (layers - 1) / 2) * LAYER_GAP
         shift = rng.uniform(-SPACING / 2, SPACING / 2, size=2)
         yy, zz = np.meshgrid(grid + shift[0], grid + shift[1])
-        jitter = rng.uniform(-0.2 * SPACING, 0.2 * SPACING, size=(yy.size, 2))
+        jitter = rng.uniform(-CFG.foil.jitter * SPACING, CFG.foil.jitter * SPACING, size=(yy.size, 2))
         pts.append(np.column_stack([np.full(yy.size, x), yy.ravel() + jitter[:, 0],
                                     zz.ravel() + jitter[:, 1]]))
     return np.vstack(pts)
@@ -80,6 +97,7 @@ def one_track(args: tuple[np.ndarray, np.ndarray, float, float]) -> tuple[np.nda
     """Integrate one alpha particle; return sampled path, times and the final velocity angle."""
     nuclei, start, dt_out, k = args
     from scipy.integrate import solve_ivp
+    SIM = CFG.simulation
 
     def rhs(_t, s):
         return np.concatenate([s[3:], acceleration(s[:3], nuclei, k)])
@@ -89,9 +107,9 @@ def one_track(args: tuple[np.ndarray, np.ndarray, float, float]) -> tuple[np.nda
     leave.terminal = True
     leave.direction = 1
 
-    s0 = np.concatenate([start, [1.0, 0.0, 0.0]])
-    sol = solve_ivp(rhs, (0.0, 4 * (R_STOP - X_START)), s0, method="DOP853",
-                    rtol=1e-9, atol=1e-9, events=leave, dense_output=True)
+    s0 = np.concatenate([start, [SIM.speed, 0.0, 0.0]])
+    sol = solve_ivp(rhs, (0.0, SIM.time_limit_factor * (R_STOP - X_START) / SIM.speed), s0, method=SIM.method,
+                    rtol=SIM.rtol, atol=SIM.atol, events=leave, dense_output=True)
     t_end = sol.t[-1]
     t = np.arange(0.0, t_end, dt_out)
     path = sol.sol(t)[:3].T
@@ -101,14 +119,15 @@ def one_track(args: tuple[np.ndarray, np.ndarray, float, float]) -> tuple[np.nda
 
 
 def simulate(seed: int, n_alpha: int, out: Path, r_min: float = R_MIN, layers: int = LAYERS) -> None:
+    SIM = CFG.simulation
     rng = np.random.default_rng(seed)
     nuclei = make_foil(rng, layers)
     starts = np.column_stack([np.full(n_alpha, X_START),
                               rng.uniform(-BEAM_HALF, BEAM_HALF, n_alpha),
                               rng.uniform(-BEAM_HALF, BEAM_HALF, n_alpha)])
-    dt_out = 1.0
+    dt_out = SIM.dt_out
     with ProcessPoolExecutor() as pool:
-        results = list(pool.map(one_track, [(nuclei, s, dt_out, r_min * 0.5) for s in starts], chunksize=8))
+        results = list(pool.map(one_track, [(nuclei, s, dt_out, r_min * SIM.energy) for s in starts], chunksize=SIM.chunksize))
     paths = [r[0] for r in results]
     lengths = np.array([len(p) for p in paths])
     flat = np.concatenate(paths)
@@ -117,7 +136,7 @@ def simulate(seed: int, n_alpha: int, out: Path, r_min: float = R_MIN, layers: i
     np.savez_compressed(out, nuclei=nuclei, starts=starts, flat=flat, lengths=lengths,
                         angles=angles, dt=dt_out, r_min=r_min, layers=layers,
                         beam_half=BEAM_HALF, spacing=SPACING)
-    print(f"{n_alpha} tracks, {np.sum(angles > 90)} turned by more than 90 degrees -> {out}")
+    print(f"{n_alpha} tracks, {np.sum(angles > CFG.film.turned_deg)} turned by more than {CFG.film.turned_deg:g} degrees -> {out}")
 
 
 def rutherford_curve(theta_deg: np.ndarray, n_alpha: int, r_min: float, layers: int) -> np.ndarray:
@@ -128,10 +147,15 @@ def rutherford_curve(theta_deg: np.ndarray, n_alpha: int, r_min: float, layers: 
     return per_rad * math.pi / 180.0
 
 
+def smooth(v: float, a: float, b: float) -> float:
+    u = min(max((v - a) / (b - a), 0.0), 1.0)
+    return u * u * (3 - 2 * u)
+
+
 # ------------------------------------------------------------------- the film
 
 def render(data_path: Path, out: Path, size: tuple[int, int], fps: int, seconds: float | None,
-           snap: float | None = None) -> None:
+           lang: str = "en", snap: float | None = None) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -139,17 +163,19 @@ def render(data_path: Path, out: Path, size: tuple[int, int], fps: int, seconds:
 
     if not shutil.which("ffmpeg"):
         sys.exit("ffmpeg is required")
+    tx = TEXT[lang]
+    V, FM, LY, F, ST = CFG.video, CFG.film, CFG.layout, CFG.fonts, CFG.style
     d = np.load(data_path)
     nuclei, flat, lengths, angles = d["nuclei"], d["flat"], d["lengths"], d["angles"]
     n = len(lengths)
     offsets = np.concatenate([[0], np.cumsum(lengths)])
     dt = float(d["dt"])
     W, H = size
-    dpi = 100
-    speed = 80.0                        # simulation units per film second
-    window = 150.0                      # half-size of the foil view
-    launch_span = 17.0                  # film seconds over which alphas are fired
-    rng = np.random.default_rng(1)
+    dpi = V.dpi
+    speed = FM.speed                    # simulation units per film second
+    window = FM.window                  # half-size of the foil view
+    launch_span = FM.launch_span        # film seconds over which alphas are fired
+    rng = np.random.default_rng(FM.launch_seed)
     t0 = np.sort(rng.uniform(0.0, launch_span, n))
     # film time at which each alpha leaves the foil view (for the histogram)
     exit_t = np.empty(n)
@@ -158,33 +184,37 @@ def render(data_path: Path, out: Path, size: tuple[int, int], fps: int, seconds:
         far = np.where(np.linalg.norm(p, axis=1) > window)[0]
         far = far[p[far, 0] > -window] if len(far) else far
         exit_t[i] = t0[i] + (dt * (far[0] if len(far) else len(p) - 1)) / speed
-    total = float(seconds) if seconds else float(exit_t.max() + 3.0)
+    total = float(seconds) if seconds else float(exit_t.max() + FM.end_pad)
     frames = int(round(total * fps))
-    turned = angles > 90.0
-    big = angles > 10.0
-    bins = np.linspace(0, 180, 91)
-    theory_x = np.linspace(1.0, 179.0, 400)
-    theory_y = rutherford_curve(theory_x, n, float(d["r_min"]), int(d["layers"])) * 2.0          # per 2-degree bin
+    turned = angles > FM.turned_deg
+    big = angles > FM.big_deg
+    bins = np.linspace(0, FM.angle_max, FM.hist_bins + 1)
+    bin_width = FM.angle_max / FM.hist_bins
+    theory_x = np.linspace(*FM.theory_range, FM.theory_samples)
+    theory_y = rutherford_curve(theory_x, n, float(d["r_min"]), int(d["layers"])) * bin_width          # per bin
+    words = dict(turned=num(FM.turned_deg, "g", lang), bin=num(bin_width, "g", lang), layers=int(d["layers"]), one_in=FM.real_one_in)
 
-    fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor="#0a0d14")
-    sc = H / 720.0                                   # font scale
-    ax = fig.add_axes([0.02, 0.08, 0.80 * H / W, 0.80])   # square foil view
-    axh = fig.add_axes([0.575, 0.20, 0.395, 0.55], facecolor="#10141f")
-    gold = "#e6b422"
+    BG = ST.figure_background
+    bg_rgba = np.array([int(BG[1:3], 16), int(BG[3:5], 16), int(BG[5:7], 16), 255], np.float32)
+    fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor=BG)
+    sc = H / V.reference_height                      # font scale
+    ax = fig.add_axes([LY.scene_pos[0], LY.scene_pos[1], LY.scene_height * H / W, LY.scene_height])   # square foil view
+    axh = fig.add_axes(LY.hist_axes, facecolor=ST.hist_background)
+    gold = ST.gold
 
     def setup_scene() -> None:
-        ax.set_facecolor("#05070c")
+        ax.set_facecolor(ST.scene_background)
         ax.set_xlim(-window, window)
         ax.set_ylim(-window, window)
         ax.set_aspect("equal")
         ax.set_xticks([])
         ax.set_yticks([])
         for s in ax.spines.values():
-            s.set_color("#2a3142")
+            s.set_color(ST.spine)
 
     writer = None if snap is not None else subprocess.Popen(
         ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
-         "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "20",
+         "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", V.preset, "-crf", str(V.crf),
          "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], stdin=subprocess.PIPE)
 
     layer_x = np.unique(np.round(nuclei[:, 0], 6))
@@ -194,10 +224,10 @@ def render(data_path: Path, out: Path, size: tuple[int, int], fps: int, seconds:
         ax.clear()
         setup_scene()
         # foil: translucent gold slab and nuclei (projection on the x-y plane)
-        ax.axvspan(layer_x.min() - 4, layer_x.max() + 4, color=gold, alpha=0.10, lw=0)
-        ax.scatter(nuclei[:, 0], nuclei[:, 1], s=34, color=gold, edgecolors="#fff2b0",
-                   linewidths=0.4, zorder=3)
-        active = np.where((tf >= t0) & (tf < exit_t + 0.4))[0]
+        ax.axvspan(layer_x.min() - LY.slab_margin, layer_x.max() + LY.slab_margin, color=gold, alpha=ST.slab_alpha, lw=0)
+        ax.scatter(nuclei[:, 0], nuclei[:, 1], s=ST.nucleus_size, color=gold, edgecolors=ST.nucleus_edge,
+                   linewidths=ST.nucleus_edge_width, zorder=3)
+        active = np.where((tf >= t0) & (tf < exit_t + FM.exit_delay))[0]
         pts, cols, sizes = [], [], []
         segs, segcols = [], []
         for i in active:
@@ -205,54 +235,61 @@ def render(data_path: Path, out: Path, size: tuple[int, int], fps: int, seconds:
             idx = min(idx, lengths[i] - 1)
             p = flat[offsets[i]:offsets[i] + idx + 1]
             pos = p[-1]
-            color = "#ff5a4d" if turned[i] else ("#7fd1ff" if big[i] else "#c8d3e6")
+            color = ST.turned_colour if turned[i] else (ST.big_colour if big[i] else ST.alpha_colour)
             pts.append(pos[:2])
             cols.append(color)
-            sizes.append(26 if turned[i] else 7)
+            sizes.append(ST.point_size_turned if turned[i] else ST.point_size)
             if (big[i] or turned[i]) and len(p) > 2:
-                tail = p[max(0, idx - 60):, :2]
+                tail = p[max(0, idx - FM.tail):, :2]
                 segs.append(tail)
                 segcols.append(color)
         if segs:
-            ax.add_collection(LineCollection(segs, colors=segcols, linewidths=1.0, alpha=0.7, zorder=2))
+            ax.add_collection(LineCollection(segs, colors=segcols, linewidths=ST.tail_width, alpha=ST.tail_alpha, zorder=2))
         if pts:
             pts = np.array(pts)
             ax.scatter(pts[:, 0], pts[:, 1], s=sizes, c=cols, zorder=4, linewidths=0)
-        ax.text(-window + 6, window - 14, "α", color="#c8d3e6", fontsize=16 * sc)
-        ax.annotate("", xy=(-window + 52, window - 38), xytext=(-window + 8, window - 38),
-                    arrowprops=dict(arrowstyle="->", color="#c8d3e6", lw=1.4))
-        ax.text(layer_x.max() + 8, -window + 8, "gold foil / золотая фольга", color=gold, fontsize=11 * sc)
+        ax.text(-window + LY.alpha_label_offset[0], window - LY.alpha_label_offset[1], tx["alpha_label"], color=ST.alpha_colour,
+                fontsize=F.alpha_label * sc)
+        ax.annotate("", xy=(-window + LY.arrow_offset[1], window - LY.arrow_offset[2]),
+                    xytext=(-window + LY.arrow_offset[0], window - LY.arrow_offset[2]),
+                    arrowprops=dict(arrowstyle=ST.arrow_style, color=ST.alpha_colour, lw=ST.arrow_width))
+        ax.text(layer_x.max() + LY.foil_label_offset[0], -window + LY.foil_label_offset[1], tx["foil_label"], color=gold,
+                fontsize=F.foil_label * sc)
         # histogram of the particles that have already left
         done = exit_t <= tf
         axh.clear()
-        axh.set_facecolor("#10141f")
+        axh.set_facecolor(ST.hist_background)
         counts, _ = np.histogram(angles[done], bins=bins)
-        axh.bar(bins[:-1] + 1.0, counts, width=1.8, color="#7fd1ff", log=True)
-        axh.axvspan(90, 180, color="#ff5a4d", alpha=0.10, lw=0)
-        sel = theory_x >= 12.0
-        axh.plot(theory_x[sel], theory_y[sel], color=gold, lw=1.8, label="Rutherford 1/sin⁴(θ/2)")
-        axh.set_xlim(0, 180)
+        axh.bar(bins[:-1] + bin_width / 2, counts, width=ST.bar_width, color=ST.bar_colour, log=True)
+        axh.axvspan(FM.turned_deg, FM.angle_max, color=ST.turned_colour, alpha=ST.turned_region_alpha, lw=0)
+        sel = theory_x >= FM.theory_min_deg
+        axh.plot(theory_x[sel], theory_y[sel], color=gold, lw=ST.theory_width, label=tx["legend"])
+        axh.set_xlim(0, FM.angle_max)
         axh.set_yscale("log")
-        axh.set_ylim(0.5, 1500)
-        axh.set_xlabel("scattering angle θ, degrees / угол рассеяния θ, градусы", color="#c8d3e6", fontsize=11 * sc)
-        axh.set_ylabel("particles per 2° / частиц на 2°", color="#c8d3e6", fontsize=11 * sc)
-        axh.tick_params(colors="#c8d3e6", labelsize=10 * sc)
+        axh.set_ylim(*LY.hist_ylim)
+        axh.set_xlabel(tx["xlabel"], color=ST.text, fontsize=F.axis_label * sc)
+        axh.set_ylabel(tx["ylabel"].format(**words), color=ST.text, fontsize=F.axis_label * sc)
+        axh.tick_params(colors=ST.text, labelsize=F.tick * sc)
         for s in axh.spines.values():
-            s.set_color("#2a3142")
-        axh.legend(loc="upper right", frameon=False, labelcolor=gold, fontsize=11 * sc)
-        axh.text(92, 0.45, "θ > 90°", color="#ff8a7d", fontsize=11 * sc)
+            s.set_color(ST.spine)
+        axh.legend(loc=LY.legend_loc, frameon=False, labelcolor=gold, fontsize=F.legend * sc)
+        axh.text(*LY.turned_label_pos, tx["turned_label"].format(**words), color=ST.turned_text, fontsize=F.turned_label * sc)
         fig.texts.clear()
-        fig.text(0.02, 0.925, "Rutherford scattering / Рассеяние Резерфорда", color="white", fontsize=19 * sc)
-        fig.text(0.585, 0.86, f"fired / выпущено: {int(np.sum(t0 <= tf))}", color="#c8d3e6", fontsize=14 * sc)
-        fig.text(0.585, 0.805, f"turned back (θ > 90°) / назад: {int(np.sum(turned & done))}", color="#ff8a7d", fontsize=14 * sc)
-        fig.text(0.02, 0.025, "schematic: 4 atomic layers, nuclei drawn much larger than they are; "
-                 "in a real foil about 1 in 8000 turns back / схема: 4 слоя атомов, ядра увеличены",
-                 color="#7f8aa3", fontsize=9 * sc)
+        fig.text(*LY.title_pos, tx["title"], color=ST.title, fontsize=F.title * sc)
+        fig.text(*LY.fired_pos, tx["fired"].format(n=int(np.sum(t0 <= tf))), color=ST.text, fontsize=F.counter * sc)
+        fig.text(*LY.turned_pos, tx["turned"].format(n=int(np.sum(turned & done)), **words), color=ST.turned_text, fontsize=F.counter * sc)
+        fig.text(*LY.note_pos, tx["note"].format(**words), color=ST.note_colour, fontsize=F.note * sc)
         fig.canvas.draw()
+        frame = np.asarray(fig.canvas.buffer_rgba())
+        if V.fade_s > 0:
+            fade = min(smooth(tf, 0.0, V.fade_s), 1.0 - smooth(tf, total - V.fade_s, total))
+            if fade < 1.0:
+                frame = (bg_rgba + (frame.astype(np.float32) - bg_rgba) * fade).clip(0, 255).astype(np.uint8)
         if writer is None:
-            fig.savefig(out, dpi=dpi, facecolor=fig.get_facecolor())
+            from PIL import Image
+            Image.fromarray(frame).save(out)
         else:
-            writer.stdin.write(np.asarray(fig.canvas.buffer_rgba()).tobytes())
+            writer.stdin.write(frame.tobytes())
     if writer is not None:
         writer.stdin.close()
         writer.wait()
@@ -263,25 +300,30 @@ def render(data_path: Path, out: Path, size: tuple[int, int], fps: int, seconds:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--simulate", action="store_true", help="only integrate the trajectories")
-    ap.add_argument("--seed", type=int, default=11)
+    ap.add_argument("--seed", type=int, default=CFG.simulation.seed)
     ap.add_argument("--alphas", type=int, default=N_ALPHA)
     ap.add_argument("--r-min", type=float, default=R_MIN)
     ap.add_argument("--layers", type=int, default=LAYERS)
+    ap.add_argument("--lang", choices=("en", "ru"), default="en")
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--snapshot", type=float, default=None, help="write one PNG at this film time (s)")
     ap.add_argument("--data", type=Path, default=MEDIA / "rutherford_tracks.npz")
-    ap.add_argument("--out", type=Path, default=MEDIA / "rutherford.mp4")
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--config", type=Path, default=None, help="another configuration file instead of config.toml")
+    ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="override one configuration value")
     args = ap.parse_args()
+    V = CFG.video
+    out = args.out or MEDIA / f"rutherford_{args.lang}.mp4"
     if args.simulate or not args.data.exists():
         simulate(args.seed, args.alphas, args.data, args.r_min, args.layers)
         if args.simulate:
             return
     if args.snapshot is not None:
-        render(args.data, args.out.with_suffix(".png"), (1280, 720), 30, None, snap=args.snapshot)
+        render(args.data, out.with_suffix(".png"), (V.width, V.height), V.fps, None, args.lang, snap=args.snapshot)
     elif args.preview:
-        render(args.data, args.out.with_name("rutherford_preview.mp4"), (640, 360), 15, 4.0)
+        render(args.data, out.with_name(out.stem + "_preview.mp4"), (V.preview_width, V.preview_height), V.preview_fps, V.preview_seconds, args.lang)
     else:
-        render(args.data, args.out, (1280, 720), 30, None)
+        render(args.data, out, (V.width, V.height), V.fps, None, args.lang)
 
 
 if __name__ == "__main__":

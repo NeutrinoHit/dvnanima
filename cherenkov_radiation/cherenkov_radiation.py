@@ -17,10 +17,12 @@ theta_max = 41.2 deg.
 Scenes (film time, s): 0-10 beta = 0.55 (below threshold); 10-19 beta = 0.85; 19-28 beta = 0.99;
 28-40 beta rises slowly 0.80 -> 0.99 and the ring grows.
 
+All the numbers are in config.toml and all the words in texts.toml (see ../dvconfig.py for --config / --set).
+
 Usage:
-    python cherenkov_radiation.py                 # film -> media/cherenkov_radiation.mp4
-    python cherenkov_radiation.py --preview
-    python cherenkov_radiation.py --snapshot 22
+    python cherenkov_radiation.py --lang en       # film -> media/cherenkov_radiation_en.mp4
+    python cherenkov_radiation.py --lang ru
+    python cherenkov_radiation.py --lang en --snapshot 22
 """
 
 from __future__ import annotations
@@ -34,16 +36,21 @@ from pathlib import Path
 
 import numpy as np
 
-HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from dvconfig import load_config, load_texts  # noqa: E402
 
-N_INDEX = 1.33
-M_ELECTRON, M_MUON = 0.511, 105.658       # MeV
-L_DET = 1.0                               # radiator-to-detector distance, units of the ring panel
-EMIT_DT = 0.10                            # wavelet emission period, s
-WINDOW_BACK, WINDOW_FRONT = 4.4, 1.3      # world window relative to the particle
+HERE = Path(__file__).resolve().parent
+CFG = load_config(HERE)
+
+N_INDEX = CFG.physics.n_index
+M_ELECTRON, M_MUON = CFG.physics.electron_mass_mev, CFG.physics.muon_mass_mev       # MeV
+L_DET = CFG.physics.detector_distance                               # radiator-to-detector distance, units of the ring panel
+EMIT_DT = CFG.physics.emit_dt                                       # wavelet emission period, s
+WINDOW_BACK, WINDOW_FRONT = CFG.physics.window_back, CFG.physics.window_front      # world window relative to the particle
 # (film time, beta) knots: beta(t) is linear between knots
-BETA_KNOTS = ((0.0, 0.55), (10.0, 0.55), (11.5, 0.85), (19.0, 0.85), (20.5, 0.99), (28.0, 0.99),
-              (29.5, 0.80), (40.0, 0.99))
+BETA_KNOTS = tuple(tuple(k) for k in CFG.timeline.beta_knots)
+FILM_LENGTH = CFG.timeline.film_length
+TRANSITIONS = [tuple(w) for w in CFG.timeline.transitions]
 
 
 # ------------------------------------------------------------------ physics
@@ -85,10 +92,10 @@ def beta_of_t(t: float) -> float:
 
 
 def in_transition(t: float) -> bool:
-    return 10.0 <= t < 11.5 or 19.0 <= t < 20.5 or 28.0 <= t < 29.5
+    return any(a <= t < b for a, b in TRANSITIONS)
 
 
-def trajectory(t_end: float, dt: float = 1 / 120) -> tuple[np.ndarray, np.ndarray]:
+def trajectory(t_end: float, dt: float = 1 / CFG.physics.trajectory_per_s) -> tuple[np.ndarray, np.ndarray]:
     ts = np.arange(0.0, t_end + dt, dt)
     beta = np.array([beta_of_t(t) for t in ts])
     x = np.concatenate([[0.0], np.cumsum(0.5 * (beta[1:] + beta[:-1]) * dt)])
@@ -109,7 +116,15 @@ def smooth(v: float, a: float, b: float) -> float:
 
 # --------------------------------------------------------------------- film
 
-def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float | None = None) -> None:
+TEXT = {lang: load_texts(HERE, lang) for lang in ("en", "ru")}     # texts.toml
+
+
+def num(x: float, fmt: str, lang: str) -> str:
+    s = format(x, fmt)
+    return s.replace(".", "{,}") if lang == "ru" else s
+
+
+def render(out: Path, size: tuple[int, int], fps: int, total: float, lang: str = "en", snap: float | None = None) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.patches as mp
@@ -118,20 +133,24 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
 
     if snap is None and not shutil.which("ffmpeg"):
         sys.exit("ffmpeg is required")
+    tx = TEXT[lang]
+    V, LY, ST, WV, SC, AP, RP = CFG.video, CFG.layout, CFG.style, CFG.wavelets, CFG.scene, CFG.angle_panel, CFG.ring_panel
     W, H = size
-    dpi = 100
-    sc = H / 720.0
-    BG = "#03060c"
-    TXT = (0.88, 0.93, 1.0, 0.95)
-    DIM = (0.6, 0.68, 0.8, 0.9)
+    dpi = V.dpi
+    sc = H / V.reference_height
+    BG = ST.background
+    bg_rgba = np.array([int(BG[1:3], 16), int(BG[3:5], 16), int(BG[5:7], 16), 255], np.float32)
+    TXT = tuple(ST.text)
+    DIM = tuple(ST.dim)
+    PART, LIGHT = tuple(ST.particle), tuple(ST.light)
     fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor=BG)
     ww = WINDOW_BACK + WINDOW_FRONT
-    ax_w = fig.add_axes([0.03, 0.17, 0.62, 0.70])
-    wh = ww * (0.70 * H) / (0.62 * W)
-    ax_a = fig.add_axes([0.715, 0.585, 0.27, 0.275], facecolor="none")     # theta(beta)
-    ax_r = fig.add_axes([0.715, 0.15, 0.27, 0.31], facecolor="none")     # ring on the detector
+    ax_w = fig.add_axes(LY.world_axes)
+    wh = ww * (LY.world_axes[3] * H) / (LY.world_axes[2] * W)
+    ax_a = fig.add_axes(AP.axes, facecolor="none")     # theta(beta)
+    ax_r = fig.add_axes(RP.axes, facecolor="none")     # ring on the detector
 
-    k = total / 40.0
+    k = total / FILM_LENGTH
     ts, xs = trajectory(total / k)
     frames = int(round(total * fps))
     ids = [int(round(snap * fps))] if snap is not None else range(frames)
@@ -139,17 +158,23 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
     if snap is None:
         writer = subprocess.Popen(
             ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
-             "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "19",
+             "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", V.preset, "-crf", str(V.crf),
              "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], stdin=subprocess.PIPE)
-    bgrid = np.linspace(threshold_beta() + 1e-6, 0.9999, 200)
+    bgrid = np.linspace(threshold_beta() + AP.beta_epsilon, AP.beta_max, AP.grid_points)
     th_curve = np.array([math.degrees(cherenkov_angle(b)) for b in bgrid])
     th_max = math.degrees(math.acos(1 / N_INDEX))
 
+    from matplotlib.ticker import FuncFormatter
+
     def style(ax):
+        if lang == "ru":
+            fmt = FuncFormatter(lambda v, _: f"{v:g}".replace(".", ",").replace("-", "\u2212"))
+            ax.xaxis.set_major_formatter(fmt)
+            ax.yaxis.set_major_formatter(fmt)
         for s in ax.spines.values():
-            s.set_color((0.5, 0.6, 0.75, 0.6))
-            s.set_linewidth(0.8 * sc)
-        ax.tick_params(colors=(0.65, 0.72, 0.85), labelsize=9 * sc, length=3 * sc)
+            s.set_color(tuple(ST.spine_colour))
+            s.set_linewidth(ST.spine_width * sc)
+        ax.tick_params(colors=tuple(ST.tick_colour), labelsize=ST.tick_size * sc, length=ST.tick_length * sc)
 
     for k_ in ids:
         t_film = k_ / fps
@@ -168,107 +193,101 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
         ax_w.set_ylim(-wh / 2, wh / 2)
         ax_w.axis("off")
         # medium
-        ax_w.add_patch(mp.Rectangle((xp - WINDOW_BACK, -wh / 2), ww, wh, color=(0.10, 0.22, 0.34, 0.45), lw=0, zorder=0))
+        ax_w.add_patch(mp.Rectangle((xp - WINDOW_BACK, -wh / 2), ww, wh, color=tuple(WV.medium_colour), lw=0, zorder=0))
         # wavelets
         xe, r = wavelets(t, ts, xs)
-        ang = np.linspace(0, 2 * math.pi, 80)
-        keep = r < 1.25 * WINDOW_BACK
+        ang = np.linspace(0, 2 * math.pi, WV.points)
+        keep = r < WV.keep_factor * WINDOW_BACK
         segs = [np.column_stack([c + rr * np.cos(ang), rr * np.sin(ang)]) for c, rr in zip(xe[keep], r[keep])]
         age = r[keep] * N_INDEX
-        cols = [(0.55, 0.8, 1.0, 0.55 * math.exp(-a / 4.0) + 0.08) for a in age]
-        ax_w.add_collection(LineCollection(segs, colors=cols, linewidths=1.0 * sc, zorder=2))
+        cols = [(*WV.colour, WV.alpha_gain * math.exp(-a / WV.decay_time) + WV.alpha_base) for a in age]
+        ax_w.add_collection(LineCollection(segs, colors=cols, linewidths=WV.width * sc, zorder=2))
         # track and particle
-        ax_w.plot([xp - WINDOW_BACK, xp], [0, 0], color=(1.0, 0.85, 0.4, 0.35), lw=1.0 * sc, ls=":", zorder=3)
-        ax_w.plot([xp], [0], "o", color=(1.0, 0.8, 0.3), ms=9 * sc, zorder=8)
-        ax_w.annotate("", xy=(xp + 0.95, 0), xytext=(xp + 0.25, 0),
-                      arrowprops=dict(arrowstyle="-|>", color=(1.0, 0.8, 0.3), lw=1.6 * sc), zorder=8)
-        ax_w.text(xp + 0.62, 0.18, "v", color=(1.0, 0.8, 0.3), fontsize=12 * sc, ha="center", zorder=8)
+        ax_w.plot([xp - WINDOW_BACK, xp], [0, 0], color=(*ST.track, SC.track_alpha), lw=SC.track_width * sc, ls=SC.track_dash, zorder=3)
+        ax_w.plot([xp], [0], "o", color=PART, ms=SC.particle_size * sc, zorder=8)
+        ax_w.annotate("", xy=(xp + SC.velocity_arrow["x1"], 0), xytext=(xp + SC.velocity_arrow["x0"], 0),
+                      arrowprops=dict(arrowstyle="-|>", color=PART, lw=SC.velocity_arrow["lw"] * sc), zorder=8)
+        ax_w.text(xp + SC.velocity_label["dx"], SC.velocity_label["y"], r"$\mathbf{v}$", color=PART, fontsize=SC.velocity_label["size"] * sc, ha="center", zorder=8)
         if above:
-            fade = 1.0 - smooth(abs(t - 10.75), 0.0, 0.75) if False else (0.25 if in_transition(t) else 1.0)
+            fade = CFG.timeline.transition_alpha if in_transition(t) else 1.0
             # envelope (cone) and photon rays
             for sgn in (+1, -1):
-                ex = xp - 5.0 * math.cos(psi)
-                ey = sgn * 5.0 * math.sin(psi)
-                ax_w.plot([xp, ex], [0, ey], color=(1.0, 1.0, 1.0, 0.9 * fade), lw=2.2 * sc, zorder=6)
-            for lag in (0.7, 1.5, 2.3, 3.1):
+                ex = xp - SC.cone_length * math.cos(psi)
+                ey = sgn * SC.cone_length * math.sin(psi)
+                ax_w.plot([xp, ex], [0, ey], color=(*ST.cone, SC.cone_alpha * fade), lw=SC.cone_width * sc, zorder=6)
+            for lag in SC.ray_lags:
                 for sgn in (+1, -1):
                     x0 = xp - lag
-                    ax_w.annotate("", xy=(x0 + 0.62 * math.cos(th), sgn * 0.62 * math.sin(th)), xytext=(x0, 0),
-                                  arrowprops=dict(arrowstyle="-|>", color=(0.45, 0.85, 1.0, 0.9 * fade), lw=1.5 * sc), zorder=5)
+                    ax_w.annotate("", xy=(x0 + SC.ray_length * math.cos(th), sgn * SC.ray_length * math.sin(th)), xytext=(x0, 0),
+                                  arrowprops=dict(arrowstyle="-|>", color=(*LIGHT, SC.ray_alpha * fade), lw=SC.ray_width * sc), zorder=5)
             # angle arc
-            arc = np.linspace(0, th, 30)
-            ax_w.plot(xp - 2.3 + 0.38 * np.cos(arc), 0.38 * np.sin(arc), color=(0.45, 0.85, 1.0, fade), lw=1.2 * sc, zorder=6)
-            ax_w.text(xp - 1.78, 0.12, "θ", color=(0.45, 0.85, 1.0, fade), fontsize=12 * sc, zorder=6)
-            lab = f"cos θ = 1/(nβ) = {math.cos(th):.3f}   θ = {math.degrees(th):.1f}°"
+            arc = np.linspace(0, th, SC.arc_points)
+            ax_w.plot(xp + SC.arc_centre_dx + SC.arc_radius * np.cos(arc), SC.arc_radius * np.sin(arc), color=(*LIGHT, fade), lw=SC.arc_width * sc, zorder=6)
+            ax_w.text(xp + SC.theta_label["dx"], SC.theta_label["y"], r"$\theta$", color=(*LIGHT, fade), fontsize=SC.theta_label["size"] * sc, zorder=6)
+            lab = rf"$\cos\theta=1/(n\beta)={num(math.cos(th), '.3f', lang)}\quad\theta={num(math.degrees(th), '.1f', lang)}^\circ$"
         else:
-            lab = "βn < 1: the wavelets do not overlap, no light"
+            lab = rf"$\beta n<1$: {tx['nolight']}"
         # panel text
-        n_txt = f"n = {N_INDEX:g}   β = {beta:.3f}   βn = {beta * N_INDEX:.2f}"
-        ax_w.text(xp - WINDOW_BACK + 0.12, wh / 2 - 0.2, n_txt, color=TXT, fontsize=12 * sc, va="top", zorder=9)
-        ax_w.text(xp - WINDOW_BACK + 0.12, wh / 2 - 0.55, lab, color=(0.45, 0.85, 1.0) if above else DIM,
-                  fontsize=11.5 * sc, va="top", zorder=9)
+        n_txt = rf"$n={num(N_INDEX, 'g', lang)}\quad\beta={num(beta, '.3f', lang)}\quad\beta n={num(beta * N_INDEX, '.2f', lang)}$"
+        ax_w.text(xp - WINDOW_BACK + SC.info1_offset[0], wh / 2 - SC.info1_offset[1], n_txt, color=TXT, fontsize=SC.info1_size * sc, va="top", zorder=9)
+        ax_w.text(xp - WINDOW_BACK + SC.info2_offset[0], wh / 2 - SC.info2_offset[1], lab, color=LIGHT if above else DIM,
+                  fontsize=SC.info2_size * sc, va="top", zorder=9)
 
         # ------------------------------------------------ theta(beta)
         ax_a.clear()
         ax_a.set_facecolor("none")
         style(ax_a)
-        ax_a.plot(bgrid, th_curve, color=(0.45, 0.85, 1.0, 0.95), lw=1.8 * sc)
-        ax_a.axvline(threshold_beta(), color=(1, 1, 1, 0.45), lw=0.9 * sc, ls="--")
-        ax_a.axhline(th_max, color=(1, 1, 1, 0.3), lw=0.8 * sc, ls=":")
-        ax_a.set_xlim(0.5, 1.0)
-        ax_a.set_ylim(0, 52)
-        ax_a.set_xlabel("β", color=DIM, fontsize=10 * sc)
-        ax_a.set_ylabel("θ, deg", color=DIM, fontsize=10 * sc)
-        ax_a.text(threshold_beta() + 0.01, 3, "threshold\nβ = 1/n", color=DIM, fontsize=9 * sc)
-        ax_a.text(0.995, th_max + 1.5, f"θmax = {th_max:.1f}°", color=DIM, fontsize=9 * sc, ha="right")
+        ax_a.plot(bgrid, th_curve, color=(*LIGHT, AP.curve_alpha), lw=AP.curve_width * sc)
+        ax_a.axvline(threshold_beta(), color=(*ST.guide, AP.threshold_alpha), lw=AP.threshold_width * sc, ls="--")
+        ax_a.axhline(th_max, color=(*ST.guide, AP.max_alpha), lw=AP.max_width * sc, ls=":")
+        ax_a.set_xlim(*AP.xlim)
+        ax_a.set_ylim(*AP.ylim)
+        ax_a.set_xlabel(r"$\beta$", color=DIM, fontsize=AP.label_size * sc)
+        ax_a.set_ylabel(rf"$\theta$, {tx['deg']}", color=DIM, fontsize=AP.label_size * sc)
+        ax_a.text(threshold_beta() + AP.threshold_label["dx"], AP.threshold_label["y"], tx["thr"] + "\n" + r"$\beta=1/n$", color=DIM, fontsize=AP.threshold_label["size"] * sc)
+        ax_a.text(AP.max_label["x"], th_max + AP.max_label["dy"], rf"$\theta_{{\max}}={num(th_max, '.1f', lang)}^\circ$", color=DIM, fontsize=AP.max_label["size"] * sc, ha="right")
         if above:
-            ax_a.plot([beta], [math.degrees(th)], "o", color=(1.0, 0.8, 0.3), ms=7 * sc)
+            ax_a.plot([beta], [math.degrees(th)], "o", color=PART, ms=AP.marker_size * sc)
         else:
-            ax_a.plot([beta], [0], "o", color=(1.0, 0.8, 0.3), ms=7 * sc)
-        ax_a.set_title("Cherenkov angle", color=TXT, fontsize=10.5 * sc, loc="left")
+            ax_a.plot([beta], [0], "o", color=PART, ms=AP.marker_size * sc)
+        ax_a.set_title(tx["ang_title"], color=TXT, fontsize=AP.title_size * sc, loc="left")
 
         # ------------------------------------------------ ring on the detector
         ax_r.clear()
         ax_r.set_facecolor("none")
-        ax_r.set_xlim(-1.35, 1.35)
-        ax_r.set_ylim(-1.35, 1.35)
+        ax_r.set_xlim(-RP.lim, RP.lim)
+        ax_r.set_ylim(-RP.lim, RP.lim)
         ax_r.set_aspect("equal")
         for s in ax_r.spines.values():
             s.set_visible(False)
         ax_r.set_xticks([])
         ax_r.set_yticks([])
-        ax_r.add_patch(mp.Circle((0, 0), 1.25, fill=False, ec=(0.5, 0.6, 0.75, 0.6), lw=1.0 * sc))
-        ax_r.plot([0], [0], "+", color=(1.0, 0.8, 0.3), ms=8 * sc)
+        ax_r.add_patch(mp.Circle((0, 0), RP.detector_radius, fill=False, ec=(*ST.detector, RP.detector_alpha), lw=RP.detector_width * sc))
+        ax_r.plot([0], [0], "+", color=PART, ms=RP.centre_marker_size * sc)
         R = ring_radius(beta)
         if R is not None:
-            phis = np.linspace(0, 2 * math.pi, 200)
-            ax_r.plot(R * np.cos(phis), R * np.sin(phis), color=(0.45, 0.85, 1.0, 0.95), lw=3.0 * sc)
-            ax_r.add_patch(mp.Circle((0, 0), R, fill=False, ec=(0.45, 0.85, 1.0, 0.25), lw=9 * sc))
-            ax_r.text(0, -1.33, f"R = L tan θ = {R:.2f} L", color=TXT, fontsize=10.5 * sc, ha="center")
+            phis = np.linspace(0, 2 * math.pi, RP.ring_points)
+            ax_r.plot(R * np.cos(phis), R * np.sin(phis), color=(*LIGHT, RP.ring_alpha), lw=RP.ring_width * sc)
+            ax_r.add_patch(mp.Circle((0, 0), R, fill=False, ec=(*LIGHT, RP.halo_alpha), lw=RP.halo_width * sc))
+            ax_r.text(0, RP.text_y, rf"$R=L\,\tan\theta={num(R, '.2f', lang)}\,L$", color=TXT, fontsize=RP.radius_size * sc, ha="center")
         else:
-            ax_r.text(0, -1.33, "no ring below threshold", color=DIM, fontsize=10.5 * sc, ha="center")
-        ax_r.set_title("ring on the detector", color=TXT, fontsize=10.5 * sc, loc="left")
+            ax_r.text(0, RP.text_y, tx["noring"], color=DIM, fontsize=RP.none_size * sc, ha="center")
+        ax_r.set_title(tx["ring_title"], color=TXT, fontsize=RP.title_size * sc, loc="left")
 
         # ------------------------------------------------ titles and captions
-        if t < 10.0:
-            cap = ("v < c/n: the wavelets of successive positions lie inside one another",
-                   "v < c/n: волны от последовательных положений вложены друг в друга")
-        elif t < 28.0:
-            cap = ("v > c/n: the wavelets add up along a common envelope, a cone; light goes perpendicular to it",
-                   "v > c/n: волны складываются вдоль общей огибающей, конуса; свет идёт перпендикулярно ей")
+        if t < CFG.timeline.caption_switch[0]:
+            cap = tx["cap1"]
+        elif t < CFG.timeline.caption_switch[1]:
+            cap = tx["cap2"]
         else:
-            cap = (f"the faster the charge, the wider the cone and the ring; threshold in water: e⁻ {threshold_kinetic_energy(M_ELECTRON):.2f} MeV, μ {threshold_kinetic_energy(M_MUON):.0f} MeV",
-                   f"чем быстрее заряд, тем шире конус и кольцо; порог в воде: e⁻ {threshold_kinetic_energy(M_ELECTRON):.2f} МэВ, μ {threshold_kinetic_energy(M_MUON):.0f} МэВ")
-        fig.text(0.03, 0.058, cap[0], color=TXT, fontsize=11.0 * sc)
-        fig.text(0.03, 0.022, cap[1], color=DIM, fontsize=9.8 * sc)
-        fig.text(0.03, 0.915, "Cherenkov radiation", color=TXT, fontsize=16 * sc)
-        fig.text(0.03, 0.885, "Излучение Вавилова — Черенкова", color=DIM, fontsize=11 * sc)
-        fade_io = min(smooth(t_film, 0.0, 0.5), 1.0 - smooth(t_film, total - 0.5, total))
+            cap = tx["cap3"].format(e=rf"${num(threshold_kinetic_energy(M_ELECTRON), '.2f', lang)}$", mu=rf"${num(threshold_kinetic_energy(M_MUON), '.0f', lang)}$")
+        fig.text(*LY.caption_pos, cap, color=TXT, fontsize=LY.caption_size * sc)
+        fig.text(*LY.title_pos, tx["title"], color=TXT, fontsize=LY.title_size * sc)
+        fade_io = min(smooth(t_film, 0.0, V.fade_s), 1.0 - smooth(t_film, total - V.fade_s, total))
         fig.canvas.draw()
         frame = np.asarray(fig.canvas.buffer_rgba()).astype(np.float32)
         if fade_io < 1.0:
-            bg = np.array([3, 6, 12, 255], np.float32)
-            frame = bg + (frame - bg) * fade_io
+            frame = bg_rgba + (frame - bg_rgba) * fade_io
         frame = frame.clip(0, 255).astype(np.uint8)
         if writer is None:
             from PIL import Image
@@ -284,18 +303,23 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--lang", choices=("en", "ru"), default="en")
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--snapshot", type=float, default=None)
-    ap.add_argument("--seconds", type=float, default=40.0)
-    ap.add_argument("--out", type=Path, default=HERE / "media" / "cherenkov_radiation.mp4")
+    ap.add_argument("--seconds", type=float, default=FILM_LENGTH)
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--config", type=Path, default=None, help="another configuration file instead of config.toml")
+    ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="override one configuration value")
     args = ap.parse_args()
-    args.out.parent.mkdir(parents=True, exist_ok=True)
+    V = CFG.video
+    out = args.out or HERE / "media" / f"cherenkov_radiation_{args.lang}.mp4"
+    out.parent.mkdir(parents=True, exist_ok=True)
     if args.snapshot is not None:
-        render(args.out.with_suffix(".png"), (1280, 720), 30, args.seconds, snap=args.snapshot)
+        render(out.with_suffix(".png"), (V.width, V.height), V.fps, args.seconds, args.lang, snap=args.snapshot)
     elif args.preview:
-        render(args.out.with_name("cherenkov_radiation_preview.mp4"), (640, 360), 15, args.seconds)
+        render(out.with_name(out.stem + "_preview.mp4"), (V.preview_width, V.preview_height), V.preview_fps, args.seconds, args.lang)
     else:
-        render(args.out, (1280, 720), 30, args.seconds)
+        render(out, (V.width, V.height), V.fps, args.seconds, args.lang)
 
 
 if __name__ == "__main__":

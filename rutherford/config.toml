@@ -1,0 +1,115 @@
+# Every number of the film "Rutherford scattering of alpha particles" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set foil.screen=40 --set film.speed=60
+# Units of the model: alpha mass m = 1, initial speed v0 = 1 (E = 1/2); lengths in the units of the simulation (r_min = 1 by default).
+# Film seconds; positions in [0, 1] are fractions of the frame; font sizes are points at 720 p.
+# The simulation parameters (foil, simulation) change the tracks: run `--simulate` again after changing them (the film reads media/rutherford_tracks.npz).
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 20
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+preview_seconds = 4.0
+fade_s = 0.0                      # fade in/out from the background colour; 0 = none (the film starts and ends as it is)
+reference_height = 720
+
+[foil]
+r_min = 1.0                       # head-on distance of closest approach
+layers = 4
+layer_gap = 14.0
+spacing = 50.0                    # mean spacing of the nuclei inside a layer
+half = 125.0                      # lateral half-size of the foil
+beam_half = 90.0                  # beam cross section: |y|, |z| <= beam_half
+x_start = -150.0
+r_stop = 260.0                    # trajectories stop at this distance from the foil centre
+n_alpha = 6000
+screen = 25.0                     # atomic screening length: the electrons make the atoms neutral
+jitter = 0.2                      # the nuclei are displaced from the lattice by up to this fraction of the spacing
+
+[simulation]
+seed = 11
+energy = 0.5                      # E = m v0^2 / 2; the strength of the potential is K = r_min * E
+speed = 1.0                       # v0
+dt_out = 1.0                      # the sampling step of the stored trajectories
+time_limit_factor = 4             # integration time limit = this * (r_stop - x_start) / v0
+method = "DOP853"
+rtol = 1e-9
+atol = 1e-9
+chunksize = 8                     # tracks per job of the process pool
+
+[film]
+speed = 80.0                      # simulation units per film second
+window = 150.0                    # half-size of the foil view
+launch_span = 17.0                # film seconds over which the alphas are fired
+launch_seed = 1                   # the random firing times
+exit_delay = 0.4                  # a particle stays on the screen this long after it has left the view
+end_pad = 3.0                     # the film lasts until the last particle has left + this
+turned_deg = 90.0                 # "turned back" above this angle
+big_deg = 10.0                    # the tracks of the particles above this angle are drawn
+angle_max = 180.0
+hist_bins = 90
+theory_range = [1.0, 179.0]
+theory_samples = 400
+theory_min_deg = 12.0             # the Rutherford curve is drawn only above this angle (see README)
+tail = 60                         # length of the track tail, in samples
+real_one_in = 8000                # one alpha in so many turns back in a real foil (a number in the text)
+
+[layout]
+scene_pos = [0.02, 0.08]          # the square foil view: lower left corner and height (the width follows from the aspect ratio)
+scene_height = 0.80
+hist_axes = [0.575, 0.20, 0.395, 0.55]
+hist_ylim = [0.5, 1500.0]
+title_pos = [0.02, 0.925]
+fired_pos = [0.585, 0.86]
+turned_pos = [0.585, 0.805]
+note_pos = [0.02, 0.025]
+alpha_label_offset = [6.0, 14.0]  # from the upper left corner of the view
+arrow_offset = [8.0, 52.0, 38.0] # x of the tail, x of the head (from the left edge) and y (below the top edge)
+foil_label_offset = [8.0, 8.0]    # from the right edge of the last layer and from the bottom of the view
+slab_margin = 4.0                 # the translucent slab extends this beyond the outer layers
+turned_label_pos = [92.0, 0.45]   # in the data of the histogram
+legend_loc = "upper right"
+
+[fonts]
+title = 19
+counter = 14
+note = 9
+alpha_label = 16
+foil_label = 11
+axis_label = 11
+tick = 10
+legend = 11
+turned_label = 11
+
+[style]
+figure_background = "#0a0d14"
+scene_background = "#05070c"
+hist_background = "#10141f"
+spine = "#2a3142"
+text = "#c8d3e6"
+title = "white"
+gold = "#e6b422"
+nucleus_edge = "#fff2b0"
+nucleus_edge_width = 0.4
+nucleus_size = 34
+slab_alpha = 0.10
+alpha_colour = "#c8d3e6"          # undeflected particles
+big_colour = "#7fd1ff"            # deflected by more than big_deg
+turned_colour = "#ff5a4d"         # turned back
+turned_text = "#ff8a7d"
+note_colour = "#7f8aa3"
+point_size = 7
+point_size_turned = 26
+tail_width = 1.0
+tail_alpha = 0.7
+arrow_style = "->"
+arrow_width = 1.4
+bar_colour = "#7fd1ff"
+bar_width = 1.8
+turned_region_alpha = 0.10
+theory_width = 1.8

@@ -1,0 +1,100 @@
+# Every number of the film "A free Gaussian wave packet" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set model.k0=3.0 --set layout.position_axes=[0.06,0.2,0.6,0.66]
+# Units: hbar = m = 1; film seconds; positions are fractions of the frame; font sizes are points at 720 p; line widths are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[model]
+k0 = 2.5                          # central wave number (= group velocity)
+sigma_narrow = 1.0                # sigma_x(0) of the main / narrow packet
+sigma_wide = 2.6                  # sigma_x(0) of the wide packet in scene 2
+t_max = 15.0                      # model time covered by one scene
+x_lo = -12.0
+x_hi = 52.0
+grid_points = 4096                # FFT grid
+box_length = 240.0
+box_centre = 12.0
+sigma_curve_samples = 300
+momentum_window = [0.2, 4.8]      # the part of the momentum space that is drawn
+momentum_ymax = 1.12
+
+[timeline]
+film_length = 34.0                # the nominal length of the film; the times below scale with the real length
+scene2_start = 17.0
+time_margin_start = 0.04          # the model time runs linearly between these fractions of a scene
+time_margin_span = 0.92
+scene_fade_s = 0.5                # fade between the scenes (scaled)
+scene_fade_floor = 0.35
+
+[layout]
+position_axes = [0.06, 0.20, 0.61, 0.66]
+momentum_axes = [0.725, 0.50, 0.25, 0.36]
+sigma_axes = [0.725, 0.20, 0.25, 0.17]
+strip_axes = [0.06, 0.175, 0.61, 0.17]       # a history strip that is switched off
+ylim_scene1 = [-0.95, 0.95]
+ylim_scene2 = [-0.1, 0.62]
+caption_box = [0.92, 0.075]
+caption_box_colour = [0.01, 0.02, 0.05, 0.8]
+caption_pos = [0.03, 0.03]
+title_pos = [0.06, 0.915]
+legend1_pos = [1.0, 0.82]         # offsets from x_lo (x) and the data y of the labels of scene 1
+legend1_pos2 = [8.0, 0.82]
+time_label_scene1 = [1.0, 0.82]   # offset from x_hi
+time_label_scene2 = [1.0, 0.55]
+sigma0_pos = [[1.0, 0.55], [1.0, 0.49]]
+width_arrow_y = 0.66
+width_label_y = 0.72
+momentum_colour_note = [4.7, 1.0]
+sigma_ylim_factor = 1.08       # the sigma_x(t) panel spans [0, max * this]
+
+[fonts]
+title = 17
+caption = 11.5
+axis_label = 11
+legend = 12
+time_label = 13
+width_label = 10.5
+panel_title = 10.5
+colour_note = 9.5
+tick = 9
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+spine_colour = [0.5, 0.6, 0.75, 0.6]
+spine_width = 0.8
+tick_colour = [0.65, 0.72, 0.85]
+tick_length = 3.0
+axis_line = [0.5, 0.6, 0.75, 0.3]
+axis_line_width = 0.7
+packet_narrow = [1.0, 0.72, 0.3]
+packet_wide = [0.35, 0.8, 1.0]
+real_part = [0.55, 0.78, 1.0]
+real_part_alpha = 0.9
+real_part_width = 1.1
+density_width_scene1 = 1.9
+density_width_scene2 = 2.0
+fill_alpha_scene1 = 0.25
+fill_alpha_scene2 = 0.22
+mean_line = [1.0, 1.0, 1.0, 0.5]
+mean_line_width = 0.9
+width_arrow = [1.0, 1.0, 1.0, 0.8]
+width_arrow_lw = 1.2
+momentum_fill_alpha = 0.25
+momentum_width = 1.8
+momentum_bar_width = 1.05
+sigma_curve_alpha = 0.9
+sigma_curve_width = 1.6
+sigma_marker = 6.0

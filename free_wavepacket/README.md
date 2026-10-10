@@ -12,13 +12,30 @@ Two scenes, 34 s. Units `hbar = m = 1`.
 The tests compare the FFT evolution with the analytic width and group velocity and check that the norm and
 `|psi~(p)|^2` are conserved.
 
+## Configuration
+
+Every number of the film (frame size and encoder, timeline, physics, sizes of the dots, lines and fonts, the layout of the frame,
+colours, opacities) is in `config.toml` (6 sections: `video`, `model`, `timeline`, `layout`, `fonts`, `style`); all the words and formulas are in `texts.toml` (one table per
+language, the same keys in both). The script contains only algorithms. A value can be changed without editing a file:
+
+```bash
+python free_wavepacket.py --lang en --snapshot 20 --set style.background='"#000000"' --set video.crf=18
+python free_wavepacket.py --lang en --config my_config.toml
+```
+
+`--set section.key=value` is repeatable (the value is a Python/TOML literal), `--config` takes another file with the same
+structure, a misspelt key is an error (see `../dvconfig.py`, tests in `../test_dvconfig.py`).
+
 Run from this directory (numpy, matplotlib, Pillow and ffmpeg are required):
 
 ```bash
-./render.sh                 # media/free_wavepacket.mp4
-./render.sh --preview       # low-resolution check
-./render.sh --snapshot 12   # one PNG at film time 12 s
+./render.sh --lang en         # media/free_wavepacket_en.mp4
+./render.sh --lang ru         # media/free_wavepacket_ru.mp4
+./render.sh --lang en --preview       # low-resolution check
+./render.sh --lang en --snapshot 12   # one PNG at film time 12 s
 python -m unittest test_free_wavepacket
 ```
 
 The older `fields/wavepackets_free` (Manim, scalar field) stays in the gallery.
+
+The film exists in two separate versions, English and Russian (`--lang en`, `--lang ru`); all formulas and labels are typeset with matplotlib mathtext (LaTeX), words stay outside the formulas.

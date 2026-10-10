@@ -1,0 +1,171 @@
+# Every number of the film "Hulse-Taylor binary pulsar" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set model.phase_exaggeration=60 --set layout.orbit_centre=[0.3,0.5]
+# Units: film seconds; "px" are pixels of a 720 p frame (they scale with the frame height); positions in [0, 1] are fractions of the frame;
+# font sizes are points at 720 p; line widths are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+preview_seconds = 8.0             # the preview is a time-compressed run of the whole film
+fade_s = 0.0                      # this film has no fade in and out
+reference_height = 720
+
+[model]
+gm_sun = 1.32712440018e20         # G M_sun, m^3 s^-2
+day_s = 86400.0                   # seconds in a day
+hour_s = 3600.0
+year_days = 365.25                # days in a (Julian) year
+period_days = 0.322997448918      # orbital period P_b, days
+eccentricity = 0.6171334
+mass_pulsar = 1.438               # solar masses
+mass_companion = 1.390
+pdot_gr = -2.40263e-12            # dP_b/dt predicted by general relativity
+pdot_intrinsic = -2.398e-12       # observed, kinematic contribution subtracted
+pdot_observed = -2.423e-12
+pdot_ratio = 0.9983               # measured / predicted (Weisberg and Huang 2016), quoted in the film
+pdot_ratio_error = 0.0016
+year_start = 1975.0
+year_end = 2005.0
+shrink_view = 0.075               # drawn relative shrink of the orbit over the 30 years (the real one is 5e-8)
+phase_exaggeration = 120.0        # exaggeration of the phase shift of the stars (the real one is 0.5 degree)
+kepler_iterations = 12            # Newton iterations of the Kepler equation
+shift_samples = 300               # points of the shift curves
+
+[timeline]
+film_length = 36.0                # the nominal length of the film; all the times below scale with the real length
+waves = [3.0, 6.5]                # the gravitational waves fade in
+panel = [7.0, 9.0]                # the graph fades in
+years = [10.0, 30.0]              # the years run
+label_fade_in = [0.8, 2.0]        # the labels of the stars (film seconds, not scaled)
+label_fade_out = [8.0, 9.5]
+orbit_period = 2.4                # film seconds per orbit
+start_margin_s = 0.01             # the curves are drawn from this long before the years start (film seconds)
+end_margin_years = 0.01           # the closing caption appears this close to the last year
+
+[layout]
+orbit_centre = [0.335, 0.50]      # fractions of the width and the height
+semi_major_px = 178.0
+wave_width = 0.62                 # the field of the waves covers this part of the width, centred on the orbit
+wave_cell_px = 4                  # cell of the (upsampled) field grid
+wave_edge_cells = 22.0            # the field fades out over this many cells at the border of the grid
+wave_speed_px = 330.0             # the speed of the waves (px per orbit period, before the factor below)
+wave_speed_factor = 0.62
+star_count = 160
+star_seed = 3
+star_alpha = [0.15, 0.7]          # the background stars: opacity range
+orbit_samples = 400
+trail_samples = 40
+trail_length = 1.1                # in mean anomaly, orbits
+caption_box = [0.66, 0.12]        # fractions of the frame
+caption_pos = [0.03, 0.045]
+note_pos = [0.03, 0.935]
+label_pulsar_offset = [24.0, 22.0]       # px from the star
+label_companion_offset = [-70.0, -30.0]
+panel_axes = [0.675, 0.24, 0.285, 0.47]
+panel_title_pos = [0.675, 0.865]
+shift_value_pos = [0.675, 0.775]
+year_pos = [0.855, 0.790]
+legend_gr_pos = [0.675, 0.13]
+legend_pdot_pos = [0.675, 0.095]
+ratio_pos = [0.675, 0.052]
+panel_ylim = [-43.0, 2.0]
+year_ticks = [1975, 1985, 1995, 2005]
+shift_ticks = [0, -10, -20, -30, -40]
+xlabel_pad = 2
+tick_length = 3
+
+[waves]
+amp_base = 0.4                    # amplitude = base + peak * (r_periastron / r)^exponent
+amp_peak = 0.6
+amp_exponent = 2.2
+gain = 1.6
+decay_px = 90.0                   # 1 / sqrt(1 + r / decay)
+inner_start_px = 28.0             # no field closer than this to the centre, full strength after inner_start + inner_width
+inner_width_px = 50.0
+outer_px = 520.0                  # exp(-r / outer)
+colour_gain = 2.0
+alpha_gain = 1.5
+alpha_max = 0.55
+colours = ["#d1397a", "#0b1020", "#2fd0c4"]
+
+[formats]                         # number formats of the texts (Python format specifications)
+shift = "6.1f"                    # the shift of the periastron, seconds (monospace readout)
+year = "6.0f"
+mass = ".2f"
+period_hours = ".2f"
+eccentricity = ".2f"
+years = ".0f"
+ratio = ".4f"
+
+[fonts]
+label = 11
+panel_title = 14
+shift_value = 34
+year = 24
+legend = 10
+ratio = 10
+tick = 10
+axis_label = 10.5
+caption = 11.5
+note = 8.5
+
+[style]
+background = "#03060c"
+visible_alpha = 0.01              # an element (waves, labels, graph) is not drawn below this opacity
+star_size = 0.8
+star_area = 6.0
+star_colour = [0.8, 0.88, 1.0]
+colour_pulsar = "#ffd27a"
+colour_companion = "#8fe3ff"
+glow_layers = [[5.0, 0.05], [2.8, 0.13], [1.6, 0.32], [0.75, 1.0]]     # [size factor, opacity] of the glow of a star
+star_diameter_pulsar = 17.0       # px
+star_diameter_companion = 16.5
+orbit_alpha = 0.28
+orbit_width = 0.8
+orbit_dash = [2, 4]
+ghost_threshold = 0.03            # the constant-period ghosts appear when the shift exceeds this (radians)
+ghost_full = 0.2                  # and are fully opaque at this shift
+ghost_diameter = 16.0
+ghost_alpha = 0.7
+ghost_width = 1.2
+trail_width = 2.2
+trail_alpha = 0.55
+trail_power = 1.5
+label_pulsar = [1.0, 0.85, 0.5]
+label_companion = [0.6, 0.9, 1.0]
+label_line_alpha = 0.5
+label_line_width = 0.8
+caption_box_colour = [0.01, 0.02, 0.05, 0.6]
+caption_colour = [0.88, 0.93, 1.0, 0.93]
+note_colour = [0.5, 0.58, 0.72, 0.8]
+panel_spine = [0.75, 0.82, 0.92]
+panel_spine_alpha = 0.55
+panel_zero_alpha = 0.3
+panel_zero_width = 0.9
+panel_zero_dash = [3, 4]
+panel_text = [0.82, 0.9, 1.0]
+panel_text_alpha = 0.85
+panel_tick_alpha = 0.5
+fill_colour = [1.0, 0.65, 0.25]
+fill_alpha = 0.25
+curve_gr = [0.35, 0.85, 0.9]
+curve_gr_width = 3.0
+curve_intrinsic = [1.0, 0.68, 0.3]
+curve_intrinsic_width = 1.8
+curve_dash = [4, 3]
+marker_size = 11.0
+marker_glow_size = 26.0
+marker_glow_alpha = 0.25
+marker_area = 0.6
+shift_value_colour = [0.45, 0.9, 0.95]
+year_colour = [1.0, 0.82, 0.55]
+legend_alpha = 0.9
+ratio_colour = [0.7, 0.78, 0.9]
+ratio_alpha = 0.85

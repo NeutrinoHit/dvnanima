@@ -1,0 +1,22 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+
+[en]
+title1 = '''A free Gaussian wave packet'''
+title2 = '''Narrow and wide packets'''
+p_title1 = '''$|\tilde\psi(p)|^2$ does not change'''
+p_title2 = '''$|\tilde\psi(p)|^2$: narrower in $x$ = broader in $p$'''
+p_colour = '''colour = phase of $\tilde\psi(p)$'''
+cap1 = '''the centre moves with the group velocity, the envelope broadens and its height falls: the phases $e^{-iE_p t}$ get out of step'''
+cap2 = '''the narrower in $x$, the broader in $p$, the faster the spreading: $\sigma_x\sigma_p=\hbar/2$ at $t=0$'''
+
+sigma_title = '''$\sigma_x(t)=\sigma_0\sqrt{1+(t/2\sigma_0^2)^2}$'''
+
+[ru]
+title1 = '''Свободный гауссов волновой пакет'''
+title2 = '''Узкий и широкий пакеты'''
+p_title1 = '''$|\tilde\psi(p)|^2$ не меняется'''
+p_title2 = '''$|\tilde\psi(p)|^2$: уже по $x$ — шире по $p$'''
+p_colour = '''цвет — фаза $\tilde\psi(p)$'''
+cap1 = '''центр движется с групповой скоростью, огибающая расширяется, высота падает: фазы $e^{-iE_p t}$ расходятся'''
+cap2 = '''чем уже по $x$, тем шире по $p$ и тем быстрее расплывание: $\sigma_x\sigma_p=\hbar/2$ при $t=0$'''
+sigma_title = '''$\sigma_x(t)=\sigma_0\sqrt{1+(t/2\sigma_0^2)^2}$'''

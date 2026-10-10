@@ -22,12 +22,32 @@ the phase advance of the stars with respect to the constant-period model (the ho
 retarded phase and a wavelength about a thousand times smaller than the real one, with the amplitude
 following the instantaneous separation so that the bursts come at periastron.
 
-Run from this directory (numpy, scipy, matplotlib and ffmpeg are required):
+## Configuration
+
+Every number of the film (frame size and encoder, timeline, physics of the orbit, the wave field, sizes of the stars, lines and fonts,
+the layout of the frame, colours, opacities, the seed of the background stars) is in `config.toml` (8 sections: `video`, `model`, `timeline`,
+`layout`, `waves`, `formats`, `fonts`, `style`); all the words and formulas are in `texts.toml` (one table per language, the same keys in both).
+The script contains only algorithms. A value can be changed without editing a file:
 
 ```bash
-./render.sh                 # media/hulse_taylor.mp4, 36 s
-./render.sh --preview       # 8 s low-resolution check
-./render.sh --snapshot 28   # one PNG at film time 28 s
+python hulse_taylor.py --lang en --snapshot 28 --set model.phase_exaggeration=60 --set video.crf=18
+python hulse_taylor.py --lang en --config my_config.toml
+```
+
+`--set section.key=value` is repeatable (the value is a Python/TOML literal), `--config` takes another file with the same
+structure, a misspelt key is an error (see `../dvconfig.py`, tests in `../test_dvconfig.py`).
+
+The film exists in two separate versions, English and Russian (`--lang en`, `--lang ru`); all formulas and labels are typeset
+with matplotlib mathtext (LaTeX), words stay outside the formulas. The first version of the film was bilingual (an English and a Russian
+line in the same frame); the two versions now have one language each.
+
+Run from this directory (numpy, matplotlib and ffmpeg are required):
+
+```bash
+./render.sh --lang en                # media/hulse_taylor_en.mp4, 36 s
+./render.sh --lang ru                # media/hulse_taylor_ru.mp4
+./render.sh --lang en --preview      # 8 s low-resolution check
+./render.sh --lang en --snapshot 28  # one PNG at film time 28 s
 python -m unittest test_hulse_taylor
 ```
 

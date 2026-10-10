@@ -1,0 +1,67 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# cap* and sum_* are lists (the first item is the text, the second one, if any, a second line).
+
+[en]
+title_ps = '''$\pi^0\to e^+e^-e^+e^-$'''
+title_s = '''$S\to e^+e^-e^+e^-$'''
+sub_ps = '''pseudoscalar, $P=-1$'''
+sub_s = '''scalar, $P=+1$'''
+dial = '''planes of the pairs, end view'''
+events = '''events'''
+key_E = '''E'''
+key_B = '''B'''
+key = '''colour: E     gold: B'''
+ps_formula = '''$\mathcal{L}=\frac{\alpha}{\pi f_\pi}\,\pi^0\,\mathbf{E}\!\cdot\!\mathbf{B}$      $\mathcal{M}\propto \mathbf{E}_1\!\cdot\!\mathbf{B}_2+\mathbf{E}_2\!\cdot\!\mathbf{B}_1$      $\Gamma=\frac{\alpha^2 m_\pi^3}{64\pi^3 f_\pi^2}=7.8\ \mathrm{eV}$'''
+s_formula = '''$\mathcal{L}=\frac{g}{2}\,S\,(\mathbf{E}^2-\mathbf{B}^2)$      $\mathcal{M}\propto \mathbf{E}_1\!\cdot\!\mathbf{E}_2-\mathbf{B}_1\!\cdot\!\mathbf{B}_2$      $\Gamma=\frac{g^2 m_S^3}{64\pi}$'''
+read_ps = '''$|\mathbf{E}_1\!\cdot\!\mathbf{B}_2|^2\propto\sin^2\varphi='''
+read_s = '''$(\mathbf{E}_1\!\cdot\!\mathbf{E}_2-\mathbf{B}_1\!\cdot\!\mathbf{B}_2)^2\propto\cos^2\varphi='''
+curve_ps = '''$1-a\cos 2\varphi$'''
+curve_s = '''$1+a\cos 2\varphi$'''
+a_note = '''$a$ is illustrative'''
+cap1 = ['''each virtual photon becomes an $e^+e^-$ pair; the pair plane contains $\mathbf{E}$ of its photon, $\mathbf{B}$ is perpendicular to it''']
+cap2 = ['''the amplitude $\propto\mathbf{E}_1\!\cdot\!\mathbf{B}_2$ is largest for $\mathbf{E}_1\parallel\mathbf{B}_2$, that is for perpendicular planes''']
+cap3 = ['''in every event the planes are oriented differently; the distribution of the angle $\varphi$ builds up''']
+cap4 = ['''a scalar couples to $\mathbf{E}^2-\mathbf{B}^2$: the polarizations, and so the planes, prefer to be parallel''']
+cap5 = ['''the angle $\varphi$ between the planes tells the parity: humps at $\pi/2$ and $3\pi/2$ for $P=-1$, at $0$ and $\pi$ for $P=+1$''']
+leg_ps = '''pseudoscalar $P=-1$'''
+leg_s = '''scalar $P=+1$'''
+sum_title = '''the parity from the planes'''
+sum_ps = ['''$\mathbf{E}_1\!\cdot\!\mathbf{B}_2+\mathbf{E}_2\!\cdot\!\mathbf{B}_1\propto\sin\varphi$''', '''perpendicular planes''']
+sum_s = ['''$\mathbf{E}_1\!\cdot\!\mathbf{E}_2-\mathbf{B}_1\!\cdot\!\mathbf{B}_2\propto\cos\varphi$''', '''parallel planes''']
+
+title_summary = '''$\pi^0,\,S\to e^+e^-e^+e^-$'''
+key_e1 = '''$\mathbf{E}_1$'''
+key_e2 = '''$\mathbf{E}_2$'''
+key_b = '''$\mathbf{B}_i=\hat{k}_i\times\mathbf{E}_i$'''
+
+[ru]
+title_ps = '''$\pi^0\to e^+e^-e^+e^-$'''
+title_s = '''$S\to e^+e^-e^+e^-$'''
+sub_ps = '''псевдоскаляр, $P=-1$'''
+sub_s = '''скаляр, $P=+1$'''
+dial = '''плоскости пар, вид вдоль оси'''
+events = '''событий'''
+key_E = '''E'''
+key_B = '''B'''
+key = '''цвет: E     золото: B'''
+ps_formula = '''$\mathcal{L}=\frac{\alpha}{\pi f_\pi}\,\pi^0\,\mathbf{E}\!\cdot\!\mathbf{B}$      $\mathcal{M}\propto \mathbf{E}_1\!\cdot\!\mathbf{B}_2+\mathbf{E}_2\!\cdot\!\mathbf{B}_1$      $\Gamma=\frac{\alpha^2 m_\pi^3}{64\pi^3 f_\pi^2}=7{,}8\ \mathrm{эВ}$'''
+s_formula = '''$\mathcal{L}=\frac{g}{2}\,S\,(\mathbf{E}^2-\mathbf{B}^2)$      $\mathcal{M}\propto \mathbf{E}_1\!\cdot\!\mathbf{E}_2-\mathbf{B}_1\!\cdot\!\mathbf{B}_2$      $\Gamma=\frac{g^2 m_S^3}{64\pi}$'''
+read_ps = '''$|\mathbf{E}_1\!\cdot\!\mathbf{B}_2|^2\propto\sin^2\varphi='''
+read_s = '''$(\mathbf{E}_1\!\cdot\!\mathbf{E}_2-\mathbf{B}_1\!\cdot\!\mathbf{B}_2)^2\propto\cos^2\varphi='''
+curve_ps = '''$1-a\cos 2\varphi$'''
+curve_s = '''$1+a\cos 2\varphi$'''
+a_note = '''амплитуда $a$ условная'''
+cap1 = ['''каждый виртуальный фотон превращается в пару $e^+e^-$; плоскость пары содержит $\mathbf{E}$ фотона, $\mathbf{B}$ перпендикулярно ей''']
+cap2 = ['''амплитуда $\propto\mathbf{E}_1\!\cdot\!\mathbf{B}_2$ максимальна при $\mathbf{E}_1\parallel\mathbf{B}_2$, то есть при перпендикулярных плоскостях''']
+cap3 = ['''в каждом событии плоскости ориентированы по-своему; копится распределение по углу $\varphi$''']
+cap4 = ['''скаляр связан с $\mathbf{E}^2-\mathbf{B}^2$: поляризации, а с ними и плоскости, стремятся быть параллельными''']
+cap5 = ['''угол $\varphi$ между плоскостями выдаёт чётность: горбы при $\pi/2$ и $3\pi/2$ для $P=-1$, при $0$ и $\pi$ для $P=+1$''']
+leg_ps = '''псевдоскаляр $P=-1$'''
+leg_s = '''скаляр $P=+1$'''
+sum_title = '''чётность по плоскостям'''
+sum_ps = ['''$\mathbf{E}_1\!\cdot\!\mathbf{B}_2+\mathbf{E}_2\!\cdot\!\mathbf{B}_1\propto\sin\varphi$''', '''плоскости перпендикулярны''']
+sum_s = ['''$\mathbf{E}_1\!\cdot\!\mathbf{E}_2-\mathbf{B}_1\!\cdot\!\mathbf{B}_2\propto\cos\varphi$''', '''плоскости параллельны''']
+title_summary = '''$\pi^0,\,S\to e^+e^-e^+e^-$'''
+key_e1 = '''$\mathbf{E}_1$'''
+key_e2 = '''$\mathbf{E}_2$'''
+key_b = '''$\mathbf{B}_i=\hat{k}_i\times\mathbf{E}_i$'''

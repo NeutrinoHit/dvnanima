@@ -1,0 +1,413 @@
+# Every number of the film "Asymmetry in Z-boson production and decay" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set physics.sin2_theta_w=0.25 --set video.crf=18
+# Units: "film s" are seconds of the content (the chapter cards are inserted by the timeline); positions marked "fraction" are
+# fractions of the width (x) or of the height (y, counted from the TOP of the frame); sizes marked "px" are pixels of the
+# 1280 x 720 reference frame (they scale with the frame height); font sizes are points at 720 p; line widths are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 22
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[physics]
+# The numbers of the book (chapter "Weak decays of W and Z bosons"): sin^2(theta_W)(m_Z) = 0.2316, 1/alpha_em(m_Z) = 128.95,
+# Gamma_Z = 2495.5 MeV (experiment); m_Z is the PDG value (the book does not print it).
+sin2_theta_w = 0.2316
+alpha_inv_mz = 128.95
+m_z = 91.1876                     # GeV
+gamma_z = 2.4955                  # GeV
+gev2_to_nb = 3.8938e5             # (hbar c)^2 in nb GeV^2, only for the cross-section scale of the A_FB(sqrt s) background
+sin2_theta_w_symmetric = 0.25     # g_v of the charged leptons vanishes here
+sin2_theta_w_err = 0.0012         # the error quoted in the book
+
+# t_3 and the electric charge q of the fermion families as [numerator, denominator]; nc = number of colours
+[physics.fermions.nu]
+t3 = [1, 2]
+q = [0, 1]
+nc = 1
+[physics.fermions.e]
+t3 = [-1, 2]
+q = [-1, 1]
+nc = 1
+[physics.fermions.u]
+t3 = [1, 2]
+q = [2, 3]
+nc = 3
+[physics.fermions.d]
+t3 = [-1, 2]
+q = [-1, 3]
+nc = 3
+
+[sampling]
+seed_b = 1                        # events of the b-quark part (any seed is valid statistically; this one ends within 0.4 sigma of the model)
+seed_mu = 2                       # events of the muon part (ends within 0.5 sigma)
+seed_test = 7
+n_b = 20000                       # b events in the film
+n_mu = 1000000                    # muon events in the film
+
+# ------------------------------------------------------------------------------------------------ the timeline
+# part 1 couplings, 2 four channels, 3 the weak angle, 4 events, 5 the pole scan; the chapter cards are inserted before the parts 2-5
+[timeline]
+card_s = [2.4, 1.4, 1.4, 1.4, 1.4]              # the title card, then the cards of the chapters 2..5
+card_at = [0.0, 13.0, 39.5, 53.0, 77.0]           # content time before which a card is shown
+part_bounds = [0.0, 13.0, 39.5, 53.0, 77.0, 89.0]
+card_fade_in = [0.0, 0.18]
+card_fade_out = [0.80, 1.0]
+
+# ------------------------------------------------------------------------------------------------ part 1: the couplings
+[couplings]
+formula_in = [[0.0, 1.0], [1.3, 2.3], [2.6, 3.6], [3.0, 4.0]]   # the formula rows fade in: g_v g_a, g_L, g_R, the current
+legend_in = [4.0, 5.0]
+group_start = [3.8, 5.1, 6.4, 7.7]                  # the bars of nu, e, u, d grow one after another
+group_grow_s = 1.0
+readout_delay = 0.8                                 # the number A_LR appears this long after the group starts
+caption_at = [0.0, 3.6, 8.9, 11.0]                  # c1a, c1b, c1c, c1d
+groups = ["nu", "e", "u", "d"]
+value_decimals = 2                                  # the g^2 printed over the bars
+a_decimals = 3                                      # the asymmetry A_LR
+highlight_at = [11.0, 11.8]                         # the electron group is framed (production and decay of the Z give the same A_LR^e)
+highlight_alpha = 0.55
+highlight_pad = [18.0, 14.0, 20.0, 12.0]            # px: left, top, right, bottom around the group
+
+[couplings.layout]
+group_x = [0.170, 0.395, 0.620, 0.845]              # fraction of the width
+baseline_y = 0.715
+unit_height = 0.355                                 # fraction of the height of a bar of the squared coupling 1
+bar_width = 0.044                                   # fraction of the width
+bar_gap = 0.008
+name_y = 0.790
+charge_y = 0.828
+a_y = 0.872
+value_dy = -0.020                                   # the printed value above the bar (fraction of the height)
+formula_pos = [[0.030, 0.140], [0.030, 0.206], [0.030, 0.272], [0.500, 0.140]]   # g_v g_a / g_L / g_R / the current
+legend_pos = [[0.500, 0.225], [0.500, 0.296]]       # the left end of the icons of the legend
+legend_icon_scale = 1.15
+legend_text_gap = 16.0                              # px: between the pictogram and its text
+lr_label_dy = 0.030                                 # the labels g_L^2, g_R^2 under the bars
+baseline_alpha = 0.55
+baseline_width = 1.1
+bar_alpha = 0.9
+
+# ------------------------------------------------------------------------------------------------ the common layout
+[layout]
+title_pos = [0.030, 0.062]                          # fractions (y from the top)
+chapter_label_pos = [0.970, 0.062]
+formula_pos = [0.030, 0.140]                        # the first formula row; the rows are formula_row apart
+formula_row = 0.066
+caption_pos = [0.030, 0.962]                        # the lower left corner of the caption (it grows upwards)
+card_title_y = 0.46
+card_subtitle_y = 0.56
+card_number_y = 0.38
+card_chapter_y = 0.50
+card_chapter_sub_y = 0.60
+formula_min_alpha = 0.01
+
+[fonts]
+title = 19
+chapter_label = 13
+formula = 16.5
+formula_small = 15
+caption = 12.5
+card_title = 34
+card_subtitle = 17
+card_number = 54
+card_chapter = 32
+card_chapter_sub = 16
+label = 14
+label_small = 11
+value = 11.5
+readout = 15
+group_name = 15
+group_sub = 10.5
+legend = 14
+cell_title = 12.5
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+gold = [1.00, 0.84, 0.35]                           # the spins
+white = [0.95, 0.97, 1.0]                           # the momenta, the sums
+left_c = [0.40, 0.72, 1.00]                         # L: left-handed (blue)
+right_c = [0.75, 0.55, 1.00]                        # R: right-handed (violet)
+ch_LL = [0.30, 0.86, 0.76]                          # the four helicity channels (cool: forward, warm: backward)
+ch_RR = [0.62, 0.92, 0.45]
+ch_LR = [1.00, 0.58, 0.30]
+ch_RL = [1.00, 0.40, 0.52]
+mu_c = [0.40, 0.72, 1.00]                           # the muon curve
+b_c = [1.00, 0.58, 0.30]                            # the b-quark curve
+good = [0.45, 0.92, 0.65]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+panel_alpha = 0.85
+
+# the pictogram of a fermion pair f fbar flying apart: momenta (white) and spins (gold); L: both spins against the flight of f
+[icon]
+half_length = 32.0                                  # px: the fermions sit at +-half_length from the centre
+radius = 6.5
+momentum_len = 22.0
+momentum_gap = 9.0
+momentum_width = 2.0
+momentum_head = [9.0, 8.0]                          # length, width
+spin_len = 26.0
+spin_offset = 15.0                                  # px: the spin arrows are drawn this far to the side of the axis
+spin_width = 3.4
+spin_head = [11.0, 11.0]
+particle_alpha = 0.95
+glow_radius = 15.0
+glow_alpha = 0.16
+beam_half_length = 46.0                              # px: e- and e+ of the initial-state pictogram
+
+# ------------------------------------------------------------------------------------------------ part 2: the four helicity channels
+[channels]
+fermion = "d"                                       # the family of the final fermion: the d-type quark (the b quark)
+cells_in = [0.0, 1.2]
+beams_in = [0.4, 1.4]
+beams_move = [1.7, 3.3]
+z_in = [3.1, 3.9]
+z_spin_out = [4.4, 5.0]
+mini_in = [4.5, 5.3]
+sweeps = [[5.0, 8.8], [10.0, 11.9], [13.6, 15.5], [16.6, 18.5]]    # LL, LR, RL, RR (the grid order of the cells)
+flip = [12.0, 13.2]                                 # the initial state turns from e_L e_R (J_z = -1) to e_R e_L (J_z = +1)
+sum_in = [19.4, 20.8]
+dn_in = [19.8, 21.0]                                # the formula of dN/dcos(theta)
+afb_in = [22.6, 23.8]                               # A_FB = 3/4 A_LR^e A_LR^f
+afb_num_in = [24.2, 25.4]
+caption_at = [0.0, 4.6, 9.6, 12.4, 16.2, 19.4, 22.6]   # c2a ... c2g
+sweep_ease = 0.12                                   # the sweep of theta slows down at both ends over this fraction of the time
+theta_label_step_deg = 1.0
+
+[channels.layout]
+formula_pos = [[0.030, 0.140], [0.030, 0.206], [0.030, 0.272]]   # the matrix element / dN dcos / A_FB
+stage_centre = [0.262, 0.645]                       # fractions of the frame
+stage_unit = 108.0                                  # px per unit of the normalised distribution 1 + cos^2 + ...
+axis_half = 312.0                                   # px: half-length of the beam axis
+axis_alpha = 0.30
+axis_width = 1.0
+axis_dash = [4, 4]
+lobe_points = 241
+lobe_fill_alpha = 0.34
+lobe_fill_alpha_summed = 0.15
+lobe_line_alpha = 0.95
+lobe_line_width = 1.7
+ray_alpha = 0.32
+ray_width = 1.0
+sum_line_width = 2.4
+sum_alpha = 0.97
+sym_line_width = 1.4
+sym_alpha = 0.6
+sym_dash = [5, 4]
+arc_radius = 46.0
+arc_width = 1.3
+arc_alpha = 0.9
+theta_label_radius = 66.0
+icon_scale = 1.1
+fb_label_dy = -8.0                                 # px: "forward" / "backward" above the ends of the axis
+fb_label_inset = 6.0
+z_radius = 17.0
+z_alpha = 0.95
+z_label_dy = -48.0
+beam_label_dy = -42.0
+beam_start_x = 285.0                                # px from the centre: where e- and e+ start
+mini_pos = [0.075, 0.402]                           # the initial-state pictogram (centre of the two leptons)
+mini_scale = 0.8
+mini_arrow_gap = 78.0                               # px from the pictogram centre to the arrow
+mini_arrow_len = 34.0
+mini_z_gap = 28.0
+mini_text_gap = 20.0
+j_spin_len = 56.0
+trace_dot = 4.6
+beam_marker_len = 40.0
+beam_marker_dy = 20.0
+legend_pos = [0.040, 0.880]
+legend_arrow_len = 36.0
+legend_gap = 150.0
+fermion_label = "b"
+sum_readout_pos = [0.262, 0.905]                    # where the numbers of A_FB are written (the line below the stage)
+
+[channels.cells]
+origin = [0.565, 0.292]                             # fractions: the upper left corner of the 2 x 2 matrix
+size = [0.195, 0.285]
+gap = [0.012, 0.012]
+unit = 36.0                                         # px per unit of the normalised distribution in a cell
+border_alpha_idle = 0.20
+border_alpha_active = 0.85
+border_width = 1.2
+radius = 8.0
+title_dy = 20.0                                     # px from the top edge to the middle of the title
+lobe_dy = 6.0                                       # px: the lobe centre below the middle of the cell
+weight_dy = 24.0                                    # px from the bottom edge: the line with the weight and the share
+bar_dy = 11.0                                       # px from the bottom edge: the share bar
+bar_height = 4.0
+bar_inset = 14.0
+share_decimals = 1
+title_idle_alpha = 0.5
+axis_alpha = 0.22
+
+# ------------------------------------------------------------------------------------------------ part 3: the weak mixing angle
+[weak_angle]
+s2_start = 0.25                                     # g_v of the charged leptons vanishes
+s2_range = [0.2200, 0.2600]                         # the scale of the slider
+s2_ticks = [0.22, 0.23, 0.24, 0.25, 0.26]
+plots_in = [0.0, 1.2]
+formula_in = [[0.4, 1.5], [9.0, 10.2]]              # g_L^e g_R^e / the approximate formulas
+slide = [2.6, 9.0]                                  # the knob moves from s2_start to the book value
+caption_at = [0.0, 2.6, 9.0]                        # c3a, c3b, c3c
+err_band_in = [9.0, 10.0]
+decimals_s2 = 4
+decimals_a = 3
+a_fb_fermions = ["e", "d"]                          # the curves: muons (the e family) and b quarks (the d family)
+
+[weak_angle.layout]
+formula_pos = [[0.030, 0.140], [0.030, 0.206]]
+dist_box = [0.080, 0.315, 0.545, 0.610]             # x0, y0, x1, y1 (fractions): the distributions dN/dcos
+asym_box = [0.080, 0.705, 0.545, 0.825]             # the asymmetric parts (8/3) A_FB cos
+dist_ylim = [0.0, 2.6]
+dist_yticks = [0.0, 1.0, 2.0]
+asym_ylim = [-0.42, 0.42]
+asym_yticks = [-0.3, 0.0, 0.3]
+xticks = [-1.0, -0.5, 0.0, 0.5, 1.0]
+tick_len = 5.0
+curve_width = 2.3
+sym_width = 1.4
+sym_dash = [5, 4]
+sym_alpha = 0.65
+axis_alpha = 0.55
+axis_width = 1.0
+grid_alpha = 0.10
+curve_samples = 201
+legend_y = 0.280
+legend_x = [0.080, 0.215, 0.330]                    # the three legend entries (fractions of the width)
+legend_line_len = 26.0
+slider_x = [0.625, 0.945]
+slider_y = 0.350
+slider_track_alpha = 0.55
+slider_track_width = 2.0
+slider_tick_len = 7.0
+slider_knob = 9.0
+slider_label_dy = -26.0                             # px: the value of sin^2 above the knob
+slider_tick_label_dy = 24.0
+quarter_label_dy = 46.0                             # px below the track: "1/4: g_v = 0"
+err_band_height = 14.0                              # px
+bars_origin = [0.625, 0.505]                        # the upper left corner of the bar area of the electron couplings
+bars_baseline_y = 0.735
+bars_unit = 0.55                                    # fraction of the height of a bar of the squared coupling 1
+bar_width = 0.040
+bar_gap = 0.012
+bars_x = [0.640, 0.718]                             # left edges of the g_L^2 and g_R^2 bars
+bar_label_dy = 0.030
+readout_x = 0.800
+readout_y = [0.545, 0.640, 0.735]
+
+# ------------------------------------------------------------------------------------------------ part 4: events and the statistical error
+[events]
+fermion_b = "d"                                     # the b quark (the d family)
+fermion_mu = "e"                                    # the muon (the e family)
+formula_in = [[0.2, 1.2], [1.6, 2.6]]               # dN/dcos / A_FB = (N_F - N_B)/(N_F + N_B)
+display_in = [0.0, 1.0]
+slow_events = [2.0, 3.4, 4.6, 5.5, 6.2, 6.7, 7.1, 7.4, 7.65, 7.85, 8.0, 8.12]   # the first events are shown one by one (film s of the part)
+ramp_b = [8.3, 15.0]                                # N grows from the last slow event to n_b (logarithmically)
+switch = [16.0, 17.2]                               # the b quarks fade out (first half), the muons fade in (second half)
+ramp_mu = [17.6, 23.0]                              # N from n_mu_start to n_mu
+n_mu_start = 30
+caption_at = [0.0, 1.8, 12.5, 17.0, 20.0]           # c4a ... c4e
+flight_s = 0.35                                     # a ray grows from the vertex to the detector in this time
+persist = [1.0, 2.2]                                # a slow event fades out between these ages
+burst_events = 22                                   # the fast phase shows this many of the latest events
+burst_alpha = 0.75
+hist_bins = 20
+hist_ymargin = 1.28
+hist_ymin_top = 6                                   # the smallest top of the y axis (counts per bin)
+conv_samples = 220
+conv_ylim = [-0.32, 0.32]
+conv_yticks = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3]
+conv_xlog = [1.4, 6.0]                              # log10 N: the range of the axis
+conv_xticks = [2, 3, 4, 5, 6]
+a_decimals = 3
+sigma_decimals = 3
+
+[events.layout]
+formula_pos = [[0.030, 0.140], [0.030, 0.206]]
+ring_centre = [0.270, 0.590]
+ring_radius = 182.0                                 # px
+ring_alpha = 0.40
+ring_width = 1.4
+ring_ticks_deg = 30
+tick_len = 6.0
+axis_alpha = 0.28
+ray_width_f = 2.0
+ray_width_fbar = 1.3
+ray_alpha_fbar = 0.45
+hit_radius = 4.6
+flash_radius = 24.0
+vertex_radius = 5.0
+counter_dx = 18.0                                   # px between the ring and the counters
+counter_y = [-0.06, 0.0]                            # fractions of the height relative to the centre: the label / the number
+label_y = -0.285                                    # the species label above the ring (relative to the centre, fraction of the height)
+hist_box = [0.575, 0.440, 0.955, 0.790]
+hist_curve_width = 2.0
+hist_curve_alpha = 0.9
+hist_bar_alpha = 0.78
+hist_bar_gap = 0.012                                # fraction of a bin left empty between the bars
+hist_xticks = [-1.0, -0.5, 0.0, 0.5, 1.0]
+readout_n = [0.575, 0.296]                          # N = ...
+readout_a = [0.575, 0.355]                          # A_FB = ... +- ...
+readout_model = [0.955, 0.355]                      # the model value (right aligned)
+conv_box = [0.085, 0.440, 0.520, 0.790]
+conv_line_width = 2.0
+conv_band_alpha = 0.22
+conv_ref_alpha = 0.8
+
+# ------------------------------------------------------------------------------------------------ part 5: away from the pole
+[scan]
+fermion = "e"                                       # e+e- -> mu+mu- (the e family)
+formula_in = [[0.0, 1.0], [0.8, 1.8]]
+plots_in = [0.0, 1.0]
+path_t = [1.6, 3.2, 4.6, 6.0, 7.0, 8.0, 9.4, 10.8]       # the film time (part) and the sqrt(s) of the sweep
+path_s = [50.0, 75.0, 88.0, 91.1876, 92.5, 94.0, 120.0, 150.0]
+x_range = [50.0, 150.0]                             # GeV: the range of the problem in the book
+x_ticks = [60.0, 80.0, 100.0, 120.0, 140.0]
+y_range = [-0.85, 0.85]
+y_ticks = [-0.5, 0.0, 0.5]
+curve_samples = 401
+pole_label_in = [6.0, 6.8]
+pole_label_out = [8.2, 9.0]
+caption_at = [0.0, 1.8, 5.6, 9.4]                   # c5a ... c5d
+sigma_fraction = 0.34                               # the height of the cross-section curve in the plot, fraction of the box
+decimals_a = 3
+decimals_s = 1
+
+[scan.layout]
+formula_pos = [[0.030, 0.140], [0.030, 0.206]]
+lobe_centre = [0.225, 0.610]
+lobe_label_y = 0.815
+lobe_unit = 54.0                                    # px per unit of the normalised distribution
+lobe_points = 241
+lobe_fill_alpha = 0.34
+lobe_line_width = 2.0
+sym_alpha = 0.6
+sym_width = 1.3
+axis_half = 245.0
+axis_alpha = 0.28
+plot_box = [0.520, 0.375, 0.955, 0.790]
+curve_width = 2.4
+sigma_alpha = 0.16
+sigma_line_alpha = 0.5
+pole_line_alpha = 0.55
+dot_radius = 6.0
+readout_s = [0.040, 0.300]                          # sqrt(s) = ... GeV
+readout_a = [0.040, 0.352]
+pole_label_pos = [0.520, 0.325]
+legend_pos = [0.700, 0.328]

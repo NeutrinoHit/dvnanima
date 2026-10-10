@@ -1,0 +1,119 @@
+# Every number of the film "A kick to an electron" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set model.n_lines=30 --set timeline.t_kick=2.0
+# Units: c = 1; film seconds; "px" are pixels of a 720 p frame (the script scales them with the frame height);
+# positions marked "fraction" are fractions of the frame; font sizes are points at 720 p; line widths are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6                      # fade-in and fade-out of every run
+reference_height = 720
+
+[model]
+n_lines = 22                      # field lines of equal flux in the upper half-plane
+arc_samples = 24                  # points of one arc of the shell
+circle_samples = 300              # points of the dashed circle r = ct
+
+[timeline]
+film_length = 20.0                # seconds
+runs = [[0.30, 0.0, 10.0], [0.85, 10.0, 20.0]]     # [beta, start, end] of the two runs, film seconds
+t_kick = 1.6                      # seconds after the start of a run
+t_front_max = 6.2                 # time since the kick at which the picture stops (the front leaves the frame)
+kick_window = 0.35                # the orange kick arrow is visible for |t| < this
+v_arrow_min_x = 0.4               # the velocity arrow appears when the charge has moved this far (light-seconds)
+front_label_t = 1.2               # the label "radiation front" appears at this time since the kick
+caption_front_t = 5.4             # the last caption appears at this time since the kick
+
+[layout]
+origin = [0.20, 0.215]            # fraction: the origin x = 0 of the field lines
+unit_px = 80.0                    # px travelled by light in one film second
+r_far_px = 620.0                  # px: length of the radial lines far from the shell
+scene_width = 0.715               # fraction: the left part with the field lines (the right one is the text panel)
+x_label_offset = [-14.0, -26.0]   # px from the origin
+core_half = 3.5                   # px: half-length of the dark core of the charge
+kick_arrow_gap = 12.0             # px between the origin and the head of the kick arrow
+kick_arrow_len = 95.0             # px
+kick_text_offset = [-120.0, 24.0] # px from the origin
+v_arrow_dy = 24.0                 # px above the charge
+v_arrow_from = 8.0                # px from the charge
+v_arrow_to = 60.0
+v_label_offset = [30.0, 32.0]     # px from the charge
+front_label = [0.62, 0.80]        # the label of the front, in units of the radius ct from the origin
+panel_x = 0.735                   # fraction: left edge of the text panel
+title_y = 0.90
+beta_y = 0.835
+items_y0 = 0.74                   # first of the three zone entries
+items_dy = 0.145
+body_dy = 0.052                   # distance from the zone name to its description
+gauss_y = 0.29
+formula1_y = 0.235
+formula2_y = 0.178
+note_y = 0.145
+caption_box_height = 0.075
+caption_pos = [0.03, 0.028]
+
+[fonts]
+x_label = 10
+kick = 14
+v_label = 13
+front_label = 11
+title = 14
+beta = 14
+zone_name = 12.5
+zone_body = 9.5
+gauss = 9.8
+formula1 = 14
+formula2 = 12
+note = 8.5
+caption = 11.5
+mono_family = "monospace"
+body_linespacing = 1.35
+note_linespacing = 1.4
+
+[style]
+background = "#03060c"
+charge = "#7fd6ff"
+charge_core = "#04203a"
+outer = [0.45, 0.55, 0.78]        # r > ct
+front = [1.0, 0.78, 0.30]         # r = ct
+inner = [0.35, 0.88, 1.0]         # r < ct
+glow = [[4.2, 0.07], [2.4, 0.16], [1.3, 0.4], [0.6, 1.0]]     # [size relative to the dot, opacity] of the halo of the charge
+charge_size = 15.0                # px
+core_width = 2.2
+outer_alpha = 0.55
+inner_alpha = 0.85
+arc_alpha = 0.38
+outer_width = 1.3
+inner_width = 1.5
+arc_width = 3.0
+circle = [1.0, 0.85, 0.5, 0.35]
+circle_width = 1.0
+circle_dash = [3, 4]
+axis_line = [0.7, 0.8, 0.95, 0.28]
+axis_line_width = 1.0
+origin_label = [0.75, 0.82, 0.95, 0.7]
+origin_ring = [0.8, 0.85, 1.0, 0.5]
+origin_ring_size = 7.0            # px
+origin_ring_width = 1.0
+kick_colour = [1.0, 0.55, 0.15]
+kick_arrow_width = 5.0
+kick_arrow_mutation = 22.0
+kick_text_colour = [1.0, 0.7, 0.35]
+v_colour = [0.6, 0.95, 1.0, 0.9]
+v_arrow_width = 2.0
+front_label_colour = [1.0, 0.82, 0.4, 0.9]
+title_colour = [0.88, 0.93, 1.0, 1.0]
+beta_colour = [0.6, 0.9, 1.0, 1.0]
+zone_body_colour = [0.72, 0.78, 0.9, 0.9]
+gauss_colour = [0.88, 0.93, 1.0, 0.9]
+formula_colour = [1.0, 0.82, 0.4, 0.95]
+note_colour = [0.6, 0.68, 0.8, 0.85]
+caption_box = [0.01, 0.02, 0.05, 0.85]
+caption_colour = [0.88, 0.93, 1.0, 0.93]

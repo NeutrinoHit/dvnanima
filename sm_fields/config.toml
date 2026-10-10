@@ -1,0 +1,419 @@
+# Every number of the film "The fields of the Standard Model" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set zoom.half=2.2 --set layout.panel_x=0.8
+# Units: film seconds; "plane units" are the units of the scalar-QED model (qed_pair.py); a sheet is drawn in "sheet units"
+# (the half-width of a sheet is 1); figure fractions are fractions of the frame; font sizes are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 26
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[timeline]
+total = 104.0
+camera = [3.5, 7.0]               # the camera turns from the top view to the oblique one
+lift = [6.0, 14.5]                # the tiles lift one after another into the stack (a cascade)
+point = [15.0, 20.0]              # a point of space pierces all the sheets
+pulse = 21.0                      # a particle on the electron sheet
+passing = [28.0, 40.0]            # two electron waves pass through each other
+zoom = [40.0, 45.0]               # the other sheets fly away, two solid sheets are left
+part_a = [46.0, 63.0]             # e- e-: repulsion (scalar QED)
+part_b = [64.5, 81.5]             # e- e+: attraction (scalar QED)
+part_c = [83.0, 100.0]            # e- e+ -> gamma gamma, then a separate event gamma gamma -> e- e+
+lift_caption_lead = 1.0           # the first caption lasts until the lift starts minus this
+
+[stack]
+spacing = 0.40                    # distance between the sheets of the stack
+size_table = 0.82                 # half-width of a tile in the table
+size_stack = 2.30                 # half-width of a sheet in the stack
+lift_duration = 3.2               # seconds a tile needs to lift
+table_col_centre = 2.0            # tile centre: ((col - col_centre) * col_pitch + x_shift, (row_centre - row) * row_pitch + y_shift)
+table_col_pitch = 2.35
+table_x_shift = 0.2
+table_row_centre = 1.5
+table_row_pitch = 2.0
+table_y_shift = 0.15
+complete_at = 0.999              # the stack counts as complete (and the waves start) when the lift progress exceeds this
+
+[fluctuation]                     # the small random ripples of every sheet
+amplitude = 0.020
+waves = 4
+k_range = [2.0, 5.0]
+omega_range = [0.8, 2.0]
+height_factor = 2.2               # sheet units -> scene units (times the size of the sheet / size_stack)
+seed_base = 11
+seed_step = 7
+
+[stack_waves]                     # the waves before the zoom (sheet units)
+height_factor = 3.0
+ring_count = 3
+ring_spacing = 2.6                # seconds between the rings
+ring_speed = 0.55
+ring_width = 0.14
+ring_k = 13.0
+ring_amplitude = 0.27
+ring_amplitude_step = 0.04
+ring_decay = 3.0                  # amplitude ~ 1 / sqrt(1 + decay * r)
+packet_sigma = 0.22
+packet_k = 14.0
+packet_amplitude = 0.38
+packets = [                       # two packets that pass through each other: x0, y0, velocity
+  { x0 = -1.7, y0 = -0.25, vx = 0.45 },
+  { x0 = 1.7, y0 = 0.25, vx = -0.45 },
+]
+
+[zoom]
+half = 2.6                        # half-size of the two sheets in the zoom (scene units)
+z_electron = -1.5
+z_photon = 1.5
+fly_distance = 11.0
+fly_start = 1.0                   # the other sheets start to fly this long after the zoom starts
+solid_from = 2.0                  # the two sheets become solid between zoom_start + from and zoom_end + to
+solid_to = 0.5
+light_up_s = 1.0                  # for a moment the other sheets light up before they fly away
+light_up_gain = 0.42
+light_up_base = 0.17
+fluctuation_damping = 0.6         # the ripples of the two sheets are damped by this much during the zoom
+fields_from = 0.5                 # the interaction fields are computed from part_a_start - this
+label_from = 2.5
+label_to = 0.5
+caption_lead = 0.5                # captions switch this long before the next part starts
+solid_cutoff = 0.01               # the solid surface is drawn when its opacity exceeds this
+
+[heights]
+electron = 8.5                    # scene units per unit of |psi|^2
+photon = 0.75                     # scene units per unit of A_0
+a0_base_equal = 0.28              # the far field of two equal charges is a constant: a gauge shift
+a0_base_opposite = 0.0
+grid_step = 2                     # every second point of the model grid is drawn
+
+[annihilation]
+t_annihilation = 5.0              # seconds from the start of part C
+t_creation = 11.5
+electron_speed = 1.0              # plane units per second
+photon_speed = 2.0
+mix_width = 0.9
+electron_amplitude = 1.05
+electron_sigma = 0.62
+photon_amplitude = 0.95
+photon_sigma = 0.75
+photon_k = 4.2
+
+[stages]                          # cross-fades of the three parts
+a_in = 1.5
+b_in_before = 1.0
+b_in_after = 0.2
+c_in_before = 1.0
+c_in_after = 0.2
+c_out = [1.0, 2.5]
+weight_min = 1.0e-4
+panel_min = 0.02
+caption_c1_after = 2.0            # the first caption of part C lasts until t_annihilation + this
+caption_c2_until = 8.0            # the second one until this many seconds from the start of part C
+
+[camera]
+azimuth_deg = 38.0                # the oblique view
+elevation_top_deg = 90.0
+elevation_drop_deg = 62.0         # the elevation goes from 90 to 90 - 62 degrees
+xlim = [-6.2, 6.2]
+ylim = [-4.6, 4.6]
+
+[wire]
+line_step = 5                     # every n-th line of the grid is drawn in the wire view
+alpha = 0.85
+alpha_gain = 0.9
+dim_drop = 0.68                   # the non-focus sheets are dimmed by this much
+dim_ramp = [-1.0, 1.0]            # around the end of the "point" part
+solid_wire_fade = 0.8
+width = 0.8
+width_focus = 1.0
+focus_lead = 1.0                  # only the electron sheet is the focus this long before the passing part
+alpha_min = 0.01
+frame_width = 1.4
+frame_alpha_gain = 0.1
+cross_section_width = 2.6
+cross_section_threshold = 1.0e-3
+cross_section_until = 0.5         # the thick cross-section line is drawn until zoom_start + this
+dim_threshold = 0.5              # the dimming is considered on above this
+
+[surface]
+light = [-0.45, -0.55, 0.70]
+electron_shade_base = 0.30
+electron_shade_gain = 0.70
+electron_tint_scale = 1.1
+electron_tint_gain = 0.35
+electron_alpha = 0.94
+photon_negative_scale = 0.25
+photon_cold = [0.55, 0.50, 1.00]
+photon_shade_base = 0.30
+photon_shade_gain = 0.70
+photon_alpha = 0.80
+alpha_boost = 1.2
+edge_width = 0.35
+
+[labels]
+tile_size = 17
+tile_dy = -0.04
+multiplicity_size = 11
+multiplicity_pos = [0.72, -0.78]  # in tile half-widths
+symbol_size = 11.5
+symbol_offset = [0.12, -0.02]
+sheet_annotation_size = 11.5
+sheet_annotation_dx = -0.15
+sheet_annotation_linespacing = 1.3
+multiplicity = { quark = '$\times 3$', gauge = '$\times 8$' }
+no_multiplicity = ["gamma", "Z", "W"]
+
+[legend]
+x0 = -5.9
+y = -4.28
+marker_size = 9
+text_dx = 0.22
+gap = 0.45
+text_size = 11.5
+hide_after = 0.98                 # the legend disappears when the stack is complete
+
+[point_of_space]
+position = [0.9, 0.4]
+z_margin = 0.45
+line_alpha = 0.8
+line_width = 1.4
+line_dash = [3, 3]
+dot_size = 5
+text_offset = [0.35, -0.25]
+text_size = 11
+fade_in = 1.0
+fade_out = [0.8, 2.0]
+visible_until = 2.0               # after the end of the "point" part
+
+[charges]
+dotted_alpha = 0.55
+dotted_width = 1.0
+dotted_dash = [2, 3]
+label_dy = 0.30
+label_dz = 0.15
+label_size = 15
+
+[panel]
+x = 0.805
+pair = { y = 0.80, size = 24 }
+kind = { y = 0.755, size = 15 }
+maxwell = { y = 0.66, size = 16 }
+maxwell_note = { y = 0.625, size = 9.5 }
+phase = { y = 0.55, size = 15 }
+phase_note = { y = 0.515, size = 9.5 }
+positive = { y = 0.43, size = 13 }
+negative = { y = 0.395, size = 13 }
+repulsion_color = [1.0, 0.62, 0.45]
+attraction_color = [0.55, 0.85, 1.0]
+negative_color = [0.55, 0.50, 1.0]
+
+[bars]
+axes = [0.83, 0.40, 0.14, 0.26]
+xlim = 3.0
+ylim = 1.15
+centres = [0.5, 2.0]
+width = 0.8
+alpha = 0.9
+baseline_alpha = 0.5
+baseline_width = 1.0
+label_y = -0.1
+label_size = 13
+sum_pos = [1.25, -0.42]
+sum_size = 11
+title_pos = [0.83, 0.72]
+title_size = 17
+
+[layout]
+axes = [0.0, 0.07, 0.78, 0.86]
+title_pos = [0.03, 0.925]
+subtitle_pos = [0.03, 0.892]
+caption_pos = [0.03, 0.035]
+colour_note_pos = [0.03, 0.068]
+note_pos = [0.78, 0.07]
+
+[fonts]
+title = 19
+subtitle = 11.5
+caption = 11.5
+colour_note = 10
+note = 8.5
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+title_color = [0.9, 0.95, 1.0, 0.95]
+note_color = [0.55, 0.62, 0.75, 0.9]
+colour_note_alpha = 0.9
+colour_note_fade = [-1.5, 0.0]    # around the end of the "point" part
+point_color = [1.0, 1.0, 1.0]
+
+[groups]                          # the colours of the groups of fields
+quark = [0.97, 0.66, 0.30]
+lepton = [0.40, 0.72, 1.00]
+neutrino = [0.45, 0.90, 0.82]
+gauge = [1.00, 0.52, 0.62]
+higgs = [0.84, 0.56, 1.00]
+
+[table]                           # the order of the sheets in the stack from the top; the fields themselves are in [[fields]]
+stack_order = ["H", "W", "Z", "g", "gamma", "e", "mu", "tau", "nu_e", "nu_mu", "nu_tau", "u", "c", "t", "d", "s", "b"]
+legend = [["quark", "g_quark"], ["neutrino", "g_neutrino"], ["lepton", "g_lepton"], ["gauge", "g_gauge"], ["higgs", "g_higgs"]]
+
+[qed]                             # the scalar-QED model of the zoom (qed_pair.py, scalar_qed_numerics.py)
+lx = 12.0                         # the sheet is the square [-lx/2, lx/2]^2 of the plane of the packets
+ngrid = 150
+t_sim = 28.0
+n_anim = 141
+sim_samples = 561
+mass = 6.0
+charge_q = 0.88
+sigma = 0.38
+px = 1.80
+x0 = 4.40
+y0 = 0.54
+ratio = 4.20
+render_unused = [1.1, 0.92, 1.0, 1.0, 2.1, 1.0]   # RenderConfig of the numerics (not used by the film)
+
+[[fields]]
+name = "u"
+group = "quark"
+col = 0
+row = 0
+label = '$u$'
+symbol = '$\psi_u$'
+
+[[fields]]
+name = "c"
+group = "quark"
+col = 1
+row = 0
+label = '$c$'
+symbol = '$\psi_c$'
+
+[[fields]]
+name = "t"
+group = "quark"
+col = 2
+row = 0
+label = '$t$'
+symbol = '$\psi_t$'
+
+[[fields]]
+name = "d"
+group = "quark"
+col = 0
+row = 1
+label = '$d$'
+symbol = '$\psi_d$'
+
+[[fields]]
+name = "s"
+group = "quark"
+col = 1
+row = 1
+label = '$s$'
+symbol = '$\psi_s$'
+
+[[fields]]
+name = "b"
+group = "quark"
+col = 2
+row = 1
+label = '$b$'
+symbol = '$\psi_b$'
+
+[[fields]]
+name = "nu_e"
+group = "neutrino"
+col = 0
+row = 2
+label = '$\nu_e$'
+symbol = '$\psi_{\nu_e}$'
+
+[[fields]]
+name = "nu_mu"
+group = "neutrino"
+col = 1
+row = 2
+label = '$\nu_\mu$'
+symbol = '$\psi_{\nu_\mu}$'
+
+[[fields]]
+name = "nu_tau"
+group = "neutrino"
+col = 2
+row = 2
+label = '$\nu_\tau$'
+symbol = '$\psi_{\nu_\tau}$'
+
+[[fields]]
+name = "e"
+group = "lepton"
+col = 0
+row = 3
+label = '$e$'
+symbol = '$\psi_e$'
+
+[[fields]]
+name = "mu"
+group = "lepton"
+col = 1
+row = 3
+label = '$\mu$'
+symbol = '$\psi_\mu$'
+
+[[fields]]
+name = "tau"
+group = "lepton"
+col = 2
+row = 3
+label = '$\tau$'
+symbol = '$\psi_\tau$'
+
+[[fields]]
+name = "g"
+group = "gauge"
+col = 3
+row = 0
+label = '$g$'
+symbol = '$G^a_\mu$'
+
+[[fields]]
+name = "gamma"
+group = "gauge"
+col = 3
+row = 1
+label = '$\gamma$'
+symbol = '$A_\mu$'
+
+[[fields]]
+name = "Z"
+group = "gauge"
+col = 3
+row = 2
+label = '$Z$'
+symbol = '$Z_\mu$'
+
+[[fields]]
+name = "W"
+group = "gauge"
+col = 3
+row = 3
+label = '$W^{\pm}$'
+symbol = '$W^{\pm}_\mu$'
+
+[[fields]]
+name = "H"
+group = "higgs"
+col = 4
+row = 1.5                         # the Higgs sits in its own column
+label = '$H$'
+symbol = '$H$'

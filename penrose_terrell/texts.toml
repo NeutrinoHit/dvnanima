@@ -1,0 +1,18 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# {beta} and {gamma} in sub_camera are replaced by the numbers (decimal comma in Russian).
+
+[en]
+title_rest = '''At rest'''
+sub_rest = '''$\beta=0$'''
+title_camera = '''Camera'''
+sub_camera = '''$\beta={beta},\ \gamma={gamma}$'''
+title_snapshot = '''Snapshot'''
+sub_snapshot = '''not observable'''
+
+[ru]
+title_rest = '''В покое'''
+sub_rest = '''$\beta=0$'''
+title_camera = '''Камера'''
+sub_camera = '''$\beta={beta},\ \gamma={gamma}$'''
+title_snapshot = '''Снимок'''
+sub_snapshot = '''ненаблюдаем'''

@@ -20,15 +20,19 @@ The body-frame (rest-frame) coordinates of that point are
 which select the football pattern.  The snapshot panel uses t_e = tau for every
 point instead.
 
+All the numbers are in config.toml and all the words in texts.toml (see ../dvconfig.py for --config / --set).
+
 Usage:
-    python penrose_terrell.py                 # full film -> media/penrose_terrell.mp4
-    python penrose_terrell.py --preview       # 3 s low-resolution film
-    python penrose_terrell.py --frame 0.0     # one PNG at camera time tau = 0
+    python penrose_terrell.py --lang en                # full film -> media/penrose_terrell_en.mp4
+    python penrose_terrell.py --lang ru
+    python penrose_terrell.py --lang en --preview      # 3 s low-resolution film
+    python penrose_terrell.py --lang en --frame 0.0    # one PNG at camera time tau = 0
 """
 
 from __future__ import annotations
 
 import argparse
+import functools
 import itertools
 import math
 import shutil
@@ -37,10 +41,15 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 from scipy.spatial import ConvexHull
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from dvconfig import load_config, load_texts  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
+CFG = load_config(HERE)
+TEXT = {lang: load_texts(HERE, lang) for lang in ("en", "ru")}     # texts.toml
 PHI = (1 + 5 ** 0.5) / 2
 
 
@@ -90,9 +99,9 @@ def football_albedo(xb: np.ndarray, yb: np.ndarray, zb: np.ndarray) -> tuple[np.
     order = np.argsort(t, axis=-1)
     first = order[..., 0]
     t_sorted = np.take_along_axis(t, order[..., :2], axis=-1)
-    seam = (t_sorted[..., 1] - t_sorted[..., 0]) / t_sorted[..., 0] < 0.012
-    albedo = np.where(IS_PENTAGON[first], 0.07, 0.96)
-    albedo = np.where(seam, 0.12, albedo)
+    seam = (t_sorted[..., 1] - t_sorted[..., 0]) / t_sorted[..., 0] < CFG.ball.seam_width
+    albedo = np.where(IS_PENTAGON[first], CFG.ball.albedo_pentagon, CFG.ball.albedo_hexagon)
+    albedo = np.where(seam, CFG.ball.albedo_seam, albedo)
     return albedo, (first == HIGHLIGHT) & ~seam
 
 
@@ -120,57 +129,71 @@ def camera_image(x: np.ndarray, y: np.ndarray, tau: float, beta: float,
         z = (-b + np.sqrt(np.clip(disc, 0.0, None))) / (2 * a)
         xb = gamma * (w - beta * z)
     # headlight shading from the apparent (circular) outline of the camera image
+    floor = CFG.ball.shade_floor
     if snapshot:
-        shade = 0.5 + 0.5 * np.clip(z, 0.0, 1.0)
+        shade = floor + (1.0 - floor) * np.clip(z, 0.0, 1.0)
     else:
         rr = (x - beta * tau) ** 2 + y * y
-        shade = 0.5 + 0.5 * np.sqrt(np.clip(1.0 - rr, 0.0, 1.0))
+        shade = floor + (1.0 - floor) * np.sqrt(np.clip(1.0 - rr, 0.0, 1.0))
     albedo, mark = football_albedo(xb, y, z)
     gray = albedo * shade
-    rgb = np.stack([gray, gray * 0.98, gray * 0.92], axis=-1)
-    orange = np.stack([0.95 * shade, 0.45 * shade, 0.08 * shade], axis=-1)
+    rgb = np.stack([gray * tint for tint in CFG.ball.tint], axis=-1)
+    orange = np.stack([c * shade for c in CFG.ball.highlight], axis=-1)
     rgb = np.where(mark[..., None], orange, rgb)
     return np.where(hit[..., None], rgb, 0.0), hit
 
 
 # --------------------------------------------------------------------- frames
 
-def load_font(size: int) -> ImageFont.FreeTypeFont:
-    for name in ("/System/Library/Fonts/Helvetica.ttc", "/System/Library/Fonts/SFNS.ttf",
-                 "/Library/Fonts/Arial.ttf", "DejaVuSans.ttf"):
-        try:
-            return ImageFont.truetype(name, size)
-        except OSError:
-            continue
-    return ImageFont.load_default()
+def num(x: float, fmt: str, lang: str) -> str:
+    """A number for use inside $...$: decimal comma in Russian."""
+    s = format(x, fmt)
+    return s.replace(".", "{,}") if lang == "ru" else s
 
 
-def render_frame(tau: float, beta: float, size: int, span: float) -> Image.Image:
+@functools.lru_cache(maxsize=None)
+def render_header(lang: str, beta: float, size: int) -> Image.Image:
+    """The titles above the three panels (matplotlib mathtext; the same for every frame, so it is made once)."""
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+
+    tx, LY, ST, dpi = TEXT[lang], CFG.layout, CFG.style, CFG.video.dpi
+    head, gap = int(LY.header * size), LY.gap
+    width = 3 * size + 2 * gap
+    canvas_rgb = tuple(c / 255 for c in ST.canvas)
+    fig = Figure(figsize=(width / dpi, head / dpi), dpi=dpi, facecolor=canvas_rgb)
+    FigureCanvasAgg(fig)
+    gamma = 1 / math.sqrt(1 - beta * beta)
+    camera_sub = tx["sub_camera"].replace("{beta}", num(beta, ".2f", lang)).replace("{gamma}", num(gamma, ".1f", lang))
+    titles = ((tx["title_rest"], tx["sub_rest"]), (tx["title_camera"], camera_sub), (tx["title_snapshot"], tx["sub_snapshot"]))
+    for k, (t1, t2) in enumerate(titles):
+        x0 = k * (size + gap) + size * LY.title_pos[0]
+        fig.text(x0 / width, 1 - size * LY.title_pos[1] / head, t1, ha="left", va="top",
+                 color=tuple(c / 255 for c in ST.title_colours[k]), fontsize=size * LY.title_size * 72 / dpi)
+        fig.text(x0 / width, 1 - size * LY.subtitle_pos[1] / head, t2, ha="left", va="top",
+                 color=tuple(c / 255 for c in ST.subtitle_colour), fontsize=size * LY.subtitle_size * 72 / dpi)
+    fig.canvas.draw()
+    return Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy())
+
+
+def render_frame(tau: float, beta: float, size: int, span: float, lang: str = "en") -> Image.Image:
     """Three panels (at rest | camera | snapshot), each size x size, field of view +-span."""
+    LY, ST = CFG.layout, CFG.style
     xs = np.linspace(-span, span, size)
     ys = np.linspace(span, -span, size)
     X, Y = np.meshgrid(xs, ys)
-    bg = np.array([0.035, 0.045, 0.07])
+    bg = np.array(ST.background)
     panels = []
     for b, snap, t in ((0.0, False, 0.0), (beta, False, tau), (beta, True, tau)):
         rgb, hit = camera_image(X, Y, t, b, snapshot=snap)
         img = np.where(hit[..., None], rgb, bg)
         panels.append(Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)))
-    head = int(0.2 * size)
-    gap = 6
-    canvas = Image.new("RGB", (3 * size + 2 * gap, size + head), (8, 11, 18))
+    head = int(LY.header * size)
+    gap = LY.gap
+    canvas = Image.new("RGB", (3 * size + 2 * gap, size + head), tuple(ST.canvas))
     for k, p in enumerate(panels):
         canvas.paste(p, (k * (size + gap), head))
-    dr = ImageDraw.Draw(canvas)
-    f1, f2 = load_font(int(size * 0.062)), load_font(int(size * 0.045))
-    gamma = 1 / math.sqrt(1 - beta * beta)
-    titles = (("At rest / В покое", f"β = 0", (210, 210, 215)),
-              ("Camera / Камера", f"β = {beta:.2f},  γ = {gamma:.1f}", (245, 245, 245)),
-              ("Snapshot / Снимок", "not observable / ненаблюдаем", (150, 155, 170)))
-    for k, (t1, t2, col) in enumerate(titles):
-        x0 = k * (size + gap) + size * 0.03
-        dr.text((x0, size * 0.02), t1, font=f1, fill=col)
-        dr.text((x0, size * 0.105), t2, font=f2, fill=(140, 195, 225))
+    canvas.paste(render_header(lang, beta, size), (0, 0))
     return canvas
 
 
@@ -178,22 +201,22 @@ def tau_at(frame: int, frames: int, tau0: float, tau1: float) -> float:
     return tau0 + (tau1 - tau0) * frame / max(frames - 1, 1)
 
 
-def write_film(out: Path, beta: float, size: int, fps: int, seconds: float) -> None:
+def write_film(out: Path, beta: float, size: int, fps: int, seconds: float, lang: str = "en") -> None:
     if not shutil.which("ffmpeg"):
         sys.exit("ffmpeg is required")
     out.parent.mkdir(parents=True, exist_ok=True)
     frames = int(round(seconds * fps))
-    span = 1.9
+    span = CFG.scene.span
     # the ball (centre x = beta*tau) crosses the +-span window
-    tau0, tau1 = (-span - 1.5) / beta, (span + 1.5) / beta
-    sample = render_frame(0.0, beta, size, span)
+    tau0, tau1 = (-span - CFG.scene.tau_margin) / beta, (span + CFG.scene.tau_margin) / beta
+    sample = render_frame(0.0, beta, size, span, lang)
     cmd = ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
            "-s", f"{sample.width}x{sample.height}", "-r", str(fps), "-i", "-",
-           "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
+           "-c:v", "libx264", "-preset", CFG.video.preset, "-crf", str(CFG.video.crf), "-pix_fmt", "yuv420p",
            "-movflags", "+faststart", str(out)]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     for k in range(frames):
-        img = render_frame(tau_at(k, frames, tau0, tau1), beta, size, span)
+        img = render_frame(tau_at(k, frames, tau0, tau1), beta, size, span, lang)
         proc.stdin.write(img.tobytes())
     proc.stdin.close()
     proc.wait()
@@ -201,25 +224,30 @@ def write_film(out: Path, beta: float, size: int, fps: int, seconds: float) -> N
 
 
 def main() -> None:
+    V = CFG.video
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--beta", type=float, default=0.99)
-    ap.add_argument("--size", type=int, default=480, help="panel size in pixels")
-    ap.add_argument("--fps", type=int, default=30)
-    ap.add_argument("--seconds", type=float, default=12.0)
+    ap.add_argument("--lang", choices=("en", "ru"), default="en")
+    ap.add_argument("--beta", type=float, default=CFG.scene.beta)
+    ap.add_argument("--size", type=int, default=V.panel_size, help="panel size in pixels")
+    ap.add_argument("--fps", type=int, default=V.fps)
+    ap.add_argument("--seconds", type=float, default=CFG.scene.film_length)
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--frame", type=float, default=None, help="write one PNG at camera time tau")
-    ap.add_argument("--out", type=Path, default=HERE / "media" / "penrose_terrell.mp4")
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--config", type=Path, default=None, help="another configuration file instead of config.toml")
+    ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="override one configuration value")
     args = ap.parse_args()
+    out = args.out or HERE / "media" / f"penrose_terrell_{args.lang}.mp4"
     if args.frame is not None:
-        out = args.out.with_suffix(".png")
+        out = out.with_suffix(".png")
         out.parent.mkdir(parents=True, exist_ok=True)
-        render_frame(args.frame, args.beta, args.size, 1.9).save(out)
+        render_frame(args.frame, args.beta, args.size, CFG.scene.span, args.lang).save(out)
         print(f"wrote {out}")
         return
     if args.preview:
-        write_film(args.out.with_name("penrose_terrell_preview.mp4"), args.beta, 210, 15, 3.0)
+        write_film(out.with_name(out.stem + "_preview.mp4"), args.beta, V.preview_panel_size, V.preview_fps, V.preview_seconds, args.lang)
     else:
-        write_film(args.out, args.beta, args.size, args.fps, args.seconds)
+        write_film(out, args.beta, args.size, args.fps, args.seconds, args.lang)
 
 
 if __name__ == "__main__":

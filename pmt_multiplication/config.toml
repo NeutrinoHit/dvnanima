@@ -1,0 +1,137 @@
+# Every number of the film "How a photomultiplier tube amplifies a single photon" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set physics.delta=3 --set physics.dynodes=8
+# Units: film seconds; the tube is drawn in "tube units" (the axes run from x_lim to y_lim); font sizes are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[physics]
+delta = 4.0                       # mean secondary-emission yield per dynode
+dynodes = 10
+max_drawn = 36                    # electrons drawn per stage
+
+[tube]
+cathode_x = 1.7
+anode_x = 14.1
+dynode_x0 = 3.5
+dynode_dx = 1.05
+y_top = 7.7
+y_bottom = 2.3
+y_mid = 5.0
+plate_half = 0.5
+plate_angle_deg = 38.0
+cathode_spread = 2.4              # emission points on the photocathode: y_mid +- spread * 0.9
+cathode_depth = 0.15
+anode_spread = 2.7
+spread_factor = 0.9
+landing_range = [0.15, 0.7]       # the landing point on a dynode plate: start fraction + range * random
+inward = 0.12                     # the landing points are shifted into the tube by this
+control_jitter_x = 0.25
+control_pull = 0.30               # the control point of a path is pulled towards y_mid by this fraction
+control_jitter_y = 0.5
+depart_jitter = 0.10              # fractions of the stage time
+arrive_range = [0.80, 0.07]       # arrival: depart + stage_dt * (base + random * spread)
+start_delay = 0.9                 # the first electrons leave the photocathode this long after the photon enters
+anode_lead = 0.12                 # the anode time is the stage time minus this fraction of a stage
+
+[events]
+scene1 = [[1.0, 1]]               # (start time s, photoelectrons) in scene 1
+scene2 = [[21.0, 2], [26.0, 6], [30.5, 12]]
+seeds = { "1" = 5, "2" = 11, "6" = 3, "12" = 7 }
+default_seed = 1
+stage_dt_scene1 = 1.45
+stage_dt_scene2 = 0.78
+
+[timeline]
+film_length = 40.0                # the nominal length; the times scale with the real length
+scene2_start = 20.0
+scene_fade_s = 0.5
+scene_fade_floor = 0.2
+pulse_samples = 1600
+pulse_width_factor = 0.10         # sigma of an anode pulse = this * the longest stage time, times pulse_width_gain
+pulse_width_gain = 1.5
+pulse_centre = 0.6                # of a stage time after the anode time
+label_after = 0.9                 # labels appear this many stage times after the anode time
+photon_duration = 0.9
+
+[tube_axes]
+axes = [0.03, 0.14, 0.65, 0.72]
+xlim = [-0.8, 16.4]
+ylim = [0.0, 10.1]
+body = { x = 0.6, y = 0.55, w = 15.0, h = 8.8, rounding = 0.9, face = [0.10, 0.18, 0.30, 0.35], edge = [0.6, 0.72, 0.9, 0.6], lw = 1.4 }
+cathode_half = 2.6
+cathode_width = 4.0
+cathode_label = { dx = 0.1, dy = 2.9, size = 10 }
+dynode_width = 4.5
+dynode_label = { dy_odd = 0.55, dy_even = -0.75, size = 10 }
+anode_half = 2.8
+anode_width = 2.0
+anode_label = { dy = 3.0, size = 10 }
+volts_label = { x = 0.8, y = 0.1, size = 10 }
+photon = { x0 = -0.7, length = 2.3, points = 60, spacing = 0.9, max = 4, amplitude = 0.13, frequency = 3.0, width = 1.8 }
+flash = { time_factor = 0.45, base_width = 1.0, gain_width = 9.0, arrive_fraction = 0.9 }
+trail = { back = 0.12, alpha = 0.5, width = 1.2 }
+electron_size = 4.2
+counter = { x = -0.6, y = 10.0, size = 12 }
+constants_label = { x = 16.2, y = 10.0, size = 11 }
+
+[bars_panel]
+axes = [0.745, 0.585, 0.24, 0.27]
+xlim_margin = 0.6
+ymin = 0.6
+ymax_floor = 2.0e6
+ymax_factor = 4.0
+mean_alpha = 0.55
+mean_width = 1.0
+mean_label = { dx = 0.4, factor = 0.28, size = 9.5, alpha = 0.7 }
+bar_alpha = 0.9
+bar_width = 0.7
+label_size = 10
+title_size = 10.5
+bar_time_margin = 0.02
+
+[pulse_panel]
+axes = [0.745, 0.20, 0.24, 0.27]
+fill_alpha = 0.28
+width = 1.6
+ymax_factor = 1.15
+label_size = 10.5
+title_size = 10.5
+pe_label = { dy = 1.04, size = 9.5 }
+gain_label = { dx = -0.35, factor = 0.93, size = 9.5 }
+
+[layout]
+caption_pos = [0.03, 0.04]
+caption_size = 11.0
+title_pos = [0.03, 0.915]
+title_size = 17
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+cathode = [0.45, 0.75, 1.0]
+dynode = [1.0, 0.62, 0.3]
+dynode_label = [1.0, 0.75, 0.5]
+anode = [0.55, 1.0, 0.7]
+photon = [1.0, 0.95, 0.5]
+flash = [1.0, 0.9, 0.6]
+electron = [0.75, 0.95, 1.0, 1.0]
+electron_trail = [0.5, 0.85, 1.0]
+bar = [1.0, 0.72, 0.3]
+mean_line = [1.0, 1.0, 1.0]
+spine_colour = [0.5, 0.6, 0.75, 0.6]
+spine_width = 0.8
+tick_colour = [0.65, 0.72, 0.85]
+tick_size = 9
+tick_length = 3

@@ -20,10 +20,14 @@ Model (lengths in the reduced Compton wavelength lambda_C = hbar / m_e c):
   electron b = 2 alpha / (3 pi) = 0.0015.  The film uses b = 0.25 so that the effect is
   visible; the real change is about 1 % at r = 1e-3 lambda_C.
 
+All the numbers are in config.toml and all the words in texts.toml (see ../dvconfig.py for --config / --set).
+
 Usage:
-    python running_charge.py                 # film -> media/running_charge.mp4
-    python running_charge.py --preview       # 5 s low-resolution film
-    python running_charge.py --snapshot 18   # one PNG at film time 18 s
+    python running_charge.py --lang en           # film -> media/running_charge_en.mp4
+    python running_charge.py --lang ru           # film -> media/running_charge_ru.mp4
+    python running_charge.py --preview           # 6 s low-resolution film
+    python running_charge.py --snapshot 18       # one PNG at film time 18 s
+    python running_charge.py --still             # clean still without captions and graph (book previews)
 """
 
 from __future__ import annotations
@@ -37,15 +41,27 @@ from pathlib import Path
 
 import numpy as np
 
-HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from dvconfig import load_config, load_texts  # noqa: E402
 
-B_REAL = 2 * (1 / 137.036) / (3 * math.pi)
-B_FILM = 0.25
-K0 = 16.0
-R0 = 1.2
-R_SCENE = 3.3          # half-height of the scene in lambda_C
-PAIR_DENSITY = 0.85     # live pairs per unit area
-MEAN_LIFE = 1.0
+HERE = Path(__file__).resolve().parent
+CFG = load_config(HERE)
+
+B_REAL = 2 * (1 / CFG.model.alpha_inverse) / (3 * math.pi)
+B_FILM = CFG.model.b_film
+K0 = CFG.model.k0
+R0 = CFG.model.r0
+R_SCENE = CFG.model.r_scene             # half-height of the scene in lambda_C
+PAIR_DENSITY = CFG.model.pair_density    # live pairs per unit area
+MEAN_LIFE = CFG.model.mean_life
+
+TEXT = {lang: load_texts(HERE, lang) for lang in ("en", "ru")}     # texts.toml
+
+
+def num(x: float, fmt: str, lang: str) -> str:
+    """A number for plain text: decimal comma in Russian."""
+    s = format(x, fmt)
+    return s.replace(".", ",") if lang == "ru" else s
 
 
 def charge_ratio(r: np.ndarray | float, b: float = B_FILM) -> np.ndarray | float:
@@ -62,17 +78,19 @@ def smooth(x: float, a: float, b: float) -> float:
 # ------------------------------------------------------------------ the pairs
 
 def make_pairs(seed: int, total: float) -> dict[str, np.ndarray]:
+    P = CFG.pairs
     rng = np.random.default_rng(seed)
-    area = math.pi * (R_SCENE * 1.15) ** 2
+    r_out = R_SCENE * P.area_margin
+    area = math.pi * r_out ** 2
     rate = PAIR_DENSITY * area / MEAN_LIFE
-    n = int(rate * (total + 3.0))
-    t0 = np.sort(rng.uniform(-2.0, total, n))
-    life = np.clip(rng.gamma(3.0, MEAN_LIFE / 3.0, n), 0.45, 2.6)
-    r = np.sqrt(rng.uniform(0.2 ** 2, (R_SCENE * 1.15) ** 2, n))
-    near = rng.uniform(size=n) < 0.22                       # extra pairs close to the charge (polarization cloud)
-    r = np.where(near, np.sqrt(rng.uniform(0.22 ** 2, 1.5 ** 2, n)), r)
+    n = int(rate * (total + P.count_pad_s))
+    t0 = np.sort(rng.uniform(P.t_start, total, n))
+    life = np.clip(rng.gamma(P.life_shape, MEAN_LIFE / P.life_shape, n), *P.life_clip)
+    r = np.sqrt(rng.uniform(P.r_inner ** 2, r_out ** 2, n))
+    near = rng.uniform(size=n) < P.near_fraction            # extra pairs close to the charge (polarization cloud)
+    r = np.where(near, np.sqrt(rng.uniform(P.near_range[0] ** 2, P.near_range[1] ** 2, n)), r)
     phi = rng.uniform(0, 2 * math.pi, n)
-    d0 = rng.uniform(0.16, 0.42, n)
+    d0 = rng.uniform(*P.dipole_length, n)
     noise = rng.normal(size=n)          # standard normal, turned into an angle with kappa later
     unif = rng.uniform(-math.pi, math.pi, n)
     vm_seed = rng.integers(0, 2 ** 31, n)
@@ -81,6 +99,7 @@ def make_pairs(seed: int, total: float) -> dict[str, np.ndarray]:
 
 def pair_ends(pairs: dict[str, np.ndarray], t: float, s_of) -> tuple[np.ndarray, ...]:
     """Positions of the positron and electron ends and an opacity for every living pair."""
+    P = CFG.pairs
     t0, life = pairs["t0"], pairs["life"]
     alive = (t >= t0) & (t <= t0 + life)
     idx = np.where(alive)[0]
@@ -93,32 +112,34 @@ def pair_ends(pairs: dict[str, np.ndarray], t: float, s_of) -> tuple[np.ndarray,
     psi = np.array([np.random.default_rng(int(pairs["vm_seed"][i])).vonmises(0.0, k) if k > 1e-6
                     else pairs["unif"][i] for i, k in zip(idx, kappa)]) if len(idx) else np.zeros(0)
     # the pair stretches in the field of the charge
-    stretch = 1.0 + 1.4 * s_of(t) / (1.0 + (r / 0.9) ** 2)
-    d = pairs["d0"][idx] * stretch * (0.7 + 0.3 * np.sin(math.pi * np.clip(age, 0, 1)))
+    stretch = 1.0 + P.stretch_gain * s_of(t) / (1.0 + (r / P.stretch_radius) ** 2)
+    d = pairs["d0"][idx] * stretch * (P.breathing[0] + P.breathing[1] * np.sin(math.pi * np.clip(age, 0, 1)))
     cx, cy = r * np.cos(phi), r * np.sin(phi)
     ux, uy = np.cos(phi + psi), np.sin(phi + psi)           # from positron to electron
     pos = np.stack([cx - 0.5 * d * ux, cy - 0.5 * d * uy], axis=1)
     ele = np.stack([cx + 0.5 * d * ux, cy + 0.5 * d * uy], axis=1)
-    fade_in = np.clip(age * life[idx] / 0.28, 0, 1)
-    fade_out = np.clip((1 - age) * life[idx] / 0.28, 0, 1)
+    fade_in = np.clip(age * life[idx] / P.edge_fade_s, 0, 1)
+    fade_out = np.clip((1 - age) * life[idx] / P.edge_fade_s, 0, 1)
     return pos, ele, np.minimum(fade_in, fade_out), age, life[idx]
 
 
 # ---------------------------------------------------------------------- film
 
-def timeline(total: float) -> dict[str, float]:
-    k = total / 26.0
-    return dict(charge_on=(5.0 * k, 8.5 * k), panel=(8.5 * k, 10.0 * k), probe=(10.0 * k, 23.0 * k))
+def timeline(total: float) -> dict[str, tuple[float, float]]:
+    TL = CFG.timeline
+    k = total / TL.film_length
+    return {name: (TL[name][0] * k, TL[name][1] * k) for name in ("charge_on", "panel", "probe")}
 
 
-def probe_radius(t: float, tl: dict[str, float]) -> float:
+def probe_radius(t: float, tl: dict[str, tuple[float, float]]) -> float:
+    PR = CFG.probe
     a, b = tl["probe"]
     u = min(max((t - a) / (b - a), 0.0), 1.0)
     e = 0.5 - 0.5 * math.cos(math.pi * u)
-    return math.exp(math.log(3.0) + (math.log(0.13) - math.log(3.0)) * e)
+    return math.exp(math.log(PR.r_start) + (math.log(PR.r_end) - math.log(PR.r_start)) * e)
 
 
-def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float | None = None,
+def render(out: Path, size: tuple[int, int], fps: int, total: float, lang: str = "en", snap: float | None = None,
            chrome: bool = True) -> None:
     import matplotlib
     matplotlib.use("Agg")
@@ -128,39 +149,45 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
 
     if snap is None and not shutil.which("ffmpeg"):
         sys.exit("ffmpeg is required")
+    tx = TEXT[lang]
+    V, TLN, PR, SC, FL, EL, GL = CFG.video, CFG.timeline, CFG.probe, CFG.scene, CFG.field, CFG.electron, CFG.glow
+    PS, FX, PN, PT, CP, F, ST = CFG.pair_style, CFG.flash, CFG.panel, CFG.panel_text, CFG.caption, CFG.fonts, CFG.style
     W, H = size
-    dpi = 100
-    sc = H / 720.0
+    dpi = V.dpi
+    sc = H / V.reference_height
     unit = H / (2 * R_SCENE)               # pixels per lambda_C
-    cx0, cy0 = 0.37 * W, 0.5 * H
+    cx0, cy0 = SC.centre[0] * W, SC.centre[1] * H
     tl = timeline(total)
-    pairs = make_pairs(5, total)
+    pairs = make_pairs(CFG.pairs.seed, total)
     s_of = lambda t: smooth(t, *tl["charge_on"])
+    BG = ST.background
+    bg_rgba = np.array([int(BG[1:3], 16), int(BG[3:5], 16), int(BG[5:7], 16), 255], np.float32)
 
-    fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor="#04070d")
+    fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor=BG)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_xlim(0, W)
     ax.set_ylim(0, H)
     ax.axis("off")
-    pa = fig.add_axes([0.715, 0.25, 0.255, 0.38], facecolor="none")
+    pa = fig.add_axes(PN.axes, facecolor="none")
 
     # background: vignette and slowly drifting vacuum texture (low-resolution, upsampled)
-    yy, xx = np.mgrid[0:H // 8, 0:W // 8]
-    rr = np.hypot(xx * 8 - cx0, yy * 8 - cy0) / (0.55 * W)
-    vignette = np.clip(1.0 - 0.75 * rr ** 1.6, 0.0, 1.0)
-    rng = np.random.default_rng(2)
-    tex = [gaussian_filter(rng.normal(size=(H // 8, W // 8)), 6) for _ in range(3)]
+    cell = SC.texture_cell
+    yy, xx = np.mgrid[0:H // cell, 0:W // cell]
+    rr = np.hypot(xx * cell - cx0, yy * cell - cy0) / (SC.vignette_radius * W)
+    vignette = np.clip(1.0 - SC.vignette_strength * rr ** SC.vignette_power, 0.0, 1.0)
+    rng = np.random.default_rng(SC.texture_seed)
+    tex = [gaussian_filter(rng.normal(size=(H // cell, W // cell)), SC.texture_blur) for _ in range(SC.texture_count)]
     tex = [(t_ - t_.min()) / (t_.max() - t_.min()) for t_ in tex]
-    halo_y, halo_x = np.mgrid[0:H // 8, 0:W // 8]
-    halo_r = np.hypot((halo_x * 8 - cx0) / unit, (halo_y * 8 - cy0) / unit)
-    cloud = np.exp(-((halo_r - 0.55) / 0.45) ** 2)          # polarization cloud around the charge
+    halo_y, halo_x = np.mgrid[0:H // cell, 0:W // cell]
+    halo_r = np.hypot((halo_x * cell - cx0) / unit, (halo_y * cell - cy0) / unit)
+    cloud = np.exp(-((halo_r - SC.cloud_centre) / SC.cloud_width) ** 2)          # polarization cloud around the charge
 
     def glow(points: np.ndarray, color: str, diameter: float, opacity: np.ndarray, z: int) -> None:
         if len(points) == 0:
             return
         X = cx0 + unit * points[:, 0]
         Y = cy0 + unit * points[:, 1]
-        for scale, alpha in ((4.2, 0.06), (2.4, 0.14), (1.35, 0.35), (0.62, 1.0)):
+        for scale, alpha in GL.layers:
             s = (diameter * scale * 72 / dpi) ** 2
             ax.scatter(X, Y, s=s, linewidths=0, zorder=z,
                        edgecolors="none", facecolors=[matplotlib.colors.to_rgba(color, alpha * o) for o in opacity])
@@ -171,10 +198,10 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
     if snap is None:
         writer = subprocess.Popen(
             ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
-             "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "19",
+             "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", V.preset, "-crf", str(V.crf),
              "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], stdin=subprocess.PIPE)
 
-    rs_curve = np.geomspace(0.1, 3.3, 200)
+    rs_curve = np.geomspace(PN.r_range[0], PN.r_range[1], CFG.model.curve_points)
     for k in ids:
         t = k / fps
         s = s_of(t)
@@ -183,138 +210,144 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
         ax.set_ylim(0, H)
         ax.axis("off")
         # background
-        phase = 0.5 + 0.5 * math.sin(2 * math.pi * t / 11.0)
+        phase = 0.5 + 0.5 * math.sin(2 * math.pi * t / SC.texture_period_s)
         mix = (1 - phase) * tex[0] + phase * tex[1]
-        mix = 0.6 * mix + 0.4 * tex[2]
+        mix = SC.texture_mix[0] * mix + SC.texture_mix[1] * tex[2]
         img = np.zeros(mix.shape + (3,))
-        img[..., 0] = 0.015 + 0.020 * mix
-        img[..., 1] = 0.030 + 0.060 * mix
-        img[..., 2] = 0.060 + 0.130 * mix
+        img[..., 0] = SC.base[0] + SC.gain[0] * mix
+        img[..., 1] = SC.base[1] + SC.gain[1] * mix
+        img[..., 2] = SC.base[2] + SC.gain[2] * mix
         img = img * vignette[..., None]
-        img[..., 0] += 0.10 * s * cloud
-        img[..., 1] += 0.045 * s * cloud
+        img[..., 0] += SC.cloud_tint[0] * s * cloud
+        img[..., 1] += SC.cloud_tint[1] * s * cloud
         ax.imshow(np.clip(img, 0, 1), extent=(0, W, 0, H), origin="lower", interpolation="bicubic", zorder=0, aspect="auto")
         # lambda_C circle
-        ang = np.linspace(0, 2 * math.pi, 240)
-        ax.plot(cx0 + unit * np.cos(ang), cy0 + unit * np.sin(ang), color="#8fb4d8", lw=0.7 * sc, alpha=0.22, ls=(0, (2, 4)), zorder=1)
-        ax.text(cx0 + unit * 0.71, cy0 + unit * 0.78, "λ$_C$", color="#8fb4d8", alpha=0.55, fontsize=11 * sc, zorder=1)
+        ang = np.linspace(0, 2 * math.pi, SC.circle_points)
+        ax.plot(cx0 + unit * np.cos(ang), cy0 + unit * np.sin(ang), color=ST.circle_colour, lw=ST.circle_width * sc,
+                alpha=ST.circle_alpha, ls=(0, tuple(ST.circle_dash)), zorder=1)
+        ax.text(cx0 + unit * SC.circle_label[0], cy0 + unit * SC.circle_label[1], tx["lambda_label"], color=ST.circle_colour,
+                alpha=ST.circle_label_alpha, fontsize=F.circle_label * sc, zorder=1)
         # field lines whose strength follows Q(r)
-        if s > 0.01:
+        if s > FL.visible_above:
             segs, widths, cols = [], [], []
-            n_lines = 28
-            rr_ = np.geomspace(0.14, R_SCENE * 1.1, 70)
-            for i in range(n_lines):
-                a = 2 * math.pi * i / n_lines + 0.05 * math.sin(0.3 * t + i)
+            rr_ = np.geomspace(FL.radius_min, R_SCENE * FL.radius_factor, FL.points)
+            for i in range(FL.lines):
+                a = 2 * math.pi * i / FL.lines + FL.wobble * math.sin(FL.wobble_rate * t + i)
                 pts = np.stack([cx0 + unit * rr_ * math.cos(a), cy0 + unit * rr_ * math.sin(a)], axis=1)
                 q = charge_ratio(rr_)
                 for j in range(len(rr_) - 1):
                     segs.append(pts[j:j + 2])
-                    widths.append((0.5 + 2.1 * (q[j] - 1.0) * 1.1 + 0.6) * sc)
-                    alpha = s * (0.10 + 0.55 * min(1.0, (q[j] - 1.0) / 1.2)) / (1 + 0.5 * rr_[j])
-                    cols.append((0.45, 0.80, 1.0, min(alpha, 0.8)))
+                    widths.append((FL.width_base + FL.width_gain * (q[j] - 1.0) * FL.width_boost + FL.width_add) * sc)
+                    alpha = s * (FL.alpha_base + FL.alpha_gain * min(1.0, (q[j] - 1.0) / FL.alpha_q_scale)) / (1 + FL.alpha_decay * rr_[j])
+                    cols.append((*ST.field_colour, min(alpha, FL.alpha_max)))
             ax.add_collection(LineCollection(segs, linewidths=widths, colors=cols, zorder=2, capstyle="round"))
         # pairs
         pos, ele, op, age, life = pair_ends(pairs, t, s_of)
         if len(pos):
             lines = [[(cx0 + unit * p[0], cy0 + unit * p[1]), (cx0 + unit * e[0], cy0 + unit * e[1])] for p, e in zip(pos, ele)]
-            ax.add_collection(LineCollection(lines, colors=[(0.8, 0.85, 1.0, 0.45 * o) for o in op],
-                                             linewidths=1.1 * sc, zorder=3))
-            glow(ele, "#4cc3ff", 0.075 * unit * 1.6, op, 4)
-            glow(pos, "#ff8f3a", 0.075 * unit * 1.6, op, 4)
+            ax.add_collection(LineCollection(lines, colors=[(*PS.bond_colour, PS.bond_alpha * o) for o in op],
+                                             linewidths=PS.bond_width * sc, zorder=3))
+            glow(ele, GL.electron_colour, GL.base_diameter * unit * GL.pair_factor, op, 4)
+            glow(pos, GL.positron_colour, GL.base_diameter * unit * GL.pair_factor, op, 4)
             # creation / annihilation flashes
-            born = np.clip(1.0 - age * life / 0.22, 0, 1)
-            died = np.clip(1.0 - (1 - age) * life / 0.18, 0, 1)
+            born = np.clip(1.0 - age * life / FX.born_time, 0, 1)
+            died = np.clip(1.0 - (1 - age) * life / FX.died_time, 0, 1)
             mids = 0.5 * (pos + ele)
-            for flash, color in ((born, "#bfe6ff"), (died, "#ffffff")):
-                m = flash > 0.02
+            for flash, color, rad0 in ((born, FX.born_colour, FX.born_radius), (died, FX.died_colour, FX.died_radius)):
+                m = flash > FX.visible_above
                 if m.any():
                     X = cx0 + unit * mids[m, 0]
                     Y = cy0 + unit * mids[m, 1]
-                    rad = (0.06 + 0.22 * (1 - flash[m])) * unit if color != "#ffffff" else (0.04 + 0.12 * (1 - flash[m])) * unit
+                    rad = (rad0[0] + rad0[1] * (1 - flash[m])) * unit
                     ax.scatter(X, Y, s=(2 * rad * 72 / dpi) ** 2, facecolors="none",
-                               edgecolors=[matplotlib.colors.to_rgba(color, 0.40 * f) for f in flash[m]],
-                               linewidths=1.2 * sc, zorder=5)
+                               edgecolors=[matplotlib.colors.to_rgba(color, FX.alpha * f) for f in flash[m]],
+                               linewidths=FX.line_width * sc, zorder=5)
         # the electron in the centre
-        ax.scatter([cx0], [cy0], s=(0.9 * unit * 72 / dpi) ** 2, c="#2a7fff", alpha=0.05 * s, linewidths=0, zorder=6)
-        ax.scatter([cx0], [cy0], s=(0.5 * unit * 72 / dpi) ** 2, c="#38a8ff", alpha=0.18 * s, linewidths=0, zorder=6)
-        ax.scatter([cx0], [cy0], s=(0.27 * unit * 72 / dpi) ** 2, c="#4cc3ff", alpha=0.9 * s, linewidths=0, zorder=7)
-        ax.plot([cx0 - 0.07 * unit, cx0 + 0.07 * unit], [cy0, cy0], color="#05203a", lw=2.4 * sc, alpha=s, zorder=8, solid_capstyle="round")
+        for diam, col, alpha, z in zip(EL.glow_diameters, EL.glow_colours, EL.glow_alphas, (6, 6, 7)):
+            ax.scatter([cx0], [cy0], s=(diam * unit * 72 / dpi) ** 2, c=col, alpha=alpha * s, linewidths=0, zorder=z)
+        ax.plot([cx0 - EL.sign_half_length * unit, cx0 + EL.sign_half_length * unit], [cy0, cy0], color=EL.sign_colour,
+                lw=EL.sign_width * sc, alpha=s, zorder=8, solid_capstyle="round")
         # probe
         pa.clear()
         pa.set_facecolor("none")
         p_alpha = smooth(t, *tl["panel"]) if chrome else 0.0
         r_p = probe_radius(t, tl)
-        if t >= tl["probe"][0] - 0.8:
-            pa_ = smooth(t, tl["probe"][0] - 0.8, tl["probe"][0] + 0.2)
-            ang_p = math.radians(-18)
-            ts = np.linspace(0, 1, 60)
-            path_r = np.geomspace(3.0, max(r_p, 0.13), 60)
+        if t >= tl["probe"][0] + TLN.probe_fade[0]:
+            pa_ = smooth(t, tl["probe"][0] + TLN.probe_fade[0], tl["probe"][0] + TLN.probe_fade[1])
+            ang_p = math.radians(PR.angle_deg)
+            path_r = np.geomspace(PR.r_start, max(r_p, PR.r_end), PR.path_points)
             ax.plot(cx0 + unit * path_r * math.cos(ang_p), cy0 + unit * path_r * math.sin(ang_p),
-                    color="#ffffff", lw=0.9 * sc, alpha=0.18 * pa_, zorder=9)
+                    color=ST.probe_path_colour, lw=PR.path_width * sc, alpha=PR.path_alpha * pa_, zorder=9)
             px, py = r_p * math.cos(ang_p), r_p * math.sin(ang_p)
-            glow(np.array([[px, py]]), "#c6ffd2", 0.075 * unit * 1.9, np.array([pa_]), 10)
+            glow(np.array([[px, py]]), PR.glow_colour, GL.base_diameter * unit * PR.glow_factor, np.array([pa_]), 10)
             if chrome:
-                ax.text(cx0 + unit * (px + 0.20), cy0 + unit * (py - 0.30), "test charge / пробный заряд", color="#d9ffe2",
-                        alpha=0.8 * pa_, fontsize=10 * sc, zorder=10)
+                ax.text(cx0 + unit * (px + PR.label_offset[0]), cy0 + unit * (py + PR.label_offset[1]), tx["probe_label"],
+                        color=PR.label_colour, alpha=PR.label_alpha * pa_, fontsize=F.probe_label * sc, zorder=10)
         # panel with the measured charge
-        if p_alpha > 0.01:
+        if p_alpha > PN.visible_above:
             pa.set_xscale("log")
-            pa.set_xlim(3.3, 0.1)
-            pa.set_ylim(0.95, 2.35)
+            pa.set_xlim(PN.r_range[1], PN.r_range[0])
+            pa.set_ylim(*PN.y_range)
             for sp in pa.spines.values():
                 sp.set_visible(False)
             pa.spines["bottom"].set_visible(True)
-            pa.spines["bottom"].set_color((0.7, 0.8, 0.9, 0.5 * p_alpha))
+            pa.spines["bottom"].set_color((*PN.axis_colour, PN.spine_alpha * p_alpha))
             pa.spines["left"].set_visible(True)
-            pa.spines["left"].set_color((0.7, 0.8, 0.9, 0.5 * p_alpha))
+            pa.spines["left"].set_color((*PN.axis_colour, PN.spine_alpha * p_alpha))
             q_all = charge_ratio(rs_curve)
-            pa.plot(rs_curve, q_all, color=(1, 1, 1, 0.12 * p_alpha), lw=1.4 * sc)
+            pa.plot(rs_curve, q_all, color=(1, 1, 1, PN.ghost_alpha * p_alpha), lw=PN.ghost_width * sc)
             shown = rs_curve >= r_p
             if t >= tl["probe"][0]:
-                pa.plot(rs_curve[shown], q_all[shown], color=(1.0, 0.62, 0.25, p_alpha), lw=3.0 * sc, solid_capstyle="round")
-            pa.axhline(1.0, color=(0.7, 0.8, 0.9, 0.35 * p_alpha), lw=1.0 * sc, ls=(0, (3, 4)))
-            pa.set_xticks([0.1, 0.3, 1.0, 3.0])
-            pa.set_xticklabels(["0.1", "0.3", "1", "3"], color=(0.8, 0.88, 1.0, 0.8 * p_alpha), fontsize=10 * sc)
-            pa.set_yticks([1.0, 1.5, 2.0])
-            pa.set_yticklabels(["1", "1.5", "2"], color=(0.8, 0.88, 1.0, 0.8 * p_alpha), fontsize=10 * sc)
+                pa.plot(rs_curve[shown], q_all[shown], color=(*PN.curve_colour, p_alpha), lw=PN.curve_width * sc, solid_capstyle="round")
+            pa.axhline(1.0, color=(*PN.axis_colour, PN.level_alpha * p_alpha), lw=PN.level_width * sc, ls=(0, tuple(PN.level_dash)))
+            tick_col = (*PN.tick_colour, PN.tick_alpha * p_alpha)
+            pa.set_xticks(PN.xticks)
+            pa.set_xticklabels([num(v, "g", lang) for v in PN.xticks], color=tick_col, fontsize=F.tick * sc)
+            pa.set_yticks(PN.yticks)
+            pa.set_yticklabels([num(v, "g", lang) for v in PN.yticks], color=tick_col, fontsize=F.tick * sc)
             pa.minorticks_off()
-            pa.tick_params(colors=(0.7, 0.8, 0.9, 0.5 * p_alpha), length=3)
-            pa.set_xlabel("r / λ$_C$", color=(0.8, 0.88, 1.0, 0.85 * p_alpha), fontsize=11 * sc, labelpad=2)
-            pa.text(1.0, 1.0, "", transform=pa.transAxes)
+            pa.tick_params(colors=(*PN.axis_colour, PN.tick_mark_alpha * p_alpha), length=PN.tick_length)
+            pa.set_xlabel(tx["panel_xlabel"], color=(*PN.tick_colour, PN.label_alpha * p_alpha), fontsize=F.axis_label * sc,
+                          labelpad=PN.label_pad)
             if t >= tl["probe"][0]:
                 q_now = float(charge_ratio(r_p))
-                pa.scatter([r_p], [q_now], s=(14 * sc) ** 2 * 0.6, c="#ffe0b8", zorder=5, linewidths=0)
-                pa.scatter([r_p], [q_now], s=(30 * sc) ** 2 * 0.6, c="#ff9f40", alpha=0.25, zorder=4, linewidths=0)
+                pa.scatter([r_p], [q_now], s=(PN.marker_inner * sc) ** 2 * PN.marker_area, c=PN.marker_inner_colour, zorder=5, linewidths=0)
+                pa.scatter([r_p], [q_now], s=(PN.marker_outer * sc) ** 2 * PN.marker_area, c=PN.marker_outer_colour,
+                           alpha=PN.marker_outer_alpha, zorder=4, linewidths=0)
             else:
                 q_now = 1.0
             fig.texts.clear()
-            fig.text(0.715, 0.86, "Q(r) / e", color=(0.8, 0.88, 1.0, p_alpha), fontsize=16 * sc)
-            fig.text(0.715, 0.735, f"{q_now:.2f}", color=(1.0, 0.72, 0.38, p_alpha), fontsize=40 * sc, family="monospace")
-            fig.text(0.715, 0.685, "charge seen at distance r / заряд на расстоянии r", color=(0.62, 0.7, 0.82, 0.9 * p_alpha), fontsize=9.5 * sc)
-            fig.text(0.715, 0.135, "schematic scale: effect exaggerated ~150×\n(real electron: +1 % at r ≈ 10⁻³ λ$_C$)\nусловный масштаб: эффект увеличен ~150×",
-                     color=(0.55, 0.62, 0.75, 0.85 * p_alpha), fontsize=8.5 * sc, linespacing=1.45, va="top")
+            fig.text(PT.x, PT.title_y, tx["panel_title"], color=(*PT.title_colour, p_alpha), fontsize=F.panel_title * sc)
+            fig.text(PT.x, PT.number_y, num(q_now, PT.number_format, lang), color=(*PT.number_colour, p_alpha),
+                     fontsize=F.panel_number * sc, family=ST.number_family)
+            fig.text(PT.x, PT.sub_y, tx["panel_sub"], color=(*PT.sub_colour, PT.sub_alpha * p_alpha), fontsize=F.panel_sub * sc)
+            fig.text(PT.x, PT.note_y, tx["panel_note"], color=(*PT.note_colour, PT.note_alpha * p_alpha),
+                     fontsize=F.panel_note * sc, linespacing=PT.note_linespacing, va="top")
         else:
             pa.axis("off")
             fig.texts.clear()
         if chrome:
             # captions on a soft dark strip
-            strip = np.linspace(0.0, 0.62, 30)[::-1]
-            ax.imshow(np.tile(strip[:, None], (1, 2)), extent=(0, W, 0, 0.14 * H), origin="upper", cmap="gray_r", alpha=None, zorder=11, aspect="auto", interpolation="bilinear", vmin=0, vmax=1) if False else None
-            ax.add_patch(matplotlib.patches.Rectangle((0, 0), W, 0.12 * H, color=(0.01, 0.02, 0.05, 0.62), zorder=11, lw=0))
+            ax.add_patch(matplotlib.patches.Rectangle((0, 0), W, CP.strip_height * H, color=tuple(CP.strip_colour), zorder=11, lw=0))
             if t < tl["charge_on"][0]:
-                cap = ("vacuum: virtual e⁺e⁻ pairs appear and vanish, orientation random", "вакуум: виртуальные пары e⁺e⁻ рождаются и исчезают, ориентация случайна")
+                cap = tx["cap_vacuum"]
             elif t < tl["probe"][0]:
-                cap = ("near the electron the pairs line up: positrons in, electrons out, the charge is screened",
-                       "вблизи электрона пары выстраиваются: позитроны внутрь, электроны наружу, заряд экранируется")
+                cap = tx["cap_screen"]
             else:
-                cap = ("the closer, the less screening: a test charge sees a larger charge", "чем ближе, тем слабее экранировка: пробный заряд видит больший заряд")
-            fig.text(0.03, 0.058, cap[0], color=(0.86, 0.92, 1.0, 0.92), fontsize=13 * sc)
-            fig.text(0.03, 0.022, cap[1], color=(0.58, 0.67, 0.8, 0.9), fontsize=11 * sc)
+                cap = tx["cap_probe"]
+            for line, y, size, col in zip(cap.split("\n"), CP.y, CP.size, CP.colour):
+                fig.text(CP.x, y, line, color=tuple(col), fontsize=size * sc)
         fig.canvas.draw()
+        frame = np.asarray(fig.canvas.buffer_rgba())
+        if V.fade_s > 0:
+            fade = min(smooth(t, 0.0, V.fade_s), 1.0 - smooth(t, total - V.fade_s, total))
+            if fade < 1.0:
+                frame = (bg_rgba + (frame.astype(np.float32) - bg_rgba) * fade).clip(0, 255).astype(np.uint8)
         if writer is None:
-            fig.savefig(out, dpi=dpi, facecolor=fig.get_facecolor())
+            from PIL import Image
+            Image.fromarray(frame).save(out)
         else:
-            writer.stdin.write(np.asarray(fig.canvas.buffer_rgba()).tobytes())
+            writer.stdin.write(frame.tobytes())
     if writer is not None:
         writer.stdin.close()
         writer.wait()
@@ -324,27 +357,32 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--lang", choices=("en", "ru"), default="en")
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--snapshot", type=float, default=None)
-    ap.add_argument("--still", type=float, default=None,
-                    help="clean 2560x1440 still without captions and graph at this film time (for book previews)")
-    ap.add_argument("--seconds", type=float, default=26.0)
-    ap.add_argument("--out", type=Path, default=HERE / "media" / "running_charge.mp4")
+    ap.add_argument("--still", type=float, nargs="?", const=CFG.video.still_time, default=None,
+                    help="clean still (video.still_width x still_height) without captions and graph at this film time (for book previews)")
+    ap.add_argument("--seconds", type=float, default=CFG.timeline.film_length)
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--config", type=Path, default=None, help="another configuration file instead of config.toml")
+    ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="override one configuration value")
     args = ap.parse_args()
-    args.out.parent.mkdir(parents=True, exist_ok=True)
+    V = CFG.video
+    out = args.out or HERE / "media" / f"running_charge_{args.lang}.mp4"
+    out.parent.mkdir(parents=True, exist_ok=True)
     if args.still is not None:
         from PIL import Image
-        target = args.out.with_name(args.out.stem + "_still.png")
-        render(target, (2560, 1440), 30, args.seconds, snap=args.still, chrome=False)
+        target = out.with_name(out.stem + "_still.png")
+        render(target, (V.still_width, V.still_height), V.fps, args.seconds, args.lang, snap=args.still, chrome=False)
         img = Image.open(target)
-        img.crop((0, 0, int(0.70 * img.width), img.height)).save(target)
+        img.crop((0, 0, int(V.still_crop * img.width), img.height)).save(target)
         print(f"cropped {target}")
     elif args.snapshot is not None:
-        render(args.out.with_suffix(".png"), (1280, 720), 30, args.seconds, snap=args.snapshot)
+        render(out.with_suffix(".png"), (V.width, V.height), V.fps, args.seconds, args.lang, snap=args.snapshot)
     elif args.preview:
-        render(args.out.with_name("running_charge_preview.mp4"), (640, 360), 15, 6.0)
+        render(out.with_name(out.stem + "_preview.mp4"), (V.preview_width, V.preview_height), V.preview_fps, V.preview_seconds, args.lang)
     else:
-        render(args.out, (1280, 720), 30, args.seconds)
+        render(out, (V.width, V.height), V.fps, args.seconds, args.lang)
 
 
 if __name__ == "__main__":

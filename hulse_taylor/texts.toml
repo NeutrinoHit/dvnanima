@@ -1,0 +1,33 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# {m1}, {m2}, {period_h}, {ecc}, {years}, {ratio}, {error} are filled in from the model (config.toml), with a decimal comma in Russian;
+# they are always written inside $...$.
+
+[en]
+label_pulsar = '''pulsar ${m1}\,M_\odot$'''
+label_companion = '''${m2}\,M_\odot$'''
+axis_year = '''year'''
+panel_title = '''periastron shift'''
+unit_s = '''s'''
+legend_gr = '''—  GR prediction'''
+legend_pdot = '''- -  measured $\dot P_b$ (corrected)'''
+ratio = '''ratio to GR prediction ${ratio}\pm{error}$'''
+cap_intro = '''PSR B1913+16: two neutron stars on an eccentric orbit, $P_b={period_h}$ h, $e={ecc}$'''
+cap_waves = '''they radiate gravitational waves and lose energy'''
+cap_shrink = '''the orbit shrinks, the period falls, the periastron comes earlier than a constant period predicts'''
+cap_done = '''{years} years of timing agree with general relativity'''
+note = '''not to scale: orbit shrink and phase shift exaggerated, wave pattern schematic'''
+
+[ru]
+label_pulsar = '''пульсар ${m1}\,M_\odot$'''
+label_companion = '''${m2}\,M_\odot$'''
+axis_year = '''год'''
+panel_title = '''сдвиг периастра'''
+unit_s = '''с'''
+legend_gr = '''—  предсказание ОТО'''
+legend_pdot = '''- -  измеренное $\dot P_b$ (с поправкой)'''
+ratio = '''отношение к предсказанию ОТО ${ratio}\pm{error}$'''
+cap_intro = '''PSR B1913+16: две нейтронные звезды на вытянутой орбите, $P_b={period_h}$ ч, $e={ecc}$'''
+cap_waves = '''они излучают гравитационные волны и теряют энергию'''
+cap_shrink = '''орбита сжимается, период падает, периастр приходит раньше, чем при постоянном периоде'''
+cap_done = '''{years} лет наблюдений согласуются с ОТО'''
+note = '''не в масштабе: сжатие орбиты и сдвиг фазы преувеличены, волны схематичны'''

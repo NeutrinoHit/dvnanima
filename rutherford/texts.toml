@@ -1,0 +1,27 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# Placeholders filled by the script: {n} a count, {turned} the "turned back" angle, {bin} the width of a histogram bin in degrees,
+# {layers} the number of atomic layers of the foil, {one_in} "one alpha particle in so many turns back in a real foil".
+
+[en]
+title = '''Rutherford scattering'''
+alpha_label = '''$\alpha$'''
+foil_label = '''gold foil'''
+fired = '''$\alpha$-particles fired: {n}'''
+turned = '''turned back ($\theta>{turned}^\circ$): {n}'''
+xlabel = '''scattering angle $\theta$, degrees'''
+ylabel = '''particles per ${bin}^\circ$ bin'''
+turned_label = '''$\theta>{turned}^\circ$'''
+legend = '''Rutherford $\propto\cos(\theta/2)/\sin^3(\theta/2)$'''
+note = '''schematic: {layers} atomic layers, nuclei drawn much larger than they are; in a real foil about 1 in {one_in} turns back'''
+
+[ru]
+title = '''Рассеяние Резерфорда'''
+alpha_label = '''$\alpha$'''
+foil_label = '''золотая фольга'''
+fired = '''выпущено $\alpha$-частиц: {n}'''
+turned = '''рассеяно назад ($\theta>{turned}^\circ$): {n}'''
+xlabel = '''угол рассеяния $\theta$, градусы'''
+ylabel = '''частиц на интервал ${bin}^\circ$'''
+turned_label = '''$\theta>{turned}^\circ$'''
+legend = '''Резерфорд $\propto\cos(\theta/2)/\sin^3(\theta/2)$'''
+note = '''схема: атомных слоёв — {layers}, ядра нарисованы намного крупнее, чем на самом деле; в настоящей фольге назад отражается примерно одна $\alpha$-частица из {one_in}'''

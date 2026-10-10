@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import math
+import tomllib
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -49,6 +51,39 @@ class RutherfordTest(unittest.TestCase):
         screened = np.linalg.norm(ru.acceleration(np.array([r, 0, 0]), SINGLE, 0.5))
         coulomb = 0.5 / r ** 2
         self.assertLess(screened / coulomb, 1e-3)
+
+
+class ConfigTest(unittest.TestCase):
+    def test_texts_have_the_same_keys_in_both_languages(self) -> None:
+        texts = tomllib.loads((Path(ru.HERE) / "texts.toml").read_text(encoding="utf-8"))
+        self.assertEqual(set(texts), {"en", "ru"})
+        self.assertEqual(set(texts["en"]), set(texts["ru"]))
+
+    def test_the_placeholders_of_the_texts_can_be_filled(self) -> None:
+        words = dict(turned="90", bin="2", layers=4, one_in=8000, n=7)
+        for lang in ("en", "ru"):
+            tx = ru.TEXT[lang]
+            for key in ("fired", "turned", "ylabel", "turned_label", "note"):
+                self.assertNotIn("{", tx[key].format(**words))
+
+    def test_defaults_come_from_the_config(self) -> None:
+        self.assertEqual((ru.LAYERS, ru.N_ALPHA, ru.R_MIN), (ru.CFG.foil.layers, ru.CFG.foil.n_alpha, ru.CFG.foil.r_min))
+
+    def test_tracks_are_reproducible_from_the_seed(self) -> None:
+        a = ru.make_foil(np.random.default_rng(ru.CFG.simulation.seed), ru.LAYERS)
+        b = ru.make_foil(np.random.default_rng(ru.CFG.simulation.seed), ru.LAYERS)
+        self.assertTrue(np.array_equal(a, b))
+
+    def test_decimal_comma_in_russian_formulas_only(self) -> None:
+        self.assertEqual(ru.num(2.5, "g", "en"), "2.5")
+        self.assertEqual(ru.num(2.5, "g", "ru"), "2{,}5")
+        self.assertEqual(ru.num(2.0, "g", "ru"), "2")
+
+    def test_rutherford_curve_scales_with_the_number_of_particles(self) -> None:
+        th = np.array([20.0, 60.0, 120.0])
+        one = ru.rutherford_curve(th, 100, 1.0, 4)
+        self.assertTrue(np.allclose(ru.rutherford_curve(th, 200, 1.0, 4), 2 * one))
+        self.assertTrue(np.all(np.diff(one) < 0))
 
 
 if __name__ == "__main__":

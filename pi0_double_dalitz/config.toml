@@ -1,0 +1,255 @@
+# Every number of the film "pi0 -> e+ e- e+ e-" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set model.a_amplitude=0.5 --set camera.scale=90
+# Units: film seconds; "scene units" are the units of the 3D scene (the photon axis runs from -z_end to z_end); pixel sizes are
+# pixels at 720 p (they scale with the height of the frame); font sizes are points at 720 p; positions in [0, 1] are fractions of the frame.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[timeline]
+total = 54.0
+scalar_start = 24.0               # the scalar part starts
+summary_start = 47.0              # the summary starts
+summary_fade_s = 1.0
+caption_after_conversion = 0.6    # the first caption lasts until the first conversion plus this
+caption_before_second = 0.4       # a caption switches this long before the second event of a part
+
+[model]
+a_amplitude = 0.35                # dN/dphi ~ 1 -+ a cos 2phi ; illustrative
+conversion_distance = 1.5         # scene units
+z_end = 3.1
+velocity = 5.0                    # scene units per second
+bins = 12
+wave_number = 9.0                 # of the field arrows
+stretch = 3.5                     # the photon stage of the two slow events is slowed by this factor
+
+[events]
+seed = 6
+ps_start = 1.5
+scalar_offset = 0.5               # the scalar part starts this long after scalar_start
+ps_end_margin = 1.5               # the pseudoscalar events end this long before scalar_start
+scalar_end_margin = 1.5           # the scalar events end this long before summary_start
+slow_event_slowness = 2.6
+fast_slowness = 1.0
+first_gap = 7.4                   # the first fast event starts this long after the slow one
+gap = 0.8                         # the gaps between fast events shrink by `gap_decay` to `gap_min`
+gap_decay = 0.94
+gap_min = 0.075
+first_ps_phi_offset = 0.22        # the first pseudoscalar event has phi = pi/2 + this (fixed to be clear)
+first_ps_azimuth = 0.55
+first_s_phi = 0.20
+first_s_azimuth = 2.1
+duration_limit = 1.9              # an event is drawn while its time is below this (units of its slowness)
+fade_in = [0.0, 0.1]
+fade_out = [1.3, 1.9]
+photon_start = 0.05
+
+[camera]
+azimuth_deg = 36.0
+elevation_deg = 20.0
+centre = [0.505, 0.47]            # fraction of the frame
+scale = 98.0                      # pixels per scene unit at 720 p
+axis_half_length = 3.4
+axis_alpha = 0.18
+axis_width = 1.0
+axis_dash = [3, 5]
+
+[photons]                         # the E and B arrows along the photon paths
+arrow_step_slow = 0.2
+arrow_step_fast = 0.3
+amplitude_slow = 0.62
+amplitude_fast = 0.42
+first_arrow = 0.12
+b_factor = 0.8
+field_line_samples = 120
+field_line_amplitude = 0.62
+field_line_ramp = 0.25
+field_line_alpha_e = 0.55
+field_line_alpha_b = 0.45
+field_line_width = 1.2
+arrow_alpha_e = 0.9
+arrow_alpha_b = 0.75
+arrow_width_e = 2.0
+arrow_width_b = 1.4
+tip_size = 3.6
+line_alpha = 0.55
+line_width = 1.4
+
+[pairs]                           # the planes of the pairs and the electrons and positrons
+plane_start_factor = 0.55         # the plane starts at conversion_distance * this
+plane_half_width = 1.15
+plane_alpha = 0.13
+plane_edge_alpha = 0.12
+plane_edge_width = 0.7
+conversion_ramp = 0.15
+opening_angle = 0.34              # rad
+track_alpha = 0.55
+track_width = 2.2
+glow_size = 11.0
+
+[triad]                           # the E and B arrows at the photons of the latest event
+appear = [0.05, 0.2]              # after the conversion
+z = 1.0
+length = 0.85
+e_width = 2.4
+b_width = 2.0
+label_offset = 12.0
+label_size = 13.0
+
+[particle]
+glow_size = 26.0
+label_offset = [-46.0, -8.0]
+label_size = 15.0
+label_color = [0.85, 0.9, 1.0, 0.95]
+flash_duration = 0.2
+flash_size_base = 30.0
+flash_size_gain = 90.0
+flash_alpha = 0.9
+
+[dial]
+axes = [0.755, 0.60, 0.19, 0.27]
+lim = 1.35
+circle_alpha = 0.35
+circle_width = 1.0
+plane_width = 3.0
+plane_alpha = 0.9
+arrow_start = 0.7
+arrow_end = 1.12
+arrow_width = 2.0
+b_length = 0.62
+b_width = 1.3
+b_dash = [2, 2]
+label_radius = 1.30
+label_size = 11.0
+arc_radius = 0.45
+arc_alpha = 0.8
+arc_width = 1.4
+angle_pos = -1.33
+angle_size = 14.0
+angle_color = [1.0, 0.88, 0.5, 1.0]
+title_pos = [0.755, 0.905]
+title_size = 9.5
+title_color = [0.82, 0.9, 1.0, 0.9]
+readout_pos = [0.755, 0.553]
+readout_size = 10.5
+readout_color = [1.0, 0.9, 0.6, 0.95]
+arc_points = 60
+
+[hist]
+axes = [0.755, 0.215, 0.215, 0.235]
+bar_alpha = 0.85
+bar_width = 0.86
+bar_colour_ps = [0.55, 0.9, 0.78]
+bar_colour_s = [0.55, 0.85, 0.95]
+curve_colour_ps = [1.0, 0.82, 0.4]
+curve_colour_s = [0.45, 0.85, 1.0]
+curve_alpha = 0.95
+curve_width = 2.0
+curve_samples = 200
+top_min = 4.0
+top_factor = 1.5
+top_offset = 2.0
+spine_alpha = 0.5
+spine_colour = [0.75, 0.82, 0.92]
+tick_colour = [0.82, 0.9, 1.0, 0.85]
+tick_size = 9.5
+xlabel_colour = [0.82, 0.9, 1.0, 0.9]
+xlabel_size = 10.0
+count_pos = [0.755, 0.485]
+count_size = 13.0
+count_colour = [0.55, 1.0, 0.8, 1.0]
+legend_pos = [0.755, 0.115]
+legend_size = 11.0
+note_pos = [0.755, 0.078]
+note_size = 8.5
+note_colour = [0.6, 0.68, 0.8, 0.85]
+ticks = [0.0, 0.5, 1.0, 1.5, 2.0]
+
+[summary]
+dials_x = [0.165, 0.465]          # fractions of the width
+dial_y = 0.50
+dial_radius = 0.15                # fraction of the height
+circle_alpha = 0.35
+plane_width = 3.2
+plane_alpha_ps = 0.9
+plane_alpha_s = 0.55
+rotation_offset = 0.45
+arrow_start = 0.55
+arrow_end = 1.12
+arrow_width = 2.2
+e_label_radius = 1.30
+e_label_size = 13.0
+b_length = 0.62
+b_width = 1.6
+b_alpha = 0.9
+b_dash = [2, 2]
+b_label_radius = 0.80
+b_label_size = 11.0
+title_y = 0.745
+title_size = 13.0
+formula_y = 0.275
+formula_size = 11.5
+words_y = 0.225
+words_size = 12.0
+hist_bar_alpha = 0.85
+hist_bar_width = 0.40
+hist_title_pos = [0.755, 0.485]
+hist_title_size = 11.0
+hist_top_factor = 1.6
+legend_ps_pos = [0.755, 0.115]
+legend_s_pos = [0.755, 0.078]
+legend_size = 9.5
+
+[layout]
+title_pos = [0.03, 0.925]
+title_size = 19.0
+summary_title_size = 20.0
+subtitle_x_ps = 0.205
+subtitle_x_s = 0.18
+subtitle_y = 0.93
+subtitle_size = 11.0
+formula_pos = [0.03, 0.865]
+formula_size = 13.0
+keys_y = 0.832
+key_e1_x = 0.03
+key_e2_x = 0.058
+key_b_x = 0.086
+keys_size = 11.0
+caption_pos = [0.03, 0.028]
+caption_size = 11.0
+caption_box = [0.74, 0.075]       # fractions of the frame
+caption_box_colour = [0.01, 0.02, 0.05, 0.8]
+
+[style]
+background = "#03060c"
+star_seed = 2
+stars = 110
+star_size = 5.0
+star_colour = [0.8, 0.88, 1.0, 0.12]
+positron = "#ff8a3a"
+electron = "#4cc3ff"
+photon1 = "#ff6b9a"
+photon2 = "#6b8cff"
+b_field = [1.0, 0.86, 0.45]
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+title_color = [0.9, 0.95, 1.0, 0.95]
+formula_color = [0.9, 0.95, 1.0, 0.97]
+photon_line = [1.0, 0.95, 0.6]
+pion = "#c9d4e6"
+scalar = "#9be9ff"
+flash = "#fff4d0"
+glow_layers = [[4.0, 0.07], [2.2, 0.17], [1.2, 0.42], [0.55, 1.0]]   # glow: [size factor, opacity] of the layers
+arrow_mutation = 11.0
+caption_color = [0.88, 0.93, 1.0, 0.95]
+guide = [0.7, 0.8, 0.95]         # the circles and the axis of the photons

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import math
+import tomllib
 import unittest
+from pathlib import Path
 
 import numpy as np
 
 import electron_kick as ek
+
+HERE = Path(__file__).resolve().parent
 
 
 class FluxContinuityTest(unittest.TestCase):
@@ -50,6 +54,42 @@ class GeometryTest(unittest.TestCase):
             theta = np.arccos(1 - 2 * (np.arange(22) + 0.5) / 22)
             return float(sum(abs(ek.line_geometry(float(th), beta, 3.0)["theta_in"] - th) for th in theta))
         self.assertGreater(arc_sum(0.85), arc_sum(0.3))
+
+
+class ConfigTest(unittest.TestCase):
+    def test_texts_have_the_same_keys_in_both_languages_and_balanced_formulas(self) -> None:
+        texts = tomllib.loads((HERE / "texts.toml").read_text(encoding="utf-8"))
+        self.assertEqual(set(texts), {"en", "ru"})
+        self.assertEqual(set(texts["en"]), set(texts["ru"]))
+        for lang, table in texts.items():
+            for key, value in table.items():
+                self.assertEqual(value.count("$") % 2, 0, f"{lang}.{key}: unbalanced $")
+        self.assertIn("{beta}", texts["ru"]["beta_line"])
+
+    def test_the_runs_follow_each_other_and_cover_the_film(self) -> None:
+        runs = ek.CFG.timeline.runs
+        self.assertEqual(runs[0][1], 0.0)
+        self.assertEqual(runs[-1][2], ek.CFG.timeline.film_length)
+        for a, b in zip(runs, runs[1:]):
+            self.assertEqual(a[2], b[1])
+        for beta, start, end in runs:
+            self.assertTrue(0.0 < beta < 1.0 and start < end)
+
+    def test_video_section_is_complete(self) -> None:
+        v = ek.CFG.video
+        self.assertEqual(v.width * 9, v.height * 16)
+        self.assertGreater(v.width, v.preview_width)
+        self.assertGreater(v.fps, 0)
+
+    def test_decimal_comma_in_russian_formulas(self) -> None:
+        self.assertEqual(ek.num(0.3, ".2f", "ru"), "0{,}30")
+        self.assertEqual(ek.num(0.3, ".2f", "en"), "0.30")
+
+    def test_the_script_has_no_hard_coded_video_settings(self) -> None:
+        src = (HERE / "electron_kick.py").read_text(encoding="utf-8")
+        self.assertIn("load_config", src)
+        for forbidden in ('"libx264", "-preset", "slow"', "(1280, 720)", "dpi = 100\n"):
+            self.assertNotIn(forbidden, src)
 
 
 if __name__ == "__main__":

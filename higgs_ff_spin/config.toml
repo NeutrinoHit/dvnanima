@@ -1,0 +1,359 @@
+# Every number of the film "Spin and orbital structure of the f fbar pair in Higgs decays" lives here (the scripts contain only algorithms).
+# Override on the command line:  --config other.toml   or   --set iso.elevation_deg=40 --set palette.hue_period_s=8
+# Units: "film s" are seconds of the content (the chapter cards are inserted by the timeline), lengths of the physics are in 1/p
+# (x = p r), positions of the layout are fractions of the width / height of the frame, font sizes and pixel sizes are points / pixels
+# at 720 p (they scale with the height of the frame).
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 22
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[physics]
+beta = 0.996                       # p / E of the fermion (a b quark in the decay of the Higgs boson)
+p_phase_deg = -90.0                # the phase of the P-wave amplitude psi_P: -90 degrees = -i (the sign convention of Eq. (B4), see ffbar.py)
+spin_axis = [0.0, 0.0, 1.0]        # the common axis s of the spin projections (parts 2 and 3)
+mixed_xi1 = [1.0, 0.0, 0.0]        # the spin directions of the mixed state (part 4): xi_1 and xi_2 perpendicular
+mixed_xi2 = [0.0, 1.0, 0.0]
+
+[iso]                              # the surfaces |psi|^2 = const (units N^2) of the cells
+elevation_deg = 32.0
+azimuth_deg = -55.0
+r_max = 5.0                        # the window of the physics, x = p r
+view = 4.6                         # half-width of the picture in x
+mix_r_max = 6.4                    # the same for the mixed state of the part 4 (its cloud is longer)
+mix_view = 5.4
+levels = [0.05, 0.10]              # |psi|^2 / N^2 of the outer (translucent) and the inner surface
+alphas = [0.30, 1.0]
+samples = 112                      # points along a ray
+supersample = 2
+edge = 1.0
+grad_step = 0.001
+ambient = 0.34
+diffuse = 0.60
+specular = 0.30
+spec_power = 24.0
+light = [-0.45, 0.55, 0.70]        # components along (screen right, screen up, towards the camera)
+
+[palette]
+offset = 0.58                      # c_ch(phi) = offset + amp cos(phi - 2 pi ch / 3)
+amp = 0.42
+hue_period_s = 5.0                 # film seconds per turn of the common phase exp(-i omega t)
+
+[wheel]
+pixels = 96
+inner = 0.58
+label_gap = 4.0
+label_size = 9.5
+
+[glyph]
+length = 34.0                      # spin arrows (pixels at 720 p)
+gap = 26.0
+width = 2.4
+head = 9.0
+head_aspect = 0.42
+head_overlap = 0.8
+label_gap = 3.0
+label_size = 11.0
+triad_scale = 42.0
+triad_label_gap = 10.0
+
+[overlay]                          # axis, ring, probe and winding arrow drawn over a cell (lengths in x)
+alpha = 0.45
+width = 1.0
+dash = [3.0, 3.0]
+ring_radius = 4.0
+ring_points = 121
+axis_length = 4.5
+axis_head = 0.6
+head = 7.0
+axis_label_dx = 10.0
+axis_label_dy = 2.0
+label_size = 12.0
+arc_start_deg = -30.0
+arc_span_deg = 250.0
+arc_z = 0.0
+arc_width = 2.0
+arc_head = 9.0
+probe_azimuth_offset_deg = 70.0
+probe_length = 3.8
+probe_width = 2.2
+probe_head = 9.0
+probe_dot = 40.0
+axis_arrow_length = 3.8
+theta_radius = 1.6
+theta_points = 30
+theta_alpha = 0.8
+theta_width = 1.4
+arc_min_deg = 3.0
+
+[plot]                             # the small plots
+axis_alpha = 0.8
+axis_width = 1.0
+tick = 4.0
+tick_gap = 2.0
+tick_size = 10.0
+label_size = 11.0
+curve_width = 2.0
+xlabel_dx = 6.0
+ylabel_rise = 4.0
+samples = 200
+dot = 36.0
+value_dx = 7.0
+value_dy = 7.0
+value_size = 11.0
+dash = [4.0, 3.0]
+avg_alpha = 0.9
+flip_fraction = 0.7                # the value label is drawn left of the dot beyond this fraction of the axis
+
+[partial_sums]
+n_directions = 2048                # plane waves added in the part 1 (a Halton set on the sphere)
+grid = 300
+half_width = 8.0                   # the panel shows |x|, |y| <= half_width
+start_s = 0.8
+octave_s = 0.8                     # film seconds for doubling the number of the plane waves
+
+[timeline]
+card_s = 1.7
+part_bounds = [0.0, 16.0, 48.0, 61.0, 83.0, 95.0]
+card_at = [0.0, 0.0, 16.0, 48.0, 61.0, 83.0]
+card_fade_in = [0.0, 0.16]
+card_fade_out = [0.84, 1.0]
+
+[fonts]
+title = 18
+chapter_label = 12.5
+formula = 16.5
+caption = 13
+header = 14
+header_small = 11
+theta = 14
+note = 11.5
+zero = 14
+card_title = 32
+card_subtitle = 17
+card_number = 54
+card_chapter = 30
+card_chapter_sub = 16
+
+[layout]
+title_pos = [0.03, 0.945]
+title_maxw = 0.56
+chapter_label_pos = [0.97, 0.945]
+formula_pos = [0.03, 0.875]
+formula_row = 0.05
+formula_maxw = 0.94
+caption_pos = [0.03, 0.03]
+caption_maxw = 0.94
+fade_s = 0.5
+card_title_y = 0.55
+card_subtitle_y = 0.42
+card_number_y = 0.62
+card_chapter_y = 0.50
+card_chapter_sub_y = 0.41
+card_maxw = 0.92
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+blue = [0.40, 0.72, 1.00]
+warm = [1.00, 0.55, 0.40]
+gold = [1.00, 0.84, 0.35]
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+
+# ----------------------------------------------------------------------------------------------- part 1
+
+[p1]
+panels_in = [0.0, 1.0]
+left_center = [0.205, 0.50]
+left_side = 0.46
+right_center = [0.64, 0.50]
+right_side = 0.58
+disc_fraction = 0.94
+disc_alpha = 0.5
+disc_width = 1.0
+cross_alpha = 0.25
+cross_dash = [2.0, 3.0]
+dot_alpha_min = 0.25
+dot_size = 9.0
+dot_scale_min = 0.35
+dot_boost = 5.0                   # the first dots are drawn larger: size * (1 + boost * max(0, 1 - log2(N) / log2(boost_n)))
+boost_n = 64
+title_gap = 8.0
+title_size = 12.5
+exact_fade = [9.3, 10.6]
+gamma = 0.7
+scale_bar = 4.0
+scale_gap = 12.0
+bar_width = 1.6
+bar_label_gap = 3.0
+bar_size = 10.5
+arrow_len = 70.0
+arrow_width = 1.8
+arrow_head = 9.0
+arrow_label_gap = 8.0
+arrow_size = 14.0
+counter_drop = 38.0
+counter_size = 15.0
+wheel_center = [0.925, 0.64]
+wheel_radius = 0.055
+wheel_title_dy = 0.085
+note_pos = [0.835, 0.40]
+note_row = 0.09
+note_size = 12.0
+note_maxw = 0.15
+notes = [
+  { key = "p1_n1", from = 10.8, to = 16.0, row = 0 },
+  { key = "p1_n2", from = 11.6, to = 16.0, row = 1 },
+]
+formulas = [
+  { key = "p1_f1", from = 0.2, to = 9.6, row = 0 },
+  { key = "p1_f2", from = 9.6, to = 16.0, row = 0 },
+]
+captions = [
+  { key = "p1_c1", from = 0.2, to = 5.0 },
+  { key = "p1_c2", from = 5.0, to = 10.4 },
+  { key = "p1_c3", from = 10.4, to = 16.0 },
+]
+
+# ----------------------------------------------------------------------------------------------- part 2 (three cells)
+
+[p2]
+columns = [
+  { rho1 = 1, rho2 = -1, header = "p2_h0", header_p = "p3_h0", up1 = 1, up2 = -1, appear = 0.0 },
+  { rho1 = 1, rho2 = 1, header = "p2_h1", header_p = "p3_h1", up1 = 1, up2 = 1, appear = 5.5 },
+  { rho1 = -1, rho2 = -1, header = "p2_h2", header_p = "p3_h2", up1 = -1, up2 = -1, appear = 10.5 },
+]
+columns_x = [0.17, 0.46, 0.75]
+cell_y = 0.50
+cell_side = 0.44
+appear_s = 0.9
+header_y = 0.765
+header_dx = -0.035
+glyph_dx = -0.085
+glyph_dy = 0.0
+plot_w = 0.20
+plot_y0 = 0.165
+plot_y1 = 0.245
+plot_title_x = 0.07
+plot_title_y = 0.292
+theta_pos = [0.895, 0.44]
+wheel_center = [0.93, 0.62]
+wheel_radius = 0.05
+wheel_title_dy = 0.085
+wheel_in = [1.0, 2.0]
+arcs_in = [8.0, 9.0]
+show_arcs = true
+probe_in = [16.0, 17.0]
+sweep = [[17.0, 18.0, 0.0, 0.0], [18.0, 24.0, 0.0, 90.0], [24.0, 28.0, 90.0, 90.0], [28.0, 32.0, 90.0, 0.0]]
+formulas = [
+  { key = "p2_f1", from = 0.2, to = 16.0, row = 0 },
+  { key = "p2_f2", from = 16.0, to = 32.0, row = 0 },
+  { key = "p2_fth0", from = 17.2, to = 19.4, row = 1 },
+  { key = "p2_fth90", from = 24.2, to = 27.8, row = 1 },
+]
+captions = [
+  { key = "p2_c1", from = 0.2, to = 5.5 },
+  { key = "p2_c2", from = 5.5, to = 12.0 },
+  { key = "p2_c3", from = 12.0, to = 16.0 },
+  { key = "p2_c4", from = 16.0, to = 21.0 },
+  { key = "p2_c5", from = 21.0, to = 32.0 },
+]
+
+# ----------------------------------------------------------------------------------------------- part 3
+
+[p3]
+morph = [0.8, 2.2]
+probe_in = [0.0, 0.01]
+sweep = [[0.0, 2.4, 0.0, 0.0], [2.4, 6.0, 0.0, 90.0], [6.0, 8.0, 90.0, 90.0], [8.0, 11.0, 90.0, 0.0]]
+formulas = [
+  { key = "p3_f1", from = 0.8, to = 13.0, row = 0 },
+  { key = "p3_f2", from = 8.0, to = 13.0, row = 1 },
+]
+captions = [
+  { key = "p3_c1", from = 0.2, to = 5.0 },
+  { key = "p3_c2", from = 5.0, to = 8.5 },
+  { key = "p3_c3", from = 8.5, to = 13.0 },
+]
+
+# ----------------------------------------------------------------------------------------------- part 4
+
+[p4]
+cell_side = 0.46
+cell_y = 0.46
+left_x = 0.155
+right_x = 0.80
+header_y = 0.745
+wheel_center = [0.93, 0.17]
+wheel_radius = 0.045
+wheel_title_dy = 0.07
+header_dx = 0.0
+triad_dx = 0.115
+triad_dy = -0.01
+left_in = [0.0, 1.0]
+right_in = [8.5, 9.7]
+plot_in = [10.5, 11.5]
+mix_in = [1.5, 2.5]
+mix_pos = [0.375, 0.745]
+ramp = [[1.5, 7.5, 0.0, 1.0]]            # the ratio eps2 / eps1 of the mixed state (eps1 = 1)
+plot_rect = [0.375, 0.17, 0.62, 0.50]
+plot_xmax = 6.0
+plot_xticks = [0, 2, 4, 6]
+plot_ymargin = 1.15
+cancel_dx = 6.0
+cancel_dy = 8.0
+legend_x = 0.355
+legend_dy = 0.13
+legend_row = 0.045
+legend_line = 0.025
+legend_gap = 0.008
+legend_maxw = 0.28
+formulas = [
+  { key = "p4_f1", from = 0.2, to = 22.0, row = 0 },
+  { key = "p4_f2", from = 1.5, to = 22.0, row = 1 },
+]
+captions = [
+  { key = "p4_c1", from = 0.2, to = 6.0 },
+  { key = "p4_c2", from = 6.0, to = 12.5 },
+  { key = "p4_c3", from = 12.5, to = 17.5 },
+  { key = "p4_c4", from = 17.5, to = 22.0 },
+]
+
+# ----------------------------------------------------------------------------------------------- part 5
+
+[p5]
+panels_in = [0.0, 1.0]
+side = 0.46
+left_center = [0.25, 0.50]
+right_center = [0.72, 0.50]
+dots = 1200
+dot_size = 7.0
+dot_alpha_min = 0.12
+gray = [3.0, 5.0]
+gray_level = 0.75
+gamma = 0.8
+arrow_len = 70.0
+wheel_center = [0.065, 0.66]
+wheel_radius = 0.045
+formulas = [
+  { key = "p5_f1", from = 3.5, to = 12.0, row = 0 },
+]
+captions = [
+  { key = "p5_c1", from = 0.2, to = 4.5 },
+  { key = "p5_c2", from = 4.5, to = 9.0 },
+  { key = "p5_c3", from = 9.0, to = 12.0 },
+]

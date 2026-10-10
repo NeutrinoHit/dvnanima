@@ -1,0 +1,26 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# A caption may have several lines (a line break in the string); the first line is drawn at caption.y[0], the second at caption.y[1] ...
+
+[en]
+cap_vacuum = '''vacuum: virtual $e^+e^-$ pairs appear and vanish, orientation random'''
+cap_screen = '''near the electron the pairs line up: positrons in, electrons out, the charge is screened'''
+cap_probe = '''the closer, the less screening: a test charge sees a larger charge'''
+lambda_label = '''$\lambda_C$'''
+probe_label = '''test charge'''
+panel_title = '''$Q(r)/e$'''
+panel_sub = '''charge seen at distance $r$'''
+panel_xlabel = '''$r\,/\,\lambda_C$'''
+panel_note = '''schematic scale: effect exaggerated ~160×
+(real electron: +1 % at $r\approx10^{-3}\,\lambda_C$)'''
+
+[ru]
+cap_vacuum = '''вакуум: виртуальные пары $e^+e^-$ рождаются и исчезают, ориентация случайна'''
+cap_screen = '''вблизи электрона пары выстраиваются: позитроны внутрь, электроны наружу, заряд экранируется'''
+cap_probe = '''чем ближе, тем слабее экранировка: пробный заряд видит больший заряд'''
+lambda_label = '''$\lambda_C$'''
+probe_label = '''пробный заряд'''
+panel_title = '''$Q(r)/e$'''
+panel_sub = '''заряд на расстоянии $r$'''
+panel_xlabel = '''$r\,/\,\lambda_C$'''
+panel_note = '''условный масштаб: эффект увеличен ~160×
+(реальный электрон: +1 % при $r\approx10^{-3}\,\lambda_C$)'''

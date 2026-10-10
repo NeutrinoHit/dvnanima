@@ -1,0 +1,27 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+
+[en]
+title = '''Cherenkov radiation'''
+nolight = '''the wavelets do not overlap, no light'''
+deg = '''deg'''
+thr = '''threshold'''
+ang_title = '''Cherenkov angle'''
+ring_title = '''ring on the detector'''
+noring = '''no ring below threshold'''
+cap1 = '''$v<c/n$: the wavelets of successive positions lie inside one another'''
+cap2 = '''$v>c/n$: the wavelets add up along a common envelope, a cone; light goes perpendicular to it'''
+cap3 = '''the faster the charge, the wider the cone and the ring; threshold in water: {e} MeV for $e^-$, {mu} MeV for $\mu$'''
+unit = '''MeV'''
+
+[ru]
+title = '''Излучение Вавилова — Черенкова'''
+nolight = '''волны не перекрываются, света нет'''
+deg = '''град'''
+thr = '''порог'''
+ang_title = '''угол Черенкова'''
+ring_title = '''кольцо на детекторе'''
+noring = '''ниже порога кольца нет'''
+cap1 = '''$v<c/n$: волны от последовательных положений вложены друг в друга'''
+cap2 = '''$v>c/n$: волны складываются вдоль общей огибающей, конуса; свет идёт перпендикулярно ей'''
+cap3 = '''чем быстрее заряд, тем шире конус и кольцо; порог в воде: {e} МэВ для $e^-$, {mu} МэВ для $\mu$'''
+unit = '''МэВ'''

@@ -1,0 +1,209 @@
+# Every number of the film "Running charge" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set model.b_film=0.2 --set pairs.seed=7
+# Units: lengths of the model in the reduced Compton wavelength lambda_C; film seconds on the nominal timeline (they scale with the film length);
+# positions in [0, 1] are fractions of the frame; font sizes and line widths are points at 720 p (they scale with the frame height).
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+preview_seconds = 6.0
+fade_s = 0.0                      # fade in/out from the background colour; 0 = none (the film starts and ends as it is)
+reference_height = 720
+still_width = 2560                # --still: a clean frame without captions and graph, for book previews
+still_height = 1440
+still_crop = 0.70                 # the right part of the still (the graph column) is cut off: keep this fraction of the width
+still_time = 18.0
+
+[timeline]
+film_length = 26.0                # the nominal length; every time below scales with the real length
+charge_on = [5.0, 8.5]            # the charge is switched on smoothly
+panel = [8.5, 10.0]               # the graph fades in
+probe = [10.0, 23.0]              # the test charge flies in
+probe_fade = [-0.8, 0.2]          # the test charge fades in between these times relative to the start of its flight (film seconds, not scaled)
+
+[model]
+b_film = 0.25                     # the coupling b of the film (exaggerated)
+alpha_inverse = 137.036           # the real b = 2 alpha / (3 pi)
+k0 = 16.0                         # alignment strength: kappa(r) = s * k0 / (1 + (r / r0)^2)
+r0 = 1.2
+r_scene = 3.3                     # half-height of the scene in lambda_C
+pair_density = 0.85               # live pairs per unit area
+mean_life = 1.0
+curve_points = 200                # samples of Q(r) in the graph
+
+[pairs]
+seed = 5
+area_margin = 1.15                # pairs are created in a disc of radius r_scene * this
+count_pad_s = 3.0                 # the pairs are created for the film length + this
+t_start = -2.0                    # the first pairs are created before the film begins
+life_shape = 3.0                  # lifetime ~ Gamma(shape, mean_life / shape)
+life_clip = [0.45, 2.6]
+r_inner = 0.2
+near_fraction = 0.22              # extra pairs close to the charge (the polarization cloud)
+near_range = [0.22, 1.5]
+dipole_length = [0.16, 0.42]
+stretch_gain = 1.4                # the pair stretches in the field of the charge
+stretch_radius = 0.9
+breathing = [0.7, 0.3]            # length factor over the life: breathing[0] + breathing[1] sin(pi age)
+edge_fade_s = 0.28                # the pair fades in and out over this time
+
+[flash]
+born_time = 0.22
+died_time = 0.18
+visible_above = 0.02
+alpha = 0.40
+line_width = 1.2
+born_colour = "#bfe6ff"
+born_radius = [0.06, 0.22]        # radius in lambda_C: [0] + [1] * (1 - flash)
+died_colour = "#ffffff"
+died_radius = [0.04, 0.12]
+
+[scene]
+centre = [0.37, 0.5]              # the electron, as fractions of the frame
+texture_cell = 8                  # the vacuum texture has one value per cell of this many pixels
+texture_seed = 2
+texture_count = 3
+texture_blur = 6
+texture_period_s = 11.0
+texture_mix = [0.6, 0.4]          # (mix of the first two) * [0] + third * [1]
+vignette_radius = 0.55            # of the frame width
+vignette_strength = 0.75
+vignette_power = 1.6
+base = [0.015, 0.030, 0.060]      # the colour of the vacuum: base + gain * texture
+gain = [0.020, 0.060, 0.130]
+cloud_centre = 0.55               # the polarization cloud around the charge: exp(-((r - centre) / width)^2)
+cloud_width = 0.45
+cloud_tint = [0.10, 0.045]        # added to the red and green channels, times the strength of the charge
+circle_points = 240
+circle_label = [0.71, 0.78]       # the position of the lambda_C label, in lambda_C from the centre
+
+[field]
+lines = 28
+radius_min = 0.14
+radius_factor = 1.1               # lines reach r_scene * this
+points = 70
+wobble = 0.05                     # the lines sway: angle += wobble * sin(wobble_rate * t + i)
+wobble_rate = 0.3
+width_base = 0.5
+width_gain = 2.1
+width_boost = 1.1                 # width = (base + gain * (Q - 1) * boost + width_add) points
+width_add = 0.6
+alpha_base = 0.10
+alpha_gain = 0.55
+alpha_q_scale = 1.2               # the opacity saturates at Q - 1 = this
+alpha_decay = 0.5                 # divided by (1 + decay * r)
+alpha_max = 0.8
+visible_above = 0.01              # the lines are drawn when the strength of the charge exceeds this
+
+[electron]
+glow_diameters = [0.9, 0.5, 0.27] # in lambda_C
+glow_colours = ["#2a7fff", "#38a8ff", "#4cc3ff"]
+glow_alphas = [0.05, 0.18, 0.9]   # times the strength of the charge
+sign_half_length = 0.07
+sign_colour = "#05203a"
+sign_width = 2.4
+
+[probe]
+angle_deg = -18.0
+r_start = 3.0
+r_end = 0.13
+path_points = 60
+path_alpha = 0.18
+path_width = 0.9
+glow_colour = "#c6ffd2"
+glow_factor = 1.9
+label_offset = [0.20, -0.30]      # from the test charge, in lambda_C
+label_colour = "#d9ffe2"
+label_alpha = 0.8
+
+[glow]
+base_diameter = 0.075             # in lambda_C
+pair_factor = 1.6
+layers = [[4.2, 0.06], [2.4, 0.14], [1.35, 0.35], [0.62, 1.0]]    # [diameter factor, opacity] of the soft halo layers
+positron_colour = "#ff8f3a"
+electron_colour = "#4cc3ff"
+
+[pair_style]
+bond_colour = [0.8, 0.85, 1.0]
+bond_alpha = 0.45
+bond_width = 1.1
+
+[panel]
+axes = [0.715, 0.25, 0.255, 0.38]
+r_range = [0.1, 3.3]              # the log axis runs from r_range[1] to r_range[0]
+y_range = [0.95, 2.35]
+xticks = [0.1, 0.3, 1.0, 3.0]
+yticks = [1.0, 1.5, 2.0]
+visible_above = 0.01
+axis_colour = [0.7, 0.8, 0.9]     # spines, tick marks and the level line
+spine_alpha = 0.5
+ghost_alpha = 0.12                # the whole curve before the test charge draws it
+ghost_width = 1.4
+curve_colour = [1.0, 0.62, 0.25]
+curve_width = 3.0
+level_alpha = 0.35                # the line Q = e
+level_width = 1.0
+level_dash = [3, 4]
+tick_colour = [0.8, 0.88, 1.0]
+tick_alpha = 0.8
+tick_mark_alpha = 0.5
+tick_length = 3
+label_alpha = 0.85
+label_pad = 2
+marker_inner = 14
+marker_outer = 30
+marker_area = 0.6                 # marker area = (size * scale)^2 * this
+marker_inner_colour = "#ffe0b8"
+marker_outer_colour = "#ff9f40"
+marker_outer_alpha = 0.25
+
+[panel_text]
+x = 0.715
+title_y = 0.86
+number_y = 0.735
+sub_y = 0.685
+note_y = 0.135
+title_colour = [0.8, 0.88, 1.0]
+number_colour = [1.0, 0.72, 0.38]
+sub_colour = [0.62, 0.7, 0.82]
+sub_alpha = 0.9
+note_colour = [0.55, 0.62, 0.75]
+note_alpha = 0.85
+note_linespacing = 1.45
+number_format = ".2f"
+
+[caption]
+x = 0.03
+y = [0.048]                       # one entry per line of text (a text may have several lines, separated by a line break)
+size = [13.0]
+colour = [[0.86, 0.92, 1.0, 0.92]]
+strip_height = 0.12
+strip_colour = [0.01, 0.02, 0.05, 0.62]
+
+[fonts]
+circle_label = 11
+probe_label = 10
+panel_title = 16
+panel_number = 40
+panel_sub = 9.5
+panel_note = 8.5
+tick = 10
+axis_label = 11
+
+[style]
+background = "#04070d"
+circle_colour = "#8fb4d8"
+circle_width = 0.7
+circle_alpha = 0.22
+circle_dash = [2, 4]
+circle_label_alpha = 0.55
+field_colour = [0.45, 0.80, 1.0]
+probe_path_colour = "#ffffff"
+number_family = "monospace"

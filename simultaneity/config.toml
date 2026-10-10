@@ -1,0 +1,128 @@
+# Every number of the film "The relativity of simultaneity" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set velocity.v1=0.4 --set layout.diagram_axes=[0.02,0.14,0.6,0.74]
+# Units: c = 1; film seconds; diagram units are the units of the Minkowski diagram; font sizes are points at 720 p.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.5
+reference_height = 720
+
+[events]
+flashes = { A = [-1.0, 0.0], B = [0.0, 0.0], C = [1.0, 0.0] }      # (x, ct) in O
+pairs = { P = [0.0, 0.0], Q = [0.45, 1.05], R = [1.7, 0.35] }      # the last part
+clock_sweep = 0.9                 # the clocks run over [-sweep, +sweep]
+simultaneous_tolerance = 0.006    # |dt'| below this: the events are simultaneous
+order_tolerance = 1.0e-3          # |v| below this: v = 0
+appear_range = [0.6, 1.3]         # the flashes appear one after another: [start, end] + index * appear_step
+appear_step = 1.0
+late_appear_range = [37.5, 38.3]
+late_appear_step = 0.5
+
+[timeline]
+total = 56.0
+intro_end = 5.5
+passes = [[5.5, 12.5], [15.0, 24.0], [26.5, 35.5]]    # the clocks of both frames run during a pass
+late_start = 37.5                 # the timelike and spacelike pairs
+sweep_end = 52.0
+caption_steps = [5.5, 13.0, 15.0, 24.0, 26.5, 37.5, 52.0]
+
+[velocity]
+still_until = 13.0
+ramp1 = [13.0, 15.0]
+v1 = 0.3
+hold1_until = 24.0
+ramp2 = [24.0, 26.5]
+v2 = -0.5
+hold2_until = 35.5
+ramp3 = [35.5, 37.5]
+v3 = -0.6
+sweep = [38.0, 51.0]
+sweep_amplitude = 1.2
+v_final = 0.6
+
+[diagram]
+axes = [0.02, 0.14, 0.60, 0.74]
+xlim = [-3.15, 3.15]
+ylim = [-1.45, 2.5]
+x_axis = { x = 3.05, lw = 1.4, mutation = 10, alpha = 0.7 }
+t_axis = { y_top = 2.42, y_bottom = -1.38 }
+x_label = { x = 3.02, dy = -0.17, size = 12 }
+t_label = { dx = 0.1, y = 2.38, size = 12 }
+cone = { length_up = 2.5, length_down = 1.45, alpha = 0.18, width = 1.0, dash = [4, 4] }
+frame_axes = { appear = [0.0, 0.08], threshold = 0.01, alpha = 0.85, width = 1.8, ymax = 2.4, ymin = -1.38, xlim = 3.0 }
+frame_labels = { ct_x = 2.38, ct_dx = 0.08, ct_y = 2.3, x_x = 2.98, x_dy_pos = 0.12, x_dy_neg = -0.22, size = 12 }
+simultaneity_o = { x = 3.0, alpha = 0.5, width = 1.6 }
+simultaneity_op = { alpha = 0.9, width = 2.2 }
+readoff = { alpha = 0.55, width = 1.1, dash = [3, 3], marker = 4.5, label_dx = 0.09, size = 10 }
+halo = { decay = 0.6, alpha = 0.9, r0_op = 0.12, r_op = 0.55, r0_o = 0.10, r_o = 0.40, width = 2.0 }
+event_marker = { size = 9, min_scale = 0.5 }
+event_label = { dy = -0.20, size = 13 }
+light_label = { x = 2.35, y = 2.15, alpha = 0.45, size = 9.5 }
+late_op = { alpha = 0.9, width = 2.2, x = 3.0 }
+late_through = { alpha = 0.55, width = 1.3, dash = [5, 3] }
+
+[panels]
+axes_o = [0.655, 0.585, 0.325, 0.265]
+axes_op = [0.655, 0.285, 0.325, 0.265]
+xlim = 2.65
+ylim = 1.0
+axis_line = { x = 2.55, alpha = 0.3, width = 1.0 }
+frame_label = { x = -2.6, y = 0.93, size = 10.5 }
+time_label = { x = 2.6, y = 0.93, size = 12 }
+marker = 7
+name_label = { dy = -0.2, size = 11 }
+front_max = 1.7
+front_alpha = 0.9
+front_decay = 0.75
+front_width = 1.8
+flash_duration = 0.35
+flash = { r0 = 0.16, gain = 0.4, alpha = 0.9, colour = [1.0, 1.0, 0.85] }
+min_radius = 1.0e-3
+
+[readouts]
+formula_pos = [0.655, 0.225]
+formula_size = 14
+times_pos = [0.655, 0.165]
+times_size = 12.5
+times_separator = "   "
+order_pos = [0.655, 0.105]
+order_size = 12.5
+velocity_pos = [0.86, 0.255]
+velocity_size = 14
+pair_y0 = 0.835
+pair_dy = 0.265
+pair_title_size = 13
+interval_dy = 0.04
+interval_size = 11
+verdict_dy = 0.085
+verdict_size = 12.5
+verdict_alpha = 1.0
+kind_dy = 0.125
+kind_size = 10.5
+
+[layout]
+title_pos = [0.025, 0.925]
+title_size = 19
+subtitle_pos = [0.025, 0.893]
+subtitle_size = 11
+caption_pos = [0.025, 0.03]
+caption_size = 11.5
+caption_box = [0.99, 0.08]
+caption_box_colour = [0.01, 0.02, 0.05, 0.8]
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0, 0.95]
+dim = [0.6, 0.68, 0.8, 0.9]
+title_color = [0.9, 0.95, 1.0, 0.95]
+axis_colour = [0.8, 0.88, 1.0]
+frame_o = [1.0, 0.82, 0.4]
+events = { A = [1.0, 0.56, 0.23], B = [0.3, 0.76, 1.0], C = [0.61, 0.89, 0.42], P = [1.0, 0.56, 0.23], Q = [0.61, 0.89, 0.42], R = [0.3, 0.76, 1.0] }

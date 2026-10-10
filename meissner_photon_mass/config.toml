@@ -1,0 +1,298 @@
+# Every number of the film "The Meissner effect and the photon mass" lives here (the scripts contain only algorithms).
+# Override on the command line:  --config other.toml   or   --set physics.cylinder.s_final=10 --set style.background='"#000000"'
+# Units: hbar = c = 1, lengths in 1/m_A, frequencies in m_A (the disc of part 1 has the radius R in its own units);
+# "film s" are seconds of the content (the chapter cards are inserted by the timeline); figure fractions are fractions of the width / height
+# of the frame; font sizes are points at 720 p (they scale with the height of the frame).
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 24
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[physics]
+m_a = 1.0                         # the mass of the gauge field in the condensate, m_A = e v: the unit of frequency and of inverse length
+
+[physics.cylinder]                # part 1: a disc of the condensate in a uniform field (static, 2D)
+radius = 1.0
+s_start = 0.04                    # m_A R at the first frame of the ramp (lambda = 25 R: the field does not notice the disc)
+s_final = 14.0                    # m_A R at the end of the ramp (lambda = R / 14)
+
+[physics.proca]                   # part 2: leapfrog solution of  A_tt - A_xx + m_A^2(x) A = 0  with absorbing layers
+x_min = -80.0
+x_max = 60.0
+dx = 0.04
+cfl = 0.5                         # dt = cfl * dx
+sponge_width = 15.0               # the absorbing layers at both ends: A_tt + gamma A_t - A_xx + m^2 A = 0
+sponge_strength = 1.0             # gamma at the outer edge of a layer
+sponge_power = 2.0
+wave_rate = 5.0                   # simulation time per film second
+samples_per_s = 30                # the packet is stored at this rate (the frames pick the nearest sample)
+tail_window = [-2.0, 12.0]        # the window of x in which the Fourier component of A at the carrier frequency is kept
+
+[packets.below]                   # omega < m_A: reflected, evanescent tail
+omega = 0.7
+sigma = 8.0
+x0 = -30.0
+amplitude = 0.8
+duration_s = 14.0
+
+[packets.above]                   # omega > m_A: transmitted with v_g = k / omega
+omega = 1.5
+sigma = 5.0
+x0 = -24.0
+amplitude = 0.8
+duration_s = 14.0
+
+[measure]                         # how the numbers on the screen are taken from the simulation
+depth_fit = [0.25, 3.0]           # penetration depth: straight-line fit of ln|A_omega(x)| for x in this range, in units of 1/kappa
+depth_show_s = 10.5                # the simulated depth appears on the screen (packet time, s) once the packet has left the boundary
+speed_vacuum_window = [0.0, 3.0]  # packet time, s: the packet is far from the boundary
+speed_inside_fraction = 0.96      # the speed in the condensate is measured once this fraction of the energy is inside
+speed_min_s = 1.5                 # ... and at least this long after that
+wavenumber_x = [1.0, 11.0]        # the range of x in which the wave number of the transmitted packet is taken (phase of the Fourier component)
+wavenumber_s = 11.0               # packet time from which the wave number of the transmitted packet is shown (the packet has passed x = 11)
+energy_done_s = 10.0              # the reflected / transmitted energy fractions are shown from this packet time
+
+[timeline]
+card_durations = [2.0, 1.5, 1.5, 1.5]                # the film title, then one card before each part
+part_bounds = [0.0, 20.0, 48.0, 72.0]                # content time: part 1, part 2, part 3
+card_at = [0.0, 0.0, 20.0, 48.0]
+card_fade_in = [0.0, 0.16]
+card_fade_out = [0.84, 1.0]
+
+[part1]
+y_half = 1.7                      # the picture spans y in [-y_half, y_half] (in units of R), x follows from the aspect of the axes
+grid_ny = 300                     # field map: points along y (x follows from the aspect)
+ramp = [2.0, 15.0]                # content time of the growth of the condensate: s = m_A R goes from s_start to s_final
+line_spacing = 0.14               # flux between two neighbouring field lines, in B_0 R
+line_alpha = 0.62
+line_width = 1.0
+mask_depth = 3.0                  # the field lines are not drawn deeper than this many penetration depths inside the disc
+vmax = 2.0                        # the colour map shows |B| / B_0 from 0 to vmax
+cmap = [[0.0, 0.010, 0.020, 0.050], [0.25, 0.020, 0.055, 0.130], [0.5, 0.035, 0.100, 0.240], [0.75, 0.120, 0.340, 0.680], [1.0, 0.420, 0.800, 1.000]]
+cmap_samples = 256
+disc_fill_alpha = 0.34            # the opacity of the violet disc at the full density v^2 / 2
+disc_edge_alpha = [0.30, 0.95]    # outline opacity at v = 0 and at the full v
+disc_edge_width = 1.8
+disc_edge_dash = [3, 3]
+disc_dash_until = 0.08            # the outline is dashed while the density v^2 / v_f^2 is below this
+disc_label_alpha_from = 0.25      # the label |phi|^2 = v^2 / 2 appears above this density
+cut_range = [0.55, 0.6]           # the dashed cut through the top of the disc: from R + cut[0] down to R - cut[1] (in R)
+cut_alpha = 0.7
+cut_width = 1.1
+cut_dash = [3, 3]
+arrow_length = 0.62               # the B_0 arrows at the left edge, in R
+arrow_y = [-1.1, 1.1]
+arrow_width = 1.6
+legend_rect = [0.055, 0.155, 0.17, 0.014]   # the colour legend of |B|, figure fractions
+legend_ticks = [0.0, 1.0, 2.0]
+profile_xlim = [-0.9, 0.9]        # in R: the profile of the tangential field along the cut, x = R - y (depth)
+profile_ylim = [0.0, 2.35]
+profile_samples = 500
+profile_line_width = 2.2
+profile_dash = [4, 3]
+profile_shade_alpha = 0.16
+bar_fill_alpha = 0.85
+caption_times = [2.0, 15.5, 18.0]                 # c1a until the first time, c1b until the second, c1c until the third, then c1d
+formula1_in = [0.8, 2.0]
+formula2_in = [15.5, 17.0]
+profile_in = [1.5, 3.0]
+readout_in = [1.5, 3.0]
+lambda_mark_from = 13.0
+current_in = [16.0, 18.0]         # the screening current symbols appear
+current_count = 28                # symbols around the disc
+current_offset = 0.06             # radial position below the surface, in R
+current_size = 5.0                # pt at 720 p: radius of a symbol of the strongest current
+current_min = 0.45                # relative size of the weakest
+current_label_offset = [0.12, 0.12]   # from the top-right corner of the picture, in R
+arrow_x0 = 0.45                   # the B_0 arrows start this far from the left edge, in R
+edge_fade = [0.35, 0.22]          # the picture fades into the frame over these widths (x, y), in R           # the marker of lambda on the profile appears from this time
+lambda_mark_alpha = 0.9
+
+[part2]
+stage_xlim = [-32.0, 22.0]
+stage_ylim = [-1.65, 1.65]
+disp_klim = [0.0, 3.0]
+disp_wlim = [0.0, 2.3]
+zoom_xlim = [-6.0, 6.5]
+zoom_ylim = [-1.65, 1.65]
+a_start = 20.0                    # content time of the first packet
+b_start = 34.0                    # content time of the second packet
+fill_alpha = 0.50
+line_width = 1.7
+fade_edge = 3.0                   # the field fades out over this distance at the left edge of the stage (the packet comes from outside)
+condensate_alpha = 0.15
+boundary_alpha = 0.8
+boundary_width = 1.2
+boundary_dash = [4, 3]
+envelope_alpha = 0.75
+envelope_width = 1.1
+envelope_dash = [4, 3]
+envelope_samples = 120
+marker_size = 60.0                # the energy centroid marker, pt^2 at 720 p
+marker_y = -1.45
+trail_alpha = 0.35
+kappa_mark_alpha = 0.8
+caption_a = [0.0, 4.5, 10.0]       # packet time: c2a until the first, c2b until the second, c2c after
+caption_b = [0.0, 6.5]            # packet time: c2d until the first, c2e after
+formula_a_in = [0.0, 1.0]
+formula_b_in = [0.0, 1.0]
+worldline_xlim = [0.0, 15.0]      # packet time of the space-time panel (s)
+worldline_ylim = [-26.0, 24.0]
+worldline_width = 2.0
+ref_alpha = 0.55
+ref_width = 1.0
+ref_dash = [4, 3]
+speed_window_dash = [2, 2]
+table_in = [0.5, 1.5]
+
+[part3]
+a_start = 48.0
+k_lim = [0.0, 3.4]
+w_lim = [0.0, 3.7]
+cone_in = [0.5, 2.0]              # packet time: the light cone, then the hyperbola, the gap, the slider
+hyper_in = [3.0, 6.0]
+gap_in = [5.5, 7.0]
+slider_in = [7.0, 8.0]
+slider_k = [0.0, 3.0]             # the point slides between these k (in m_A) with the period below
+slider_period_s = 9.0
+curve_samples = 300
+cone_alpha = 0.55
+cone_width = 1.2
+cone_dash = [4, 3]
+hyper_width = 3.0
+gap_alpha = 0.10
+packet_line_alpha = 0.55
+packet_line_width = 1.0
+packet_line_dash = [1, 3]
+tangent_half = 0.55               # half-length of the tangent segment, in k
+point_size = 90.0
+tangent_width = 1.8
+chord_alpha = 0.5
+pol_in = [8.0, 9.5]             # the triad of the polarizations (massless)
+pol3_in = [12.0, 13.5]            # the third polarization appears
+dof_in = [10.0, 11.5]
+arrow_in = [17.0, 18.5]           # the arrow Goldstone -> longitudinal component is drawn
+summary_in = [20.0, 21.5]
+osc_period_s = 2.4                # the period of the oscillating dots, film s
+osc_amp = 0.34
+triad_xlim = [0.0, 3.0]           # three columns: eps_1, eps_2, eps_L (equal scale in x and y)
+triad_columns = [0.5, 1.5, 2.5]
+triad_symbol_y = 0.70             # fractions of the height of the triad axes
+triad_k_y = 0.34
+triad_k_half = 0.34               # half-length of the arrow of k, in x units
+triad_label_y = 0.13
+triad_word_y = 0.02
+triad_phase = [0.0, 0.25, 0.5]    # phases (fractions of a period) of eps_1, eps_2, eps_L
+cross_size = 0.7                  # size of the cross (field pointing away from us) relative to the dot
+vector_width = 2.4
+axis_alpha = 0.5
+axis_width = 1.0
+dot_size = 80.0
+dof_xlim = [0.0, 1.0]
+dof_ylim = [0.0, 1.0]
+box_w = 0.19
+box_h = 0.42
+box_y = 0.30
+box_x = [0.02, 0.29, 0.56, 0.81]  # left edges of the four boxes: phi, A (massless), chi, A (massive)
+sign_x = [0.255, 0.525, 0.775]    # the signs +  =  +
+box_alpha = 0.9
+box_width = 1.4
+arrow_rad = -0.17                 # curvature of the arrow Goldstone -> longitudinal polarization
+goldstone_y = 0.95                # axes fraction: the label of the arrow
+caption_times = [4.0, 8.0, 12.0, 17.0, 21.0]
+
+[layout]
+title_pos = [0.03, 0.935]
+chapter_label_pos = [0.97, 0.938]
+formula_pos = [0.03, 0.838]
+formula_row = 0.072
+formula_min_alpha = 0.01
+caption_pos = [0.03, 0.035]
+card_title_y = 0.52
+card_subtitle_y = 0.43
+card_number_y = 0.62
+card_chapter_y = 0.50
+card_chapter_sub_y = 0.41
+# part 1
+disc_axes = [0.03, 0.10, 0.60, 0.63]
+disc_label_pos = [0.0, 0.0]       # offset of the label |phi|^2 = v^2 / 2 from the centre of the disc, in R
+b0_label_offset = [0.1, 0.12]     # the label B_0 above the arrow, in R
+profile_axes = [0.72, 0.13, 0.245, 0.40]
+profile_title_pos = [0.0, 1.05]
+profile_xlabel_pos = [1.0, -0.12]
+profile_label_pos = [0.7, 0.8]
+bar_axes = [0.69, 0.765, 0.27, 0.018]
+bar_label_pos = [0.69, 0.80]
+readout_pos = [0.69, 0.70]
+readout_row = 0.065
+b_label_pos = [0.035, 0.145]
+# part 2
+stage_axes = [0.04, 0.455, 0.92, 0.285]
+stage_label_pos = [0.06, 0.90]            # axes fractions: "vacuum" and "condensate" labels
+stage_label2_pos = [0.585, 0.90]
+disp_axes = [0.06, 0.135, 0.25, 0.235]
+zoom_axes = [0.37, 0.135, 0.28, 0.235]
+worldline_axes = [0.37, 0.135, 0.28, 0.235]
+panel_title_y = 1.06
+vg_line_pos = [0.03, 0.90]               # the label v_g = k / omega in the space-time panel (axes fractions)
+table_pos = [0.665, 0.365]
+table_cols = [0.665, 0.865, 0.975]         # x of the labels, the "analytic" and the "simulation" columns
+table_row = 0.058
+# part 3
+disp3_axes = [0.07, 0.135, 0.40, 0.535]
+triad_axes = [0.56, 0.47, 0.40, 0.30]
+dof_axes = [0.56, 0.12, 0.40, 0.26]
+slider_text_pos = [0.05, 0.72]
+v_label_pos = [0.97, 0.10]
+mass_label_pos = [0.03, 0.62]
+triad_title_pos = [0.5, 1.0]
+dof_title_pos = [0.0, 1.03]
+cone_label_pos = [0.62, 0.50]
+hyper_label_pos = [0.05, 0.86]
+dof_label_y = 0.16
+
+[fonts]
+title = 19
+chapter_label = 13
+formula = 17
+caption = 11.5
+card_title = 36
+card_subtitle = 17
+card_number = 54
+card_chapter = 32
+card_chapter_sub = 16
+panel_title = 11.5
+panel_label = 12
+label = 12.5
+readout = 15
+table = 12.5
+tick = 10.5
+big_number = 17
+dof_number = 22
+dof_label = 11
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+blue = [0.40, 0.72, 1.00]
+warm = [1.00, 0.55, 0.40]
+gold = [1.00, 0.84, 0.35]
+violet = [0.66, 0.48, 1.00]
+mid = [0.85, 0.88, 0.95]
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+axis_color = [0.7, 0.75, 0.85]

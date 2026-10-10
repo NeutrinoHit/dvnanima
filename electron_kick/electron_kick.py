@@ -26,10 +26,13 @@ the angle theta with
 The lines are drawn with equal flux, so their density is the strength of the field, and the
 shell shines where many lines run along it, that is where the radiation field is strong.
 
+All the numbers are in config.toml and all the words in texts.toml (see ../dvconfig.py for --config / --set).
+
 Usage:
-    python electron_kick.py                 # film -> media/electron_kick.mp4
-    python electron_kick.py --preview
-    python electron_kick.py --snapshot 6    # one PNG at film time 6 s
+    python electron_kick.py --lang en       # film -> media/electron_kick_en.mp4
+    python electron_kick.py --lang ru
+    python electron_kick.py --lang en --preview
+    python electron_kick.py --lang en --snapshot 6    # one PNG at film time 6 s
 """
 
 from __future__ import annotations
@@ -43,7 +46,11 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from dvconfig import load_config, load_texts  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
+CFG = load_config(HERE)
 
 
 def psi_of_theta(theta: np.ndarray | float, beta: float) -> np.ndarray | float:
@@ -82,16 +89,26 @@ def line_geometry(theta: float, beta: float, t: float) -> dict[str, np.ndarray]:
 
 # ---------------------------------------------------------------------- film
 
+TEXT = {lang: load_texts(HERE, lang) for lang in ("en", "ru")}     # texts.toml
+
+
 def smooth(x: float, a: float, b: float) -> float:
     u = min(max((x - a) / (b - a), 0.0), 1.0)
     return u * u * (3 - 2 * u)
 
 
-RUNS = ((0.30, 0.0, 10.0), (0.85, 10.0, 20.0))     # (beta, start, end) in film seconds
-T_KICK = 1.6                                        # seconds after the start of a run
+def num(x: float, fmt: str, lang: str) -> str:
+    """A number for use inside $...$: decimal comma in Russian."""
+    s = format(x, fmt)
+    return s.replace(".", "{,}") if lang == "ru" else s
 
 
-def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float | None = None) -> None:
+def rgba(c, alpha: float = 1.0) -> tuple:
+    """A colour of the configuration [r, g, b] or [r, g, b, a] with its opacity multiplied by alpha."""
+    return (*c[:3], (c[3] if len(c) > 3 else 1.0) * alpha)
+
+
+def render(out: Path, size: tuple[int, int], fps: int, total: float, lang: str = "en", snap: float | None = None) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.colors as mcolors
@@ -100,18 +117,23 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
 
     if snap is None and not shutil.which("ffmpeg"):
         sys.exit("ffmpeg is required")
+    tx = TEXT[lang]
+    V, MD, TL, LY, F, ST = CFG.video, CFG.model, CFG.timeline, CFG.layout, CFG.fonts, CFG.style
+    runs = [tuple(r) for r in TL.runs]               # (beta, start, end) in film seconds
     W, H = size
-    dpi = 100
-    sc = H / 720.0
-    cx0, cy0 = 0.20 * W, 0.215 * H
-    unit = 80.0 * sc                            # pixels travelled by light in one film second
-    n_lines = 22
+    dpi = V.dpi
+    sc = H / V.reference_height
+    cx0, cy0 = LY.origin[0] * W, LY.origin[1] * H
+    unit = LY.unit_px * sc                      # pixels travelled by light in one film second
+    n_lines = MD.n_lines
     theta_k = np.arccos(1.0 - 2.0 * (np.arange(n_lines) + 0.5) / n_lines)   # equal flux, upper half-plane
-    r_far = 620.0 * sc
+    r_far = LY.r_far_px * sc
+    BG = ST.background
+    scene_w = LY.scene_width * W
 
-    fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor="#03060c")
+    fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor=BG)
     ax = fig.add_axes([0, 0, 1, 1])
-    clip = matplotlib.patches.Rectangle((0, 0), 0.715 * W, H, transform=ax.transData)
+    clip = matplotlib.patches.Rectangle((0, 0), scene_w, H, transform=ax.transData)
 
     frames = int(round(total * fps))
     ids = [int(round(snap * fps))] if snap is not None else range(frames)
@@ -119,102 +141,104 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
     if snap is None:
         writer = subprocess.Popen(
             ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
-             "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "19",
+             "-r", str(fps), "-i", "-", "-c:v", "libx264", "-preset", V.preset, "-crf", str(V.crf),
              "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], stdin=subprocess.PIPE)
 
     def glow(X, Y, color, d, alpha=1.0, z=8):
-        for scale, al in ((4.2, 0.07), (2.4, 0.16), (1.3, 0.4), (0.6, 1.0)):
+        for scale, al in ST.glow:
             ax.scatter([X], [Y], s=(d * scale * 72 / dpi) ** 2, linewidths=0, zorder=z,
                        facecolors=[mcolors.to_rgba(color, al * alpha)])
 
     for k_ in ids:
         tf = k_ / fps
-        run = next((r for r in RUNS if r[1] <= tf < r[2]), RUNS[-1])
+        run = next((r for r in runs if r[1] <= tf < r[2]), runs[-1])
         beta, t_start, t_end = run
         gamma = 1.0 / math.sqrt(1 - beta ** 2)
-        t = min(tf - t_start - T_KICK, 6.2)       # time since the kick, film seconds (frozen at the end of a run)
-        fade = min(smooth(tf - t_start, 0.0, 0.6), 1 - smooth(tf, t_end - 0.6, t_end)) if t_end < total - 1e-9 else smooth(tf - t_start, 0, 0.6)
+        t = min(tf - t_start - TL.t_kick, TL.t_front_max)       # time since the kick, film seconds (frozen at the end of a run)
+        fade = (min(smooth(tf - t_start, 0.0, V.fade_s), 1 - smooth(tf, t_end - V.fade_s, t_end)) if t_end < total - 1e-9
+                else smooth(tf - t_start, 0, V.fade_s))
         ax.clear()
         ax.set_xlim(0, W)
         ax.set_ylim(0, H)
         ax.axis("off")
-        ax.add_patch(matplotlib.patches.Rectangle((0, 0), W, H, color="#03060c", zorder=0))
+        ax.add_patch(matplotlib.patches.Rectangle((0, 0), W, H, color=BG, zorder=0))
         ax.set_clip_path(clip)
         segs_out, segs_in, arcs = [], [], []
         if t <= 0.0:
             for th in theta_k:
-                for sgn in (1,):
-                    segs_out.append([(cx0, cy0), (cx0 + r_far * math.cos(th), cy0 + sgn * r_far * math.sin(th))])
+                segs_out.append([(cx0, cy0), (cx0 + r_far * math.cos(th), cy0 + r_far * math.sin(th))])
             x_charge, radius = 0.0, 0.0
         else:
-            tt = t * unit / unit                  # in light-seconds: c = 1
-            radius = t
+            radius = t                            # in light-seconds: c = 1
             x_charge = beta * t
             for th in theta_k:
-                g = line_geometry(float(th), beta, tt)
-                for sgn in (1,):
-                    p0 = (cx0 + unit * g["start"][0], cy0)
-                    p1 = (cx0 + unit * g["hit"][0], cy0 + sgn * unit * g["hit"][1])
-                    segs_in.append([p0, p1])
-                    a0, a1 = g["theta_in"], g["theta_out"]
-                    aa = np.linspace(a0, a1, 24)
-                    arcs.append([(cx0 + unit * radius * math.cos(a), cy0 + sgn * unit * radius * math.sin(a)) for a in aa])
-                    far = (cx0 + unit * radius * math.cos(a1), cy0 + sgn * unit * radius * math.sin(a1))
-                    segs_out.append([far, (cx0 + r_far * math.cos(a1), cy0 + sgn * r_far * math.sin(a1))])
+                g = line_geometry(float(th), beta, t)
+                p0 = (cx0 + unit * g["start"][0], cy0)
+                p1 = (cx0 + unit * g["hit"][0], cy0 + unit * g["hit"][1])
+                segs_in.append([p0, p1])
+                a0, a1 = g["theta_in"], g["theta_out"]
+                aa = np.linspace(a0, a1, MD.arc_samples)
+                arcs.append([(cx0 + unit * radius * math.cos(a), cy0 + unit * radius * math.sin(a)) for a in aa])
+                far = (cx0 + unit * radius * math.cos(a1), cy0 + unit * radius * math.sin(a1))
+                segs_out.append([far, (cx0 + r_far * math.cos(a1), cy0 + r_far * math.sin(a1))])
         a_f = fade
-        ax.add_collection(LineCollection(segs_out, colors=[(0.45, 0.55, 0.78, 0.55 * a_f)] * len(segs_out), linewidths=1.3 * sc, zorder=2))
+        ax.add_collection(LineCollection(segs_out, colors=[rgba(ST.outer, ST.outer_alpha * a_f)] * len(segs_out), linewidths=ST.outer_width * sc, zorder=2))
         if segs_in:
-            ax.add_collection(LineCollection(segs_in, colors=[(0.35, 0.88, 1.0, 0.85 * a_f)] * len(segs_in), linewidths=1.5 * sc, zorder=3))
+            ax.add_collection(LineCollection(segs_in, colors=[rgba(ST.inner, ST.inner_alpha * a_f)] * len(segs_in), linewidths=ST.inner_width * sc, zorder=3))
         if arcs:
-            ax.add_collection(LineCollection(arcs, colors=[(1.0, 0.78, 0.30, 0.38 * a_f)] * len(arcs), linewidths=3.0 * sc, zorder=4, capstyle="round"))
+            ax.add_collection(LineCollection(arcs, colors=[rgba(ST.front, ST.arc_alpha * a_f)] * len(arcs), linewidths=ST.arc_width * sc, zorder=4, capstyle="round"))
         # light circle r = ct
         if radius > 0:
-            a_ = np.linspace(0.0, math.pi, 300)
-            ax.plot(cx0 + unit * radius * np.cos(a_), cy0 + unit * radius * np.sin(a_), color=(1, 0.85, 0.5, 0.35 * a_f), lw=1.0 * sc, ls=(0, (3, 4)), zorder=4)
-        ax.plot([0, 0.715 * W], [cy0, cy0], color=(0.7, 0.8, 0.95, 0.28 * a_f), lw=1.0 * sc, zorder=1)
-        ax.text(cx0 - 14 * sc, cy0 - 26 * sc, "x = 0", color=(0.75, 0.82, 0.95, 0.7 * a_f), fontsize=10 * sc, zorder=10)
+            a_ = np.linspace(0.0, math.pi, MD.circle_samples)
+            ax.plot(cx0 + unit * radius * np.cos(a_), cy0 + unit * radius * np.sin(a_), color=rgba(ST.circle, a_f), lw=ST.circle_width * sc,
+                    ls=(0, tuple(ST.circle_dash)), zorder=4)
+        ax.plot([0, scene_w], [cy0, cy0], color=rgba(ST.axis_line, a_f), lw=ST.axis_line_width * sc, zorder=1)
+        ax.text(cx0 + LY.x_label_offset[0] * sc, cy0 + LY.x_label_offset[1] * sc, tx["x_label"], color=rgba(ST.origin_label, a_f), fontsize=F.x_label * sc, zorder=10)
         # the charge, the origin and the kick
-        ax.scatter([cx0], [cy0], s=(7 * sc * 72 / dpi) ** 2, facecolors="none", edgecolors=[(0.8, 0.85, 1, 0.5 * a_f)], linewidths=1.0 * sc, zorder=6)
-        glow(cx0 + unit * x_charge, cy0, "#7fd6ff", 15 * sc, a_f)
-        ax.plot([cx0 + unit * x_charge - 3.5 * sc, cx0 + unit * x_charge + 3.5 * sc], [cy0, cy0], color="#04203a", lw=2.2 * sc, alpha=a_f, zorder=9, solid_capstyle="round")
-        if -0.35 < t < 0.35:
-            k_a = (1 - abs(t) / 0.35)
-            ax.annotate("", xy=(cx0 - 12 * sc, cy0), xytext=(cx0 - 12 * sc - 95 * sc, cy0),
-                        arrowprops=dict(arrowstyle="-|>", color=(1.0, 0.55, 0.15, k_a * a_f), lw=5 * sc, mutation_scale=22 * sc), zorder=10)
-            ax.text(cx0 - 120 * sc, cy0 + 24 * sc, "kick / пинок", color=(1.0, 0.7, 0.35, k_a * a_f), fontsize=14 * sc, zorder=10)
-        if t > 0 and x_charge > 0.4:
-            ax.annotate("", xy=(cx0 + unit * x_charge + 60 * sc, cy0 + 24 * sc), xytext=(cx0 + unit * x_charge + 8 * sc, cy0 + 24 * sc),
-                        arrowprops=dict(arrowstyle="-|>", color=(0.6, 0.95, 1.0, 0.9 * a_f), lw=2 * sc), zorder=10)
-            ax.text(cx0 + unit * x_charge + 30 * sc, cy0 + 32 * sc, "v", color=(0.6, 0.95, 1.0, 0.9 * a_f), fontsize=13 * sc, zorder=10)
+        ax.scatter([cx0], [cy0], s=(ST.origin_ring_size * sc * 72 / dpi) ** 2, facecolors="none", edgecolors=[rgba(ST.origin_ring, a_f)],
+                   linewidths=ST.origin_ring_width * sc, zorder=6)
+        glow(cx0 + unit * x_charge, cy0, ST.charge, ST.charge_size * sc, a_f)
+        ax.plot([cx0 + unit * x_charge - LY.core_half * sc, cx0 + unit * x_charge + LY.core_half * sc], [cy0, cy0], color=ST.charge_core,
+                lw=ST.core_width * sc, alpha=a_f, zorder=9, solid_capstyle="round")
+        if -TL.kick_window < t < TL.kick_window:
+            k_a = (1 - abs(t) / TL.kick_window)
+            ax.annotate("", xy=(cx0 - LY.kick_arrow_gap * sc, cy0), xytext=(cx0 - LY.kick_arrow_gap * sc - LY.kick_arrow_len * sc, cy0),
+                        arrowprops=dict(arrowstyle="-|>", color=rgba(ST.kick_colour, k_a * a_f), lw=ST.kick_arrow_width * sc,
+                                        mutation_scale=ST.kick_arrow_mutation * sc), zorder=10)
+            ax.text(cx0 + LY.kick_text_offset[0] * sc, cy0 + LY.kick_text_offset[1] * sc, tx["kick"], color=rgba(ST.kick_text_colour, k_a * a_f),
+                    fontsize=F.kick * sc, zorder=10)
+        if t > 0 and x_charge > TL.v_arrow_min_x:
+            ax.annotate("", xy=(cx0 + unit * x_charge + LY.v_arrow_to * sc, cy0 + LY.v_arrow_dy * sc),
+                        xytext=(cx0 + unit * x_charge + LY.v_arrow_from * sc, cy0 + LY.v_arrow_dy * sc),
+                        arrowprops=dict(arrowstyle="-|>", color=rgba(ST.v_colour, a_f), lw=ST.v_arrow_width * sc), zorder=10)
+            ax.text(cx0 + unit * x_charge + LY.v_label_offset[0] * sc, cy0 + LY.v_label_offset[1] * sc, tx["v_label"],
+                    color=rgba(ST.v_colour, a_f), fontsize=F.v_label * sc, zorder=10)
         # labels of the zones
-        if t > 1.2:
-            ax.text(cx0 + unit * radius * 0.62, cy0 + unit * radius * 0.80, "radiation front r = ct", color=(1.0, 0.82, 0.4, 0.9 * a_f), fontsize=11 * sc, zorder=10)
+        if t > TL.front_label_t:
+            ax.text(cx0 + unit * radius * LY.front_label[0], cy0 + unit * radius * LY.front_label[1], tx["front_label"],
+                    color=rgba(ST.front_label_colour, a_f), fontsize=F.front_label * sc, zorder=10)
         # panel with the formulas
         fig.texts.clear()
-        fig.text(0.735, 0.90, "electron kick / пинок электрону", color=(0.88, 0.93, 1, a_f), fontsize=14 * sc)
-        fig.text(0.735, 0.835, f"β = v/c = {beta:.2f},   γ = {gamma:.2f}", color=(0.6, 0.9, 1.0, a_f), fontsize=14 * sc, family="monospace")
+        fig.text(LY.panel_x, LY.title_y, tx["title"], color=rgba(ST.title_colour, a_f), fontsize=F.title * sc)
+        beta_line = tx["beta_line"].replace("{beta}", num(beta, ".2f", lang)).replace("{gamma}", num(gamma, ".2f", lang))
+        fig.text(LY.panel_x, LY.beta_y, beta_line, color=rgba(ST.beta_colour, a_f), fontsize=F.beta * sc, family=F.mono_family)
         items = [
-            ((0.45, 0.55, 0.78), "r > ct", "field of the charge at rest\nполе покоящегося заряда"),
-            ((1.0, 0.78, 0.30), "r = ct", "radiation front: field ⊥ radius\nфронт волны: поле ⊥ радиусу"),
-            ((0.35, 0.88, 1.0), "r < ct", "field of the moving charge,\ncrowded to the plane ⊥ v\nполе движущегося заряда"),
+            (ST.outer, tx["zone_outer"], tx["body_outer"]),
+            (ST.front, tx["zone_front"], tx["body_front"]),
+            (ST.inner, tx["zone_inner"], tx["body_inner"]),
         ]
         for i, (col, head, body) in enumerate(items):
-            y = 0.74 - 0.145 * i
-            fig.text(0.735, y, "━ " + head, color=(*col, a_f), fontsize=12.5 * sc, family="monospace")
-            fig.text(0.735, y - 0.052, body, color=(0.72, 0.78, 0.9, 0.9 * a_f), fontsize=9.5 * sc, linespacing=1.35, va="top")
-        fig.text(0.735, 0.29, "Gauss: flux conservation / сохранение потока", color=(0.88, 0.93, 1, 0.9 * a_f), fontsize=9.8 * sc)
-        fig.text(0.735, 0.235, r"$\cos\theta=\dfrac{\cos\psi}{\sqrt{1-\beta^{2}\sin^{2}\psi}}$",
-                 color=(1.0, 0.82, 0.4, 0.95 * a_f), fontsize=14 * sc)
-        fig.text(0.735, 0.178, r"$\tan\theta=\tan\psi\,/\,\gamma$", color=(1.0, 0.82, 0.4, 0.95 * a_f), fontsize=12 * sc)
-        fig.text(0.735, 0.145, "θ: angle at the origin (r > ct)\nψ: angle at the charge (r < ct)\nθ: угол из начала, ψ: угол из заряда",
-                 color=(0.6, 0.68, 0.8, 0.85 * a_f), fontsize=8.5 * sc, linespacing=1.4, va="top")
-        ax.add_patch(matplotlib.patches.Rectangle((0, 0), 0.715 * W, 0.075 * H, color=(0.01, 0.02, 0.05, 0.85), zorder=11))
-        cap = ("an electron at rest: the field lines are radial", "покоящийся электрон: линии поля радиальны") if t <= 0 else (
-            ("the field near the electron has changed, the far field has not yet heard about the kick",
-             "вблизи электрона поле уже изменилось, дальнее ещё «не знает» о толчке") if t < 5.4 else
-            ("the lines are joined along the shell: the front of the electromagnetic wave", "линии соединяются вдоль оболочки: фронт электромагнитной волны"))
-        fig.text(0.03, 0.043, cap[0], color=(0.88, 0.93, 1.0, 0.93 * a_f), fontsize=11.5 * sc)
-        fig.text(0.03, 0.012, cap[1], color=(0.6, 0.68, 0.8, 0.9 * a_f), fontsize=9.5 * sc)
+            y = LY.items_y0 - LY.items_dy * i
+            fig.text(LY.panel_x, y, tx["marker"] + " " + head, color=rgba(col, a_f), fontsize=F.zone_name * sc, family=F.mono_family)
+            fig.text(LY.panel_x, y - LY.body_dy, body, color=rgba(ST.zone_body_colour, a_f), fontsize=F.zone_body * sc,
+                     linespacing=F.body_linespacing, va="top")
+        fig.text(LY.panel_x, LY.gauss_y, tx["gauss"], color=rgba(ST.gauss_colour, a_f), fontsize=F.gauss * sc)
+        fig.text(LY.panel_x, LY.formula1_y, tx["formula1"], color=rgba(ST.formula_colour, a_f), fontsize=F.formula1 * sc)
+        fig.text(LY.panel_x, LY.formula2_y, tx["formula2"], color=rgba(ST.formula_colour, a_f), fontsize=F.formula2 * sc)
+        fig.text(LY.panel_x, LY.note_y, tx["note"], color=rgba(ST.note_colour, a_f), fontsize=F.note * sc, linespacing=F.note_linespacing, va="top")
+        ax.add_patch(matplotlib.patches.Rectangle((0, 0), scene_w, LY.caption_box_height * H, color=tuple(ST.caption_box), zorder=11))
+        cap = tx["cap_rest"] if t <= 0 else (tx["cap_near"] if t < TL.caption_front_t else tx["cap_front"])
+        fig.text(*LY.caption_pos, cap, color=rgba(ST.caption_colour, a_f), fontsize=F.caption * sc)
         fig.canvas.draw()
         if writer is None:
             fig.savefig(out, dpi=dpi, facecolor=fig.get_facecolor())
@@ -229,18 +253,23 @@ def render(out: Path, size: tuple[int, int], fps: int, total: float, snap: float
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--lang", choices=("en", "ru"), default="en")
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--snapshot", type=float, default=None)
-    ap.add_argument("--seconds", type=float, default=20.0)
-    ap.add_argument("--out", type=Path, default=HERE / "media" / "electron_kick.mp4")
+    ap.add_argument("--seconds", type=float, default=CFG.timeline.film_length)
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--config", type=Path, default=None, help="another configuration file instead of config.toml")
+    ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="override one configuration value")
     args = ap.parse_args()
-    args.out.parent.mkdir(parents=True, exist_ok=True)
+    V = CFG.video
+    out = args.out or HERE / "media" / f"electron_kick_{args.lang}.mp4"
+    out.parent.mkdir(parents=True, exist_ok=True)
     if args.snapshot is not None:
-        render(args.out.with_suffix(".png"), (1280, 720), 30, args.seconds, snap=args.snapshot)
+        render(out.with_suffix(".png"), (V.width, V.height), V.fps, args.seconds, args.lang, snap=args.snapshot)
     elif args.preview:
-        render(args.out.with_name("electron_kick_preview.mp4"), (640, 360), 15, args.seconds)
+        render(out.with_name(out.stem + "_preview.mp4"), (V.preview_width, V.preview_height), V.preview_fps, args.seconds, args.lang)
     else:
-        render(args.out, (1280, 720), 30, args.seconds)
+        render(out, (V.width, V.height), V.fps, args.seconds, args.lang)
 
 
 if __name__ == "__main__":

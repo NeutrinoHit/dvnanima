@@ -1,0 +1,26 @@
+# All the words and formulas of the film (the same keys in both languages); formulas are matplotlib mathtext (LaTeX), words stay outside $...$.
+# {deg} in phi_line is replaced by the rotation angle in degrees.
+
+[en]
+title = '''Spin $1/2$ and the Möbius strip'''
+footer = '''the vector across the strip comes back reversed after $360^\circ$ and restored after $720^\circ$'''
+dial_title = '''rotation $\varphi$'''
+spinor_title = '''spinor $\psi=e^{-i\varphi/2}$'''
+plus_one = '''$+1$'''
+minus_one = '''$-1$'''
+phi_line = '''$\varphi={deg}^\circ$'''
+msg_start = '''start'''
+msg_360 = '''$360^\circ$: $\psi\to-\psi$'''
+msg_720 = '''$720^\circ$: $\psi\to\psi$'''
+
+[ru]
+title = '''Спин $1/2$ и лента Мёбиуса'''
+footer = '''вектор поперёк ленты возвращается обращённым после $360^\circ$ и прежним после $720^\circ$'''
+dial_title = '''поворот $\varphi$'''
+spinor_title = '''спинор $\psi=e^{-i\varphi/2}$'''
+plus_one = '''$+1$'''
+minus_one = '''$-1$'''
+phi_line = '''$\varphi={deg}^\circ$'''
+msg_start = '''старт'''
+msg_360 = '''$360^\circ$: $\psi\to-\psi$'''
+msg_720 = '''$720^\circ$: $\psi\to\psi$'''

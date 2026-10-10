@@ -1,0 +1,180 @@
+# Every number of the film "A collider scattering experiment" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set model.events_seed=7 --set model.events_per_crossing_mean=8
+# Units: film seconds; "px" are pixels of a 720 p frame (they scale with the frame height); positions in [0, 1] are fractions of the frame;
+# font sizes are points at 720 p; line widths are points at 720 p; cos(theta) of the muons is the physics of the film.
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 19
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+preview_seconds = 10.0            # the preview is the first seconds of the film
+fade_s = 0.0                      # this film has no fade in and out
+reference_height = 720
+
+[model]
+bunch_size = 56                   # particles of a bunch (a few tens; schematic)
+sigma_x = 30.0                    # px, longitudinal size of a bunch
+sigma_y = 8.0                     # px, transverse size
+events_seed = 4                   # random numbers of the events (fixed: the film is reproducible)
+events_per_crossing_mean = 5.0    # Poisson mean of the number of events per crossing (hugely exaggerated)
+first_event_cos = 0.62            # the first event is chosen for readability: cos(theta) and azimuth
+first_event_phi = 0.9
+nearest_particles = 30            # an event takes place between particles that are among this many nearest to the centre
+first_start_distance = 400.0      # px, the first bunches start this far from the centre and accelerate
+first_exponent = 1.8              # x = -d (1 - (t / t_c)^exponent) while they accelerate
+bunch_speed = 560.0               # px per second of the later bunches
+detector_radius = 250.0           # px
+muon_speed = 760.0                # px per second
+first_slowdown = 2.6              # the first event is shown in slow motion
+histogram_bins = 16
+
+[timeline]
+film_length = 28.0
+stage_ends = [3.8, 5.4, 9.6]      # end of the stages 1 (preparation), 2 (interaction) and 3 (measurement); the repetition follows
+first_crossing = 4.6              # the first bunches meet (and the accelerating cavities switch to the weak state)
+crossing_start = 10.3             # the later crossings: first, period, and how long before the end of the film the last one is
+crossing_period = 0.78
+crossing_end_margin = 2.4
+flash_duration = 0.5              # of an event (times the slowdown)
+event_life = 2.5                  # an event is drawn this long
+hit_fade = 0.8                    # a hit on the detector fades to its resting brightness during this time
+cavity_rate = 6.0                 # rad per second of the pulsing of the cavities
+cavity_lag = 0.7                  # phase shift per cavity_length of distance from the centre
+cavity_length = 70.0
+histogram_start = 5.2             # the histogram fades in
+histogram_fade = 1.2
+
+[layout]
+centre = [0.355, 0.51]            # the interaction point
+star_count = 120
+star_seed = 8
+pipe_half_gap = 11.0
+pipe_length = 0.70                # fraction of the width
+ring_samples = 300
+ring_outer_offset = 9.0
+interaction_radius = 38.0
+cavity_x = [-390, -320, -250, 250, 320, 390]
+cavity_size = [28.0, 40.0]
+cut_distance = 760.0              # bunches farther than this from the centre are not computed
+keep_distance = 430.0             # particles farther than this from the centre are not drawn
+streak_factor = 0.05              # the streak behind a particle is speed * this long, at most streak_max
+streak_max = 36.0
+flash_start = [40.0, 90.0]        # glow size = start + growth * (1 - f)
+flash_ring = [8.0, 85.0]          # radius of the ring of the flash
+muon_stop = 4.0                   # the muon line ends this far outside the detector
+muon_gone = 40.0                  # and the muon disappears this far outside it
+muon_size = [13.0, 3.0]           # glow size = a + b * sgn * nz  (depth cue)
+hit_size = [11.0, 3.5]
+chip_x = 0.03
+chip_top = 0.925
+chip_step = 0.052
+label_beam_e = [-250.0, 0.925]    # legend row with the muons: px from the centre; the fraction of the height
+label_beam_p = [-150.0, 0.925]
+label_mu_m = [-60.0, 0.925]       # px from the centre; the fraction of the height
+label_mu_p = [20.0, 0.925]
+caption_box_height = 0.115
+caption_pos = [0.03, 0.042]
+hist_axes = [0.725, 0.27, 0.245, 0.34]
+hist_bar_width = 0.86
+hist_min_ymax = 4
+hist_ymax_factor = 1.15
+hist_ymax_margin = 1.05
+curve_samples = 100
+hist_ticks = [-1, 0, 1]
+hist_xlabel_pad = 2
+hist_title_pos = [0.725, 0.79]
+count_pos = [0.725, 0.69]
+crossings_pos = [0.725, 0.645]
+legend_curve_pos = [0.725, 0.19]
+legend_sigma_pos = [0.725, 0.145]
+note_pos = [0.725, 0.935]
+
+[fonts]
+beam_label = 13
+muon_label = 13
+chip_active = 13.5
+chip = 11.5
+caption = 14
+hist_tick = 10
+hist_xlabel = 9.5
+hist_title = 13
+count = 30
+crossings = 9.5
+legend_curve = 10
+legend_sigma = 9.5
+note = 8
+
+[style]
+background = "#03050b"
+visible_alpha = 0.01              # the histogram panel is not drawn below this opacity
+star_size = 1.0
+star_area = 5.0
+star_colour = [0.8, 0.88, 1.0, 0.12]
+pipe_colour = "#6f86a8"
+pipe_alpha = 0.35
+pipe_width = 1.0
+ring_colour = "#9fb7d6"
+ring_alpha = 0.30
+ring_width = 2.2
+ring_outer_alpha = 0.2
+ring_outer_width = 0.7
+interaction_colour = "#d8e6ff"
+interaction_alpha = 0.35
+interaction_width = 0.9
+interaction_dash = [2, 3]
+cavity_face = [0.2, 0.35, 0.6]
+cavity_face_alpha = 0.16
+cavity_edge = [0.5, 0.7, 1.0]
+cavity_edge_alpha = 0.55
+cavity_width = 0.9
+cavity_base = 0.55                # brightness of a cavity = (base + pulse * swing) * (1 before the first crossing, idle after)
+cavity_swing = 0.35
+cavity_idle = 0.45
+colour_e = "#4cc3ff"
+colour_p = "#ff9a3a"
+colour_mu_m = "#7dffb0"
+colour_mu_p = "#ff6bd0"
+glow_layers = [[4.0, 0.06], [2.2, 0.15], [1.2, 0.4], [0.55, 1.0]]     # [size factor, opacity] of a glow
+hit_rest = 0.42                   # resting brightness of a hit
+hit_start = 1.0                   # brightness of a fresh hit; it falls by hit_drop during hit_fade
+hit_drop = 0.58
+particle_size = 8.5               # px
+particle_alpha = 0.95
+streak_alpha = 0.30
+streak_width = 1.6
+flash_colour = "#fff1c8"
+flash_alpha = 0.85
+flash_ring_alpha = 0.6
+flash_ring_width = 1.4
+muon_line_alpha = 0.55
+muon_line_width = 3.0
+chip_on = [0.62, 0.86, 1.0]
+chip_off = [0.5, 0.58, 0.72]
+chip_alpha_active = 1.0
+chip_alpha_idle = 0.55            # while no stage is highlighted (the repetition)
+chip_alpha_other = 0.28
+beam_label_alpha = 0.9
+muon_label_alpha = 0.85
+caption_box_colour = [0.01, 0.02, 0.05, 0.6]
+caption_colour = [0.88, 0.93, 1.0, 0.93]
+bar_colour = [0.5, 0.9, 0.75]
+bar_alpha = 0.85
+curve_colour = [1.0, 0.82, 0.4]
+curve_width = 2.2
+hist_axis = [0.75, 0.82, 0.92]
+hist_axis_alpha = 0.5
+hist_text = [0.82, 0.9, 1.0]
+hist_text_alpha = 0.85
+count_colour = [0.55, 1.0, 0.8]
+crossings_colour = [0.7, 0.78, 0.9]
+crossings_alpha = 0.9
+legend_curve_alpha = 0.95
+legend_sigma_colour = [0.7, 0.78, 0.9]
+legend_sigma_alpha = 0.9
+note_colour = [0.5, 0.58, 0.72, 0.8]

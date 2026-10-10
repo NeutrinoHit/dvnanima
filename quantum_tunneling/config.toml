@@ -1,0 +1,352 @@
+# Every number of the film "Tunnelling: a point body and an extended body" lives here (the script contains only algorithms).
+# Override on the command line:  --config other.toml   or   --set classical.cars=16 --set style.background='"#000000"'
+# "film s" are seconds of the content (the chapter cards are inserted by the timeline); figure fractions are fractions of the width / height
+# of the frame; font sizes are points at 720 p (they scale with the height).
+
+[video]
+width = 1280
+height = 720
+fps = 30
+dpi = 100
+crf = 24
+preset = "slow"
+preview_width = 640
+preview_height = 360
+preview_fps = 15
+fade_s = 0.6
+reference_height = 720
+
+[timeline]
+card_s = 1.8
+card_at = [0.0, 0.0, 34.0, 66.0]            # a card is shown before this content time (the first one is the title of the film)
+card_fade_in = [0.0, 0.16]
+card_fade_out = [0.84, 1.0]
+# parts of the content, seconds: [from, to]
+a1 = [0.0, 9.0]                              # one car: a point body
+a2 = [9.0, 24.0]                             # the train
+a3 = [24.0, 34.0]                            # the scan over the number of cars
+w1 = [34.0, 46.0]                            # the chain: the wave arrives at the segment
+w2 = [46.0, 58.0]                            # the steady state: the envelope, the fluxes
+w3 = [58.0, 66.0]                            # T against the thickness of the segment
+m1 = [66.0, 80.0]                            # the matter wave on the hill
+m2 = [80.0, 91.0]                            # the mass
+outro = [91.0, 99.0]
+
+[timeline_unused]
+# the parts of the first version (a packet, the circuit) are kept in the code and not shown
+b1 = [34.0, 49.0]
+b2 = [49.0, 59.0]
+b3 = [59.0, 69.0]
+lim = [69.0, 78.0]
+c1 = [78.0, 85.0]
+c2 = [85.0, 101.0]
+outro_josephson = [101.0, 106.0]
+
+[classical]
+height = 4.0                                 # H, m: the hill y = H exp(-x^2 / 2 sigma^2)
+sigma = 2.4                                  # m
+g = 9.81                                     # m/s^2
+mass = 1.0                                   # kg per car
+spacing = 1.0                                # m along the track between neighbouring cars
+cars = 20                                    # the train of the film
+energy_fraction = 0.5                        # eta = E / V for every car (flat ground): v0 = sqrt(2 eta g H)
+margin_sigma = 6.0                           # the threshold is searched from -margin*sigma to +margin*sigma (+ the train length)
+track_x_lim = 80.0
+track_step = 0.01
+start_head_x = -19.5                         # head of the car / of the train at t = 0, m
+dt = 0.001                                   # s, velocity Verlet
+stride = 5                                   # stored every stride steps
+single_t_end = 11.0                          # s of physical time that are simulated
+train_t_end = 16.0
+single_rate = 1.0                            # physical seconds per film second
+train_rate = 1.15
+car_length = 0.9                            # m
+car_height = 0.56
+car_clearance = 0.06                         # between the rail and the car body
+coupler_height = 0.45                        # fraction of the car height
+stamp_delay_s = 0.4                          # the "turns back" stamp appears this long after the turning point
+passed_margin_sigma = 3.0                    # "passed" when the tail is this far beyond the top, in sigma
+
+[scan]
+counts = [1, 2, 3, 4, 6, 8, 10, 12, 14, 16, 20, 25, 30, 40]
+dwell_s = 0.62
+first_dwell_s = 1.4
+bracket = 0.04                               # the numerical search brackets the analytic speed by +-4 %
+bisect_dt = 0.003
+bisect_t_max = 400.0
+bisect_rel_tol = 0.0005
+analytic_n_max = 40
+analytic_samples = 40001
+dots_in_s = 0.25                             # the numerical dot appears this long after the analytic marker
+scan_view_cars_margin = 0.0
+
+[view]
+scan_y = [0.0, 1.18]
+scene_x = [-19.0, 25.0]                      # m
+scene_floor = -0.9                           # m below the ground line that are shown
+u_s = [-12.0, 36.0]                          # the U(S) panel, S in m measured along the track from the top of the hill
+u_y = [0.0, 1.16]                            # in units of N V
+bars_y = [0.0, 1.16]
+
+[quantum]
+hbar = 1.0
+mass = 1.0
+hill_height = 1.0                            # V (units of the film)
+hill_width = 0.8                             # w
+energy_fraction = 0.5                        # E / V of the packet (mean kinetic energy of the incident packet is k0^2 / 2m)
+packet_sigma = 2.5                           # sigma_x of |psi|^2
+packet_x0 = -13.0
+heavy_factor = 4.0                           # mass of the heavy packet in units of the light one
+grid_n = 4096
+grid_length = 160.0
+dt = 0.02
+absorber_width = 18.0
+absorber_strength = 4.0
+ode_half_width = 14.0
+energy_samples = 400                         # the exact T(E) is computed on this many energies and interpolated
+light_t_end = 31.0                           # sim time units of the light run
+heavy_t_end = 56.0
+light_rate = 2.0                            # sim time units per film second
+heavy_rate = 4.2
+samples_per_s = 30                           # stored states per film second
+view_x = [-17.0, 17.0]
+x_store_stride = 2                           # the stored density is every stride-th grid point inside the view
+side_x_factor = 2.0                          # "left / right of the hill" are x < -f w and x > f w
+te_e_max = 1.7
+density_height = 0.5                         # the height of the incident peak above the level E, in units of V
+density_alpha = 0.55
+forbid_alpha = 0.35
+curve_points = 160
+curve_e_min = 0.02
+big_curve_in = [2.0, 4.0]
+big_dist_in = [4.5, 6.5]
+big_prod_in = [6.5, 8.5]
+dist_height = 0.55                           # the packet distribution is drawn with this peak height (T axis)
+stationary_samples = 1500
+stationary_density_height = 0.12                               # T(E) panel: E / V from 0 to this
+magnify_heavy = 25.0                         # the transmitted part of the heavy run is also shown multiplied by this
+
+stationary_phase_rate = 4.0                   # film seconds -> the phase of the running wave of the stationary state in part 3
+
+[limits]
+energy_fraction = 0.5
+view_x = [-9.0, 9.0]
+samples = 1200
+
+[josephson]
+lam = 0.05                                   # hbar omega_p0 / E_J  (illustrative)
+s_start = 0.86
+s_end = 0.962
+t_total = 12000.0                            # in units of hbar / E_J (the ramp is adiabatic: plasma period ~ 125-250)
+grid_n = 3000
+grid_from = -5.5
+grid_to = 14.5
+dt = 0.05
+absorber_width = 2.0
+absorber_strength = 2.0
+samples_per_s = 30
+view_delta = [-1.2, 5.2]                     # the phase window relative to the well
+view_u = [-7.0, 8.5]                         # U - U_min, in units of hbar omega_p0
+density_floor = 1.0e-9
+density_ceiling = 30.0
+rate_s_range = [0.84, 0.975]
+rate_samples = 120
+ramp_hold_s = 1.0                            # the ramp is held at the start this long
+rate_floor = 1.0e-12
+
+[circuit]
+n_pairs = 44                                 # Cooper pairs drawn in each superconductor
+pair_seed = 3
+pair_size = 3.4                              # pt at 720 p
+pair_alpha = 0.9
+junction_xlim = [0.0, 12.0]
+junction_ylim = [0.0, 5.0]
+sc_blocks = [[0.2, 4.3], [7.7, 11.8]]        # x ranges of the two superconductors
+ins_block = [4.3, 7.7]
+block_y = [0.5, 3.7]
+block_alpha = 0.22
+block_edge_alpha = 0.8
+clock_centres = [[2.25, 4.35], [9.75, 4.35]]
+clock_radius = 0.42
+clock_rate = 1.3                             # rad per film second: both phases turn together, the difference delta stays
+c1_s = 0.6                                   # the bias in the sketch of part 3 (the text says s = 0.6)
+c1_xlim = [-1.6, 10.5]                       # delta
+c1_ylim = [-6.2, 1.9]                        # U / E_J
+c1_samples = 600
+ball_size = 12.0
+ball_jiggle = 0.12                           # amplitude of the zero-point motion shown (delta)
+ball_rate = 5.0
+well_alpha = 0.95
+den_alpha = 0.55
+den_gap = 1.0e-3                             # floor of the density panel is density_floor, the ceiling density_ceiling
+level_alpha = 0.9
+c2_text_alpha = 0.95
+rate_line_width = 2.0
+rate_dot_size = 70.0
+rate_ylim = [1.0e-12, 1.0]
+p_show_min = 0.001                           # below this probability the readout says '< 0.1 %'
+outro_in = [0.0, 0.9, 1.8, 2.7]              # film seconds at which the four lines appear
+outro_fade = 0.8
+cache_dir = ".cache"
+
+[wave]
+# a transverse chain of masses; springs to the floor only inside the segment; c = 1
+omega = 0.6                                  # frequency of the wave
+big_omega = 1.0                              # Omega: the frequency of the floor springs, omega < Omega
+widths = [1.0, 2.5, 5.0]                     # thickness a of the segment [0, a], the one of the film is the middle one
+featured = 1                                 # index in widths shown in parts w1 and w2
+dx = 0.02
+dt = 0.01
+x_left = -90.0
+x_right = 70.0
+absorber = 32.0                              # width of the damping layers at both ends
+absorber_strength = 0.8
+source_x = -34.0
+source_width = 0.8
+source_amp = 1.0
+ramp_periods = 3.0
+t_total = 200.0                              # simulated time per run
+samples_per_s = 30
+view_x = [-30.0, 16.0]                       # the part of the chain that is drawn
+dot_stride = 24                              # every n-th mass is drawn
+measure_left = [-26.0, -4.0]                 # the standing wave between the source and the segment (I and R)
+measure_right_margin = 3.0                   # the transmitted amplitude is averaged from a + margin over one wavelength
+env_ylim = [1.0e-4, 3.0]
+scene_ylim = [-1.9, 1.9]
+amp_scale = 0.62                             # drawn displacement = amp_scale * phi
+floor_y = -1.75
+spring_alpha = 0.55
+segment_alpha = 0.20
+loop_periods = 6                             # part w3 repeats the last periods of the steady state
+
+[objects]
+# a barrier V - E = 1 eV wide a = 0.5 nm for three masses: T ~ exp(-2 kappa a)
+hbar = 1.054571817e-34
+ev = 1.602176634e-19
+v_minus_e_ev = 1.0
+width_nm = 0.5
+electron_kg = 9.1093837e-31
+proton_kg = 1.67262192e-27
+grain_kg = 1.0e-9
+
+[mass_plot]
+factors = [1.0, 2.0, 4.0, 6.0, 9.0, 12.0, 16.0]
+marked = [1.0, 4.0, 16.0]
+log_ylim = [-9.0, 0.3]
+
+[layout]
+title_pos = [0.03, 0.935]
+chapter_label_pos = [0.97, 0.938]
+formula_pos = [0.03, 0.865]
+formula_row = 0.06
+caption_pos = [0.03, 0.035]
+caption_max_width = 0.94
+sub_caption_pos = [0.03, 0.075]
+card_title_y = 0.54
+card_subtitle_y = 0.45
+card_number_y = 0.64
+card_chapter_y = 0.52
+card_chapter_sub_y = 0.43
+scene_axes = [0.03, 0.47, 0.94, 0.31]
+bars_axes = [0.075, 0.17, 0.17, 0.225]
+u_axes = [0.46, 0.17, 0.50, 0.225]
+scan_axes = [0.075, 0.17, 0.34, 0.225]
+b_main_axes = [0.05, 0.43, 0.90, 0.31]
+b_bars_axes = [0.075, 0.17, 0.17, 0.225]
+b_te_axes = [0.46, 0.17, 0.50, 0.225]
+b_te_big_axes = [0.07, 0.17, 0.60, 0.58]
+b_te_text_x = 0.73
+b_te_text_y = 0.70
+b_te_text_row = 0.115
+lim_state_axes = [0.05, 0.16, 0.44, 0.58]
+lim_text_x = 0.53
+lim_text_y = 0.79
+lim_text_width = 0.43
+lim_line = 0.041                             # distance between the lines of a paragraph (figure fraction)
+lim_head_gap = 0.05
+lim_head_pre = 0.03
+lim_par_gap = 0.022
+c1_junction_axes = [0.04, 0.22, 0.46, 0.46]
+c1_well_axes = [0.56, 0.12, 0.40, 0.62]
+c2_pot_axes = [0.07, 0.45, 0.58, 0.29]
+c2_den_axes = [0.07, 0.17, 0.58, 0.20]
+c2_rate_axes = [0.73, 0.17, 0.24, 0.27]
+c2_text_x = 0.68
+c2_text_y = 0.80
+c2_text_row = 0.062
+wave_scene_axes = [0.05, 0.43, 0.90, 0.27]
+wave_env_axes = [0.07, 0.15, 0.50, 0.24]
+wave_text_x = 0.67
+wave_text_y = 0.38
+wave_text_row = 0.062
+wave_t_axes = [0.67, 0.15, 0.28, 0.24]
+m1_axes = [0.05, 0.43, 0.90, 0.31]
+m2_axes = [0.07, 0.17, 0.45, 0.50]
+m2_text_x = 0.60
+m2_text_y = 0.62
+m2_text_row = 0.075
+outro_x = 0.07
+outro_y = 0.72
+outro_row = 0.15
+
+[fonts]
+title = 19
+chapter_label = 13
+formula = 16
+formula_small = 13.5
+caption = 12.5
+sub_caption = 11.5
+axis_label = 11
+tick = 10
+panel_title = 11.5
+legend = 10.5
+stamp = 20
+readout = 12.5
+card_title = 34
+card_subtitle = 17
+card_number = 54
+card_chapter = 31
+card_chapter_sub = 16
+lim_text = 12.5
+lim_head = 16
+outro = 18
+min_scale = 0.6                              # the auto-shrink of a text that does not fit never goes below this fraction
+
+[style]
+background = "#03060c"
+text = [0.88, 0.93, 1.0]
+dim = [0.60, 0.68, 0.80]
+blue = [0.40, 0.72, 1.00]
+warm = [1.00, 0.55, 0.40]
+gold = [1.00, 0.84, 0.35]
+green = [0.50, 0.86, 0.58]
+hill_fill = [0.30, 0.36, 0.48]
+hill_fill_alpha = 0.60
+hill_edge = [0.68, 0.74, 0.86]
+hill_edge_width = 2.0
+rail_width = 2.2
+car_edge = [0.92, 0.96, 1.0]
+car_edge_width = 0.8
+car_alpha = 0.95
+head_car_color = [0.62, 0.84, 1.00]
+coupler_color = [0.72, 0.78, 0.88]
+coupler_width = 1.4
+title_color = [0.9, 0.95, 1.0, 0.95]
+card_title_color = [0.92, 0.96, 1.0]
+formula_alpha = 0.95
+caption_alpha = 0.95
+chapter_label_alpha = 0.9
+card_number_alpha = 0.9
+axes_edge = [0.35, 0.42, 0.55]
+axes_edge_width = 0.8
+grid_alpha = 0.0
+level_dash = [4, 3]
+level_width = 1.4
+energy_width = 1.8
+thresh_width = 2.0
+curve_width = 2.2
+ghost_alpha = 0.55
+fill_alpha = 0.28
+bar_width = 0.5
+bar_alpha = 0.92
+dot_size = 60.0
